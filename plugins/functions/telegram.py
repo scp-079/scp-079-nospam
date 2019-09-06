@@ -19,7 +19,7 @@
 import logging
 from typing import Iterable, List, Optional, Union
 
-from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message
+from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message, User
 from pyrogram.api.types import InputPeerUser, InputPeerChannel
 from pyrogram.errors import ChannelInvalid, ChannelPrivate, FloodWait, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
@@ -158,6 +158,24 @@ def get_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[List
                 wait_flood(e)
     except Exception as e:
         logger.warning(f"Get messages error: {e}", exc_info=True)
+
+    return result
+
+
+def get_users(client: Client, uids: Iterable[int]) -> Optional[List[User]]:
+    # Get users
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.get_users(user_ids=uids)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+    except Exception as e:
+        logger.warning(f"Get users error: {e}", exc_info=True)
 
     return result
 

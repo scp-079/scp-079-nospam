@@ -183,6 +183,22 @@ def get_command_type(message: Message) -> str:
     return result
 
 
+def get_document_filename(message: Message) -> str:
+    # Get document's filename
+    text = ""
+    try:
+        if message.document:
+            if message.document.file_name:
+                text = message.document.file_name
+
+        if text:
+            text = t2s(text)
+    except Exception as e:
+        logger.warning(f"Get document filename error: {e}", exc_info=True)
+
+    return text
+
+
 def get_entity_text(message: Message, entity: MessageEntity) -> str:
     # Get a message's entity text
     result = ""
