@@ -592,6 +592,13 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 color = get_color(image_path)
                 if color:
                     return "wd"
+
+            # Start detect bad
+
+            # Check the text
+            if text:
+                if is_regex_text("bad", text):
+                    return "bad"
     except Exception as e:
         logger.warning(f"Is watch message error: {e}", exc_info=True)
     finally:

@@ -340,6 +340,19 @@ def receive_leave_approve(client: Client, data: dict) -> bool:
     return False
 
 
+def receive_report_ids(client: Client, message: Message) -> bool:
+    # Receive report ids
+    try:
+        the_list = receive_file_data(client, message, True)
+        if the_list:
+            glovar.report_ids = set(the_list)
+            save("report_ids")
+    except Exception as e:
+        logger.warning(f"Receive report ids error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_refresh(client: Client, data: int) -> bool:
     # Receive refresh
     try:

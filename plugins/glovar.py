@@ -56,6 +56,7 @@ default_config: Dict[str, Union[bool, int]] = {
 }
 
 default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
+    "bad": {},
     "detected": {},
     "join": {},
     "score": {
@@ -283,14 +284,20 @@ except_ids: Dict[str, Set[Union[int, str]]] = {
 #     "temp": {"content"}
 # }
 
+report_ids: Set[int] = set()
+# report_ids = {-10012345678}
+
 user_ids: Dict[int, Dict[str, Dict[Union[int, str], Union[float, int]]]] = {}
 # user_ids = {
 #     12345678: {
+#         "bad": {
+#             -10012345678: 2
+#         },
 #         "detected": {
-#               -10012345678: 1512345678
+#             -10012345678: 1512345678
 #         },
 #         "join": {
-#               -10012345678: 1512345678
+#             -10012345678: 1512345678
 #         },
 #         "score": {
 #             "captcha": 0.0,
@@ -341,7 +348,7 @@ for word_type in regex:
 # }
 
 # Load data
-file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "user_ids", "watch_ids", "configs"]
+file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "report_ids", "user_ids", "watch_ids", "configs"]
 file_list += [f"{f}_words" for f in regex]
 for file in file_list:
     try:

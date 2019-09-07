@@ -23,7 +23,7 @@ from pyrogram import Client, Message, User
 
 from .. import glovar
 from .etc import crypt_str, get_now, thread
-from .channel import ask_for_help, declare_message, forward_evidence, send_debug, share_bad_user
+from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug, share_bad_user
 from .channel import share_watch_user, update_score
 from .file import save
 from .group import delete_message
@@ -223,6 +223,14 @@ def terminate_user(client: Client, message: Message, the_type: str, bio: str = N
                         update_score(client, uid)
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
+        elif action_type == "bad":
+            gid = message.chat.id
+            count = glovar.user_ids[uid]["bad"].get(gid, 0)
+            count += 1
+            glovar.user_ids[uid]["bad"][gid] = count
+            update_score(client, uid)
+            if gid in glovar.report_ids:
+                auto_report(client, message)
 
         return True
     except Exception as e:

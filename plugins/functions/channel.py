@@ -59,6 +59,29 @@ def ask_for_help(client: Client, level: str, gid: int, uid: int, group: str = "s
     return False
 
 
+def auto_report(client: Client, message: Message) -> bool:
+    # Let WARN auto report a user
+    try:
+        gid = message.chat.id
+        uid = message.from_user.id
+        mid = message.message_id
+        share_data(
+            client=client,
+            receivers=["WARN"],
+            action="help",
+            action_type="report",
+            data={
+                "group_id": gid,
+                "user_id": uid,
+                "message_id": mid
+            }
+        )
+    except Exception as e:
+        logger.warning(f"Auto report error: {e}", exc_info=True)
+
+    return False
+
+
 def declare_message(client: Client, gid: int, mid: int) -> bool:
     # Declare a message
     try:
@@ -373,8 +396,9 @@ def share_watch_user(client: Client, the_type: str, uid: int, until: str) -> boo
 def update_score(client: Client, uid: int) -> bool:
     # Update a user's score, share it
     try:
-        count = len(glovar.user_ids[uid]["detected"])
-        score = count * 0.4
+        delete = len(glovar.user_ids[uid]["detected"])
+        bad = sum([glovar.user_ids[uid]["bad"][gid] for gid in list(glovar.user_ids[uid]["bad"])])
+        score = delete * 0.4 + bad * 0.1
         glovar.user_ids[uid]["score"][glovar.sender.lower()] = score
         save("user_ids")
         share_data(
