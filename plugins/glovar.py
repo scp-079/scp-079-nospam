@@ -83,6 +83,14 @@ locks: Dict[str, Lock] = {
     "test": Lock()
 }
 
+names: Dict[str, str] = {
+    "bad": "自动举报",
+    "ban": "自动封禁",
+    "delete": "自动删除",
+    "wb": "追踪封禁",
+    "wd": "追踪删除"
+}
+
 receivers: Dict[str, List[str]] = {
     "bad": ["ANALYZE", "APPEAL", "CAPTCHA", "CLEAN", "LANG", "LONG", "NOFLOOD", "NOPORN",
             "NOSPAM", "MANAGE", "RECHECK", "USER", "WATCH"],

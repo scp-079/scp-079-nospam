@@ -444,6 +444,18 @@ def get_text(message: Message) -> str:
     return text
 
 
+def italic(text: Any) -> str:
+    # Get italic text
+    try:
+        text = str(text)
+        if text:
+            return f"<i>{escape(str(text))}</i>"
+    except Exception as e:
+        logger.warning(f"Italic error: {e}", exc_info=True)
+
+    return ""
+
+
 def message_link(message: Message) -> str:
     # Get a message link in a channel
     text = ""
