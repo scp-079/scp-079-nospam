@@ -110,6 +110,7 @@ regex: Dict[str, str] = {
     "sho": "短链接",
     "spc": "特殊中文",
     "spe": "特殊英文",
+    "sti": "贴纸删除",
     "tgl": "TG 链接",
     "tgp": "TG 代理",
     "wb": "追踪封禁",

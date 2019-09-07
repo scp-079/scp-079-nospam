@@ -30,7 +30,7 @@ from .etc import get_links, get_stripped_link, get_text
 from .file import delete_file, get_downloaded_path, save
 from .ids import init_group_id
 from .image import get_file_id, get_ocr, get_qrcode
-from .telegram import get_chat_member, resolve_username
+from .telegram import get_chat_member, get_sticker_title, resolve_username
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -429,6 +429,16 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             if all_text:
                 if is_regex_text("delete", all_text):
                     return "delete"
+
+            # Check sticker
+            if message.sticker:
+                sticker_name = message.sticker.set_name
+                if is_regex_text("sti", sticker_name):
+                    return "delete"
+
+                sticker_title = get_sticker_title(client, sticker_name)
+                if is_regex_text("sti", sticker_title):
+                    return f"delete nm-{sticker_title}"
 
             # Start detect watch delete
 
