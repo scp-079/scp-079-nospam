@@ -22,12 +22,12 @@ from typing import Optional, Union
 from pyrogram import Client, Message, User
 
 from .. import glovar
-from .etc import crypt_str, get_forward_name, get_full_name, get_now, thread
+from .etc import crypt_str, get_now, thread
 from .channel import ask_for_help, declare_message, forward_evidence, send_debug, share_bad_user
 from .channel import share_watch_user, update_score
 from .file import save
 from .group import delete_message
-from .filters import is_class_d, is_declared_message, is_detected_user, is_high_score_user, is_regex_text, is_watch_user
+from .filters import is_class_d, is_declared_message, is_detected_user, is_high_score_user
 from .ids import init_user_id
 from .telegram import get_users, kick_chat_member
 
@@ -124,8 +124,8 @@ def terminate_user(client: Client, message: Message, the_type: str, bio: str = N
 
         if action_type == "ban":
             log_action = "自动封禁"
-            log_rule = ""
-            debug_action = ""
+            log_rule = "全局规则"
+            debug_action = "自动封禁"
             if rule:
                 if rule == "bio":
                     log_rule = "简介检查"
@@ -133,9 +133,12 @@ def terminate_user(client: Client, message: Message, the_type: str, bio: str = N
                 elif rule == "nm":
                     log_rule = "名称检查"
                     debug_action = "名称封禁"
-            else:
-                log_rule = "全局规则"
-                debug_action = "自动封禁"
+                elif rule == "nm-record":
+                    log_rule = "名称收录"
+                    debug_action = "名称封禁"
+                elif rule == "record":
+                    log_rule = "消息收录"
+                    debug_action = "收录封禁"
 
             result = forward_evidence(client, message, log_action, log_rule, bio)
             if result:
@@ -146,11 +149,80 @@ def terminate_user(client: Client, message: Message, the_type: str, bio: str = N
                 ask_for_help(client, "ban", gid, uid)
                 send_debug(client, message.chat, debug_action, uid, mid, result)
         elif action_type == "wb":
-            pass
+            log_action = "自动封禁"
+            log_rule = "敏感追踪"
+            debug_action = "追踪封禁"
+            score_user = is_high_score_user(message)
+            if score_user:
+                log_rule = "用户评分"
+                debug_action = "评分封禁"
+
+            if rule:
+                if rule == "nm":
+                    log_rule = "名称追踪"
+                    debug_action = "名称封禁"
+                    if score_user:
+                        log_rule = "名称评分"
+
+            result = forward_evidence(client, message, log_action, log_rule, bio)
+            if result:
+                add_bad_user(client, uid)
+                ban_user(client, gid, uid)
+                delete_message(client, gid, mid)
+                declare_message(client, gid, mid)
+                ask_for_help(client, "ban", gid, uid)
+                send_debug(client, message.chat, debug_action, uid, mid, result)
         elif action_type == "delete":
-            pass
+            log_action = "自动删除"
+            log_rule = "全局规则"
+            debug_action = "自动删除"
+            more = ""
+            if rule:
+                if rule == "record":
+                    log_rule = "消息收录"
+                    debug_action = "收录删除"
+                elif "nm" in rule:
+                    more = rule.split("-")[1]
+
+            if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
+                delete_message(client, gid, mid)
+                add_detected_user(gid, uid)
+                declare_message(client, gid, mid)
+            else:
+                result = forward_evidence(client, message, log_action, log_rule, 0.0, more)
+                if result:
+                    glovar.recorded_ids[gid].add(uid)
+                    delete_message(client, gid, mid)
+                    declare_message(client, gid, mid)
+                    previous = add_detected_user(gid, uid)
+                    if not previous:
+                        update_score(client, uid)
+
+                    send_debug(client, message.chat, debug_action, uid, mid, result)
         elif action_type == "wd":
-            pass
+            log_action = "自动删除"
+            log_rule = "敏感追踪"
+            debug_action = "追踪删除"
+            score_user = is_high_score_user(message)
+            if score_user:
+                log_rule = "用户评分"
+                debug_action = "评分删除"
+
+            if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
+                delete_message(client, gid, mid)
+                add_detected_user(gid, uid)
+                declare_message(client, gid, mid)
+            else:
+                result = forward_evidence(client, message, log_action, log_rule)
+                if result:
+                    glovar.recorded_ids[gid].add(uid)
+                    delete_message(client, gid, mid)
+                    declare_message(client, gid, mid)
+                    previous = add_detected_user(gid, uid)
+                    if not previous:
+                        update_score(client, uid)
+
+                    send_debug(client, message.chat, debug_action, uid, mid, result)
 
         return True
     except Exception as e:
