@@ -25,16 +25,16 @@ from typing import Any
 from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
-from .channel import get_content, get_debug_text
+from .channel import ask_for_help, declare_message, get_content, get_debug_text, send_debug
 from .etc import code, crypt_str, general_link, get_int, get_report_record, get_stripped_link, get_text
 from .etc import thread, user_mention
 from .file import crypt_file, delete_file, get_new_path, get_downloaded_path, save
-from .filters import is_bad_message, is_class_e, is_declared_message_id, is_detected_user_id
-from .group import get_message, leave_group
+from .filters import is_avatar_image, is_bad_message, is_class_e, is_declared_message_id, is_detected_user_id
+from .group import delete_message, get_message, leave_group
 from .ids import init_group_id, init_user_id
-from .telegram import send_message, send_report_message
+from .telegram import send_message, send_photo, send_report_message
 from .timers import update_admins
-from .user import terminate_user
+from .user import add_bad_user, ban_user, terminate_user
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -123,6 +123,60 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive add bad error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_avatar(client: Client, message: Message, data: dict) -> bool:
+    # Receive avatar
+    image_path = ""
+    if glovar.locks["message"].acquire():
+        try:
+            gid = data["group_id"]
+            uid = data["user_id"]
+            mid = data["message_id"]
+            if glovar.admin_ids.get(gid):
+                # Do not check admin's avatar
+                if uid in glovar.admin_ids[gid]:
+                    return True
+
+                # Do not check Class D personnel's avatar
+                if uid in glovar.bad_ids["users"]:
+                    return True
+
+                image = receive_file_data(client, message, True)
+                if not image:
+                    return True
+
+                image_path = get_new_path()
+                image.save(image_path, "PNG")
+                if is_avatar_image(image_path):
+                    result = send_photo(client, glovar.logging_channel_id, image_path)
+                    if not result:
+                        return True
+
+                    text = (f"项目编号：{code(glovar.sender)}\n"
+                            f"用户 ID：{code(uid)}\n"
+                            f"操作等级：{code('自动封禁')}\n"
+                            f"规则：{code('头像分析')}\n")
+                    result = result.message_id
+                    result = send_message(client, glovar.logging_channel_id, text, result)
+                    if not result:
+                        return True
+
+                    add_bad_user(client, uid)
+                    ban_user(client, gid, uid)
+                    delete_message(client, gid, mid)
+                    declare_message(client, gid, mid)
+                    ask_for_help(client, "ban", gid, uid)
+                    send_debug(client, message.chat, "头像封禁", uid, mid, result)
+
+            return True
+        except Exception as e:
+            logger.warning(f"Receive avatar error: {e}", exc_info=True)
+        finally:
+            delete_file(image_path)
+            glovar.locks["message"].release()
 
     return False
 

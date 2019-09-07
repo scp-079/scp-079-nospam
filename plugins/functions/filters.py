@@ -29,7 +29,7 @@ from .etc import get_channel_link, get_document_filename, get_entity_text, get_f
 from .etc import get_links, get_stripped_link, get_text
 from .file import delete_file, get_downloaded_path, save
 from .ids import init_group_id
-from .image import get_file_id, get_ocr, get_qrcode
+from .image import get_color, get_file_id, get_ocr, get_qrcode
 from .telegram import get_chat_member, get_sticker_title, resolve_username
 
 # Enable logging
@@ -251,6 +251,26 @@ test_group = Filters.create(
     func=is_test_group,
     name="Test Group"
 )
+
+
+def is_avatar_image(path: str) -> bool:
+    # Check if the image is avatar image
+    try:
+        # Check QRCODE
+        qrcode = get_qrcode(path)
+        if qrcode:
+            if is_ban_text(qrcode) or is_regex_text("ava", qrcode):
+                return True
+
+        # Check OCR
+        ocr = get_ocr(path)
+        if ocr:
+            if is_ban_text(ocr) or is_regex_text("ava", ocr):
+                return True
+    except Exception as e:
+        logger.warning(f"Is avatar image error: {e}", exc_info=True)
+
+    return False
 
 
 def is_bad_message(client: Client, message: Message, text: str = None, image_path: str = None) -> str:
@@ -475,6 +495,11 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if all_text:
                     if is_wd_text(all_text):
                         return "wd"
+
+                if image_path:
+                    color = get_color(image_path)
+                    if color:
+                        return "wd"
         # Preview message
         else:
             # Start detect ban
@@ -563,6 +588,10 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if all_text:
                     if is_wd_text(all_text):
                         return "wd"
+
+                color = get_color(image_path)
+                if color:
+                    return "wd"
     except Exception as e:
         logger.warning(f"Is watch message error: {e}", exc_info=True)
     finally:
