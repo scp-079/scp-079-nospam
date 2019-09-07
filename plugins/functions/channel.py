@@ -27,7 +27,6 @@ from .. import glovar
 from .etc import code, code_block, general_link, get_forward_name, get_full_name, get_md5sum, get_text, message_link
 from .etc import thread, wait_flood
 from .file import crypt_file, data_to_file, delete_file, get_new_path, save
-from .group import get_message
 from .image import get_file_id
 from .telegram import get_group_info, send_document, send_message
 
@@ -124,7 +123,7 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
     return text
 
 
-def forward_evidence(client: Client, message: Message, level: str, rule: str,
+def forward_evidence(client: Client, message: Message, level: str, rule: str, score: Union[float, str] = 0.0,
                      more: str = None) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
@@ -140,6 +139,9 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str,
         elif message.service:
             text += f"消息类别：{code('服务消息')}\n"
 
+        if "评分" in rule:
+            text += f"用户得分：{code(score)}\n"
+
         if "名称" in rule:
             name = get_full_name(message.from_user)
             if name:
@@ -148,6 +150,9 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str,
             forward_name = get_forward_name(message)
             if forward_name and forward_name != name:
                 text += f"来源名称：{code(forward_name)}\n"
+
+        if "简介" in rule:
+            text += f"用户简介：{code(score)}\n"
 
         if message.contact or message.location or message.venue or message.video_note or message.voice:
             text += f"附加信息：{code('可能涉及隐私而未转发')}\n"
@@ -189,23 +194,17 @@ def forward_evidence(client: Client, message: Message, level: str, rule: str,
     return result
 
 
-def get_content(client: Optional[Client], mid: Union[int, Message]) -> str:
-    # Get the message that will be added to except_ids, return the file_id or text's hash
+def get_content(message: Message) -> str:
+    # Get the message that will be added to lists, return the file_id and text's hash
     result = ""
     try:
-        if client and isinstance(mid, int):
-            message = get_message(client, glovar.logging_channel_id, mid)
-            if message:
-                message = message.reply_to_message
-        else:
-            message = mid
-
         if message:
             file_id, _ = get_file_id(message)
             text = get_text(message)
             if file_id:
                 result += file_id
-            elif text:
+
+            if text:
                 result += get_md5sum("string", text)
     except Exception as e:
         logger.warning(f"Get content error: {e}", exc_info=True)

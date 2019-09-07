@@ -76,6 +76,7 @@ eme_group_ids: Set[int] = set()
 left_group_ids: Set[int] = set()
 
 locks: Dict[str, Lock] = {
+    "admin": Lock(),
     "message": Lock(),
     "regex": Lock(),
     "test": Lock()
@@ -96,22 +97,23 @@ recorded_ids: Dict[int, Set[int]] = {}
 #     -10012345678: {12345678}
 # }
 
-regex: Dict[str, bool] = {
-    "ad": True,
-    "aff": True,
-    "ban": True,
-    "bio": True,
-    "con": True,
-    "del": True,
-    "iml": True,
-    "nm": True,
-    "sho": True,
-    "spc": True,
-    "spe": True,
-    "tgl": True,
-    "tgp": True,
-    "wb": True,
-    "wd": True
+regex: Dict[str, str] = {
+    "ad": "广告用语",
+    "aff": "推广链接",
+    "bad": "敏感检测",
+    "ban": "自动封禁",
+    "bio": "简介封禁",
+    "con": "联系方式",
+    "del": "自动删除",
+    "iml": "IM 链接",
+    "nm": "名称封禁",
+    "sho": "短链接",
+    "spc": "特殊中文",
+    "spe": "特殊英文",
+    "tgl": "TG 链接",
+    "tgp": "TG 代理",
+    "wb": "追踪封禁",
+    "wd": "追踪删除"
 }
 
 sender: str = "NOSPAM"

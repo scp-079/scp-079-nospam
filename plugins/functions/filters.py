@@ -90,7 +90,7 @@ def is_class_e(_, message: Message) -> bool:
             if cid in glovar.except_ids["channels"]:
                 return True
 
-        content = get_content(None, message)
+        content = get_content(message)
         if content:
             if (content in glovar.except_ids["long"]
                     or content in glovar.except_ids["temp"]):
@@ -264,23 +264,49 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
     try:
         # Regular message
         if not (text or image_path):
-            # Start detect ban
-
-            # If the user is being punished
-            if is_detected_user(message):
-                return "delete"
-
             # Check detected records
-            detection = ""
-            content = get_content(client, message)
+
+            # Content
+            content = get_content(message)
+            wb_user = is_watch_user(message, "ban")
+            score_user = is_high_score_user(message)
+            wd_user = is_watch_user(message, "delete")
             if content:
                 detection = glovar.contents.get(content, "")
                 if detection == "ban":
                     return detection
 
+                if (wb_user or score_user) and detection == "wb":
+                    return detection
+
+                if detection == "delete":
+                    return detection
+
+                if (wb_user or score_user or wd_user) and detection == "wd":
+                    return detection
+
+                if content in glovar.bad_ids["temp"]:
+                    return "delete record"
+
+            # Url
             detected_url = is_detected_url(message)
             if detected_url == "ban":
                 return detected_url
+
+            if (wb_user or score_user) and detected_url == "wb":
+                return detected_url
+
+            if detected_url == "delete":
+                return detected_url
+
+            if (wb_user or score_user or wd_user) and detected_url == "wd":
+                return detected_url
+
+            # Start detect ban
+
+            # If the user is being punished
+            if is_detected_user(message):
+                return "delete"
 
             # Check the message's text
             message_text = get_text(message)
@@ -290,13 +316,19 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Check the forward from name:
             forward_name = get_forward_name(message)
-            if forward_name:
+            if forward_name and forward_name not in glovar.except_ids["long"]:
+                if forward_name in glovar.bad_ids["temp"]:
+                    return "ban nm-record"
+
                 if is_nm_text(forward_name):
                     return "ban nm"
 
             # Check the user's name:
             name = get_full_name(message.from_user)
-            if name:
+            if name and name not in glovar.except_ids["long"]:
+                if forward_name in glovar.bad_ids["temp"]:
+                    return "ban nm-record"
+
                 if is_nm_text(name):
                     return "ban nm"
 
@@ -333,14 +365,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Start detect watch ban
 
-            if is_watch_user(message, "ban") or is_high_score_user(message):
-                # Check detected records
-                if detection == "wb":
-                    return detection
-
-                if detected_url == "wb":
-                    return detected_url
-
+            if wb_user or score_user:
                 # Check the message's text
                 if message_text:
                     if is_wb_text(message_text):
@@ -348,16 +373,11 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
                 # Check channel restriction
                 if is_restricted_channel(message):
-                    return "wb restricted"
+                    return "wb"
 
                 # Check the forward from name:
-                if forward_name:
+                if forward_name and forward_name not in glovar.except_ids["long"]:
                     if is_wb_text(forward_name):
-                        return "wb nm"
-
-                # Check the user's name:
-                if name:
-                    if is_nm_text(name):
                         return "wb nm"
 
                 # Check the document filename:
@@ -387,21 +407,14 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Start detect delete
 
-            # Check detected records
-            if detection == "delete":
-                return detection
-
-            if detected_url == "delete":
-                return detected_url
-
             # Check the message's text
             if message_text:
-                if is_regex_text("delete", message_text):
+                if is_delete_text(message_text):
                     return "delete"
 
             # Check the document filename:
             if file_name:
-                if is_regex_text("delete", file_name):
+                if is_delete_text(file_name):
                     return "delete"
 
             # Check image
@@ -419,14 +432,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Start detect watch delete
 
-            if is_watch_user(message, "ban") or is_watch_user(message, "delete") or is_high_score_user(message):
-                # Check detected records
-                if detection in {"wb", "wd"}:
-                    return detection
-
-                if detected_url in {"wb", "wd"}:
-                    return detection
-
+            if wb_user or score_user or wd_user:
                 # Some media type
                 if (message.animation
                         or message.audio
@@ -512,7 +518,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Check the text
             if text:
-                if is_regex_text("delete", text):
+                if is_delete_text(text):
                     return "delete"
 
             # Check image
@@ -530,7 +536,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Start detect watch delete
 
-            if is_watch_user(message, "ban") or is_watch_user(message, "delete") or is_high_score_user(message):
+            if is_watch_user(message, "ban") or is_high_score_user(message) or is_watch_user(message, "delete"):
                 # Check the text
                 if text:
                     if is_wd_text(text):
@@ -580,6 +586,23 @@ def is_bio_text(text: str) -> bool:
             return True
     except Exception as e:
         logger.warning(f"Is bio text error: {e}", exc_info=True)
+
+    return False
+
+
+def is_delete_text(text: str) -> bool:
+    # Check if the text is delete text
+    try:
+        if is_regex_text("delete", text):
+            return True
+
+        if is_regex_text("spc", text):
+            return True
+
+        if is_regex_text("spe", text):
+            return True
+    except Exception as e:
+        logger.warning(f"Is delete text error: {e}", exc_info=True)
 
     return False
 
