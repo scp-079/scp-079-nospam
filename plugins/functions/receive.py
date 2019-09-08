@@ -519,7 +519,7 @@ def receive_text_data(message: Message) -> dict:
     return data
 
 
-def receive_user_score(project: str, data: dict) -> bool:
+def receive_user_score(client: Client, project: str, data: dict) -> bool:
     # Receive and update user's score
     try:
         project = project.lower()
@@ -528,6 +528,9 @@ def receive_user_score(project: str, data: dict) -> bool:
         score = data["score"]
         glovar.user_ids[uid][project] = score
         save("user_ids")
+        total_score = sum(glovar.user_ids[uid]["score"].values())
+        if total_score >= 3.0:
+            ask_for_help(client, "delete", 0, uid, "global")
 
         return True
     except Exception as e:
