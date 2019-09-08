@@ -224,13 +224,17 @@ def terminate_user(client: Client, message: Message, the_type: str, bio: str = N
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
         elif action_type == "bad":
-            gid = message.chat.id
-            count = glovar.user_ids[uid]["bad"].get(gid, 0)
-            count += 1
-            glovar.user_ids[uid]["bad"][gid] = count
-            update_score(client, uid)
-            if gid in glovar.report_ids:
-                auto_report(client, message)
+            result = forward_evidence(client, message, "自动记分", "全局规则")
+            if result:
+                gid = message.chat.id
+                count = glovar.user_ids[uid]["bad"].get(gid, 0)
+                count += 1
+                glovar.user_ids[uid]["bad"][gid] = count
+                update_score(client, uid)
+                if gid in glovar.report_ids:
+                    auto_report(client, message)
+
+                send_debug(client, message.chat, "微量记分", uid, mid, result)
 
         return True
     except Exception as e:
