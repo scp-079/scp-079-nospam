@@ -75,6 +75,7 @@ def interval_min_15(client: Client) -> bool:
                                 f"用户 ID：{code(uid)}\n"
                                 f"操作等级：{code('自动封禁')}\n"
                                 f"规则：{code('名称复查')}\n"
+                                f"消息类别：{code('服务消息')}\n"
                                 f"用户昵称：{code(name)}\n")
                         result = send_message(client, glovar.logging_channel_id, text)
                         if result:
