@@ -66,6 +66,13 @@ def receive_add_except(client: Client, data: dict) -> bool:
 
                 save("bad_ids")
 
+            if "简介" in record["rule"]:
+                if record["bio"]:
+                    glovar.except_ids["long"].add(record["bio"])
+                    glovar.bad_ids["temp"].discard(record["bio"])
+
+                save("bad_ids")
+
             if message.reply_to_message:
                 message = message.reply_to_message
             else:
@@ -469,6 +476,10 @@ def receive_remove_except(client: Client, data: dict) -> bool:
 
                 if record["from"]:
                     glovar.except_ids["long"].discard(record["from"])
+
+            if "简介" in record["rule"]:
+                if record["bio"]:
+                    glovar.except_ids["long"].discard(record["bio"])
 
             if message.reply_to_message:
                 message = message.reply_to_message
