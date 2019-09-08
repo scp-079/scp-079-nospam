@@ -361,7 +361,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check image
             qrcode = ""
             ocr = ""
-            all_text = ""
+            all_text = message_text
             file_id, big = get_file_id(message)
             image_path = get_downloaded_path(client, file_id)
             if is_declared_message(None, message):
@@ -381,6 +381,11 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
                         all_text += ocr
                         if is_ban_text(all_text):
+                            return "ban"
+
+                    # QRCODE == con
+                    if qrcode:
+                        if is_regex_text("ad", all_text):
                             return "ban"
 
             # Start detect watch ban
@@ -512,7 +517,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check image
             qrcode = ""
             ocr = ""
-            all_text = ""
+            all_text = text
             if image_path:
                 need_delete.append(image_path)
                 qrcode = get_qrcode(image_path)
