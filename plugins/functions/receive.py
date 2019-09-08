@@ -25,10 +25,10 @@ from typing import Any
 from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
-from .channel import ask_for_help, declare_message, get_content, get_debug_text, send_debug
-from .etc import code, crypt_str, general_link, get_int, get_report_record, get_stripped_link, get_text
+from .channel import ask_for_help, declare_message, get_content, get_debug_text, send_debug, share_data
+from .etc import code, crypt_str, general_link, get_int, get_now, get_report_record, get_stripped_link, get_text
 from .etc import thread, user_mention
-from .file import crypt_file, delete_file, get_new_path, get_downloaded_path, save
+from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .filters import is_avatar_image, is_bad_message, is_class_e, is_declared_message_id, is_detected_user_id
 from .group import delete_message, get_message, leave_group
 from .ids import init_group_id, init_user_id
@@ -513,6 +513,43 @@ def receive_remove_watch(data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive remove watch error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_status_ask(client: Client, data: dict) -> bool:
+    # Receive version info request
+    try:
+        aid = data["admin_id"]
+        mid = data["message_id"]
+        now = get_now()
+        new_count = 0
+        bad_count = len(glovar.bad_ids["users"])
+        user_ids = deepcopy(glovar.user_ids)
+        for uid in user_ids:
+            if any([now - user_ids[uid]["join"][gid] < glovar.time_new for gid in user_ids[uid]["join"]]):
+                new_count += 1
+
+        status = {
+            "昵称复查": f"{new_count} 名",
+            "黑名单": f"{bad_count} 名"
+        }
+        file = data_to_file(status)
+        share_data(
+            client=client,
+            receivers=["MANAGE"],
+            action="status",
+            action_type="reply",
+            data={
+                "admin_id": aid,
+                "message_id": mid
+            },
+            file=file
+        )
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive version ask error: {e}", exc_info=True)
 
     return False
 
