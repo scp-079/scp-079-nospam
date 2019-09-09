@@ -73,6 +73,20 @@ def receive_add_except(client: Client, data: dict) -> bool:
 
                 save("bad_ids")
 
+            if record["rule"] == "头像分析":
+                uid = record["uid"]
+                share_data(
+                    client=client,
+                    receivers=["AVATAR"],
+                    action="add",
+                    action_type="except",
+                    data={
+                        "the_id": uid,
+                        "the_type": "long"
+                    }
+                )
+                return True
+
             if message.reply_to_message:
                 message = message.reply_to_message
             else:
@@ -483,6 +497,20 @@ def receive_remove_except(client: Client, data: dict) -> bool:
             if "简介" in record["rule"]:
                 if record["bio"]:
                     glovar.except_ids["long"].discard(record["bio"])
+
+            if record["rule"] == "头像分析":
+                uid = record["uid"]
+                share_data(
+                    client=client,
+                    receivers=["AVATAR"],
+                    action="remove",
+                    action_type="except",
+                    data={
+                        "the_id": uid,
+                        "the_type": "long"
+                    }
+                )
+                return True
 
             if message.reply_to_message:
                 message = message.reply_to_message
