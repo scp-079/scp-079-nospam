@@ -360,7 +360,7 @@ def share_regex_count(client: Client, word_type: str) -> bool:
             share_data(
                 client=client,
                 receivers=["REGEX"],
-                action="update",
+                action="regex",
                 action_type="count",
                 data=f"{word_type}_words",
                 file=file
