@@ -505,6 +505,13 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     color = get_color(image_path)
                     if color:
                         return "wd"
+
+            # Start detect bad
+
+            # Check the message's text
+            if message_text:
+                if is_regex_text("bad", message_text):
+                    return "bad"
         # Preview message
         else:
             # Start detect ban
