@@ -31,12 +31,11 @@ from plugins.functions.timers import reset_data, send_count, update_admins, upda
 # Enable logging
 logger = logging.getLogger(__name__)
 
-# Start
+# Config session
 app = Client(
     session_name="bot",
     bot_token=glovar.bot_token
 )
-app.start()
 
 # Timer
 scheduler = BackgroundScheduler()
