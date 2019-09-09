@@ -106,7 +106,6 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                 return True
 
             record = get_report_record(message)
-            logger.warning(record)
             if "WARN" not in {record["origin"], record["project"]}:
                 return True
 
