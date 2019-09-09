@@ -42,7 +42,7 @@ from ..functions.user import terminate_user
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & ~Filters.new_chat_members
+@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & ~Filters.service
                    & ~class_d & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check the messages sent from groups
