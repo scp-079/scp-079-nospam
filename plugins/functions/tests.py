@@ -55,6 +55,10 @@ def nospam_test(client: Client, message: Message) -> bool:
         if detection:
             text += f"检测链接：{code(glovar.names[detection.split()[0]])}\n"
 
+        # Bad record
+        if content in glovar.bad_ids["temp"]:
+            text += f"已被收录：{code('True')}\n"
+
         # Image
         file_id, big = get_file_id(message)
         if big:
