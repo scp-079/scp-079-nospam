@@ -308,7 +308,7 @@ def receive_preview(client: Client, message: Message, data: dict) -> bool:
                             if not is_class_e(None, the_message):
                                 url = get_stripped_link(preview["url"])
                                 glovar.contents[url] = detection
-                                terminate_user(client, the_message, "url")
+                                terminate_user(client, the_message, the_message.from_user, "url")
 
             return True
         except Exception as e:
