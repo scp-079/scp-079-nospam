@@ -40,7 +40,7 @@ app.start()
 
 # Timer
 scheduler = BackgroundScheduler()
-scheduler.add_job(interval_min_15, "interval", minutes=15)
+scheduler.add_job(interval_min_15, "interval", [app], minutes=15)
 scheduler.add_job(update_status, "cron", [app], minute=30)
 scheduler.add_job(backup_files, "cron", [app], hour=20)
 scheduler.add_job(send_count, "cron", [app], hour=21)
