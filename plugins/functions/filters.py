@@ -444,15 +444,15 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Check image
             if qrcode:
-                if is_regex_text("delete", qrcode):
+                if is_regex_text("del", qrcode):
                     return "delete"
 
             if ocr:
-                if is_regex_text("delete", ocr):
+                if is_regex_text("del", ocr):
                     return "delete"
 
             if all_text:
-                if is_regex_text("delete", all_text):
+                if is_regex_text("del", all_text):
                     return "delete"
 
             # Check sticker
@@ -563,15 +563,15 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Check image
             if qrcode:
-                if is_regex_text("delete", qrcode):
+                if is_regex_text("del", qrcode):
                     return "delete"
 
             if ocr:
-                if is_regex_text("delete", ocr):
+                if is_regex_text("del", ocr):
                     return "delete"
 
             if all_text:
-                if is_regex_text("delete", all_text):
+                if is_regex_text("del", all_text):
                     return "delete"
 
             # Start detect watch delete
@@ -644,7 +644,7 @@ def is_bio_text(text: str) -> bool:
 def is_delete_text(text: str) -> bool:
     # Check if the text is delete text
     try:
-        if is_regex_text("delete", text):
+        if is_regex_text("del", text):
             return True
 
         if is_regex_text("spc", text):
