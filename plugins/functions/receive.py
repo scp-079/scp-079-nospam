@@ -95,6 +95,8 @@ def receive_add_except(client: Client, data: dict) -> bool:
             content = get_content(message)
             if content:
                 glovar.except_ids[the_type].add(content)
+                glovar.bad_ids["temp"].discard(content)
+                save("bad_ids")
 
         save("except_ids")
 
@@ -139,6 +141,8 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
             content = get_content(message)
             if content:
                 glovar.bad_ids[the_type].add(content)
+                glovar.except_ids["temp"].discard(content)
+                save("except_ids")
 
         save("bad_ids")
 
