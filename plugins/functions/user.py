@@ -82,6 +82,8 @@ def get_user(client: Client, uid: int) -> Optional[User]:
     result = None
     try:
         result = get_users(client, [uid])
+        if result:
+            result = result[0]
     except Exception as e:
         logger.warning(f"Get user error: {e}", exc_info=True)
 
