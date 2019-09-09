@@ -199,7 +199,7 @@ def get_user_bio(client: Client, uid: int) -> Optional[str]:
                 flood_wait = False
                 try:
                     user: UserFull = client.send(GetFullUser(id=user_id))
-                    if user:
+                    if user and user.about:
                         result = t2s(user.about)
                 except FloodWait as e:
                     flood_wait = True
