@@ -106,6 +106,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                 return True
 
             record = get_report_record(message)
+            logger.warning(record)
             if "WARN" not in {record["origin"], record["project"]}:
                 return True
 
@@ -114,6 +115,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                     glovar.bad_ids["temp"].add(record["name"])
                     glovar.except_ids["long"].discard(record["name"])
 
+                save("bad_ids")
                 save("except_ids")
 
             if message.reply_to_message:
@@ -435,6 +437,8 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
             if record["type"] == "服务消息":
                 if record["name"]:
                     glovar.bad_ids["temp"].discard(record["name"])
+
+                save("bad_ids")
 
             if message.reply_to_message:
                 message = message.reply_to_message
