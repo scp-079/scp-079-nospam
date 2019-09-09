@@ -362,19 +362,6 @@ def receive_leave_approve(client: Client, data: dict) -> bool:
     return False
 
 
-def receive_report_ids(client: Client, message: Message) -> bool:
-    # Receive report ids
-    try:
-        report_ids = receive_file_data(client, message, True)
-        if report_ids:
-            glovar.report_ids = report_ids
-            save("report_ids")
-    except Exception as e:
-        logger.warning(f"Receive report ids error: {e}", exc_info=True)
-
-    return False
-
-
 def receive_refresh(client: Client, data: int) -> bool:
     # Receive refresh
     try:
@@ -544,6 +531,20 @@ def receive_remove_watch(data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive remove watch error: {e}", exc_info=True)
+
+    return False
+
+
+def receive_report_ids(client: Client, message: Message, data: str) -> bool:
+    # Receive report ids
+    try:
+        if data == "report":
+            report_ids = receive_file_data(client, message, True)
+            if report_ids:
+                glovar.report_ids = report_ids
+                save("report_ids")
+    except Exception as e:
+        logger.warning(f"Receive report ids error: {e}", exc_info=True)
 
     return False
 

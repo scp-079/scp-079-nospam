@@ -358,8 +358,8 @@ def process_data(client: Client, message: Message) -> bool:
                             receive_user_score(client, sender, data)
 
                     elif action == "help":
-                        if action_type == "report":
-                            receive_report_ids(client, message)
+                        if action_type == "list":
+                            receive_report_ids(client, message, data)
 
                 elif sender == "WATCH":
 
