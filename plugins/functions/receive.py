@@ -313,7 +313,7 @@ def receive_preview(client: Client, message: Message, data: dict) -> bool:
                         image_path = None
 
                     if (not is_declared_message_id(gid, mid)
-                            and not is_detected_user_id(gid, uid)):
+                            and not is_detected_user_id(uid)):
                         the_message = get_message(client, gid, mid)
                         if not the_message:
                             return True
