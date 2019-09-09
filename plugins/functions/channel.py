@@ -373,26 +373,6 @@ def share_regex_count(client: Client, word_type: str) -> bool:
     return False
 
 
-def share_watch_user(client: Client, the_type: str, uid: int, until: str) -> bool:
-    # Share a watch ban user with other bots
-    try:
-        share_data(
-            client=client,
-            receivers=glovar.receivers["watch"],
-            action="add",
-            action_type="watch",
-            data={
-                "id": uid,
-                "type": the_type,
-                "until": until
-            }
-        )
-
-        return True
-    except Exception as e:
-        logger.warning(f"Share watch user error: {e}", exc_info=True)
-
-
 def update_score(client: Client, uid: int) -> bool:
     # Update a user's score, share it
     try:

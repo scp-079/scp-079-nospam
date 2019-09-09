@@ -22,9 +22,9 @@ from typing import Optional, Union
 from pyrogram import Client, Message, User
 
 from .. import glovar
-from .etc import crypt_str, get_now, thread
+from .etc import get_now, thread
 from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug, share_bad_user
-from .channel import share_watch_user, update_score
+from .channel import update_score
 from .file import save
 from .group import delete_message
 from .filters import is_class_d, is_declared_message, is_detected_user, is_high_score_user
@@ -61,24 +61,6 @@ def add_detected_user(gid: int, uid: int) -> bool:
         return bool(previous)
     except Exception as e:
         logger.warning(f"Add detected user error: {e}", exc_info=True)
-
-    return False
-
-
-def add_watch_user(client: Client, the_type: str, uid: int) -> bool:
-    # Add a watch ban user, share it
-    try:
-        now = get_now()
-        until = now + glovar.time_ban
-        glovar.watch_ids[the_type][uid] = until
-        until = str(until)
-        until = crypt_str("encrypt", until, glovar.key)
-        share_watch_user(client, the_type, uid, until)
-        save("watch_ids")
-
-        return True
-    except Exception as e:
-        logger.warning(f"Add watch user error: {e}", exc_info=True)
 
     return False
 
@@ -234,7 +216,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
         elif action_type == "bad":
-            result = forward_evidence(client, message, "自动记分", "全局规则")
+            result = forward_evidence(client, message, "自动评分", "全局规则")
             if result:
                 gid = message.chat.id
                 count = glovar.user_ids[uid]["bad"].get(gid, 0)
@@ -244,7 +226,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 if gid in glovar.report_ids:
                     auto_report(client, message)
 
-                send_debug(client, message.chat, "微量记分", uid, mid, result)
+                send_debug(client, message.chat, "微量评分", uid, mid, result)
 
         return True
     except Exception as e:
