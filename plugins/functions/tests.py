@@ -64,7 +64,7 @@ def nospam_test(client: Client, message: Message) -> bool:
                 qrcode = get_qrcode(image_path)
                 if qrcode:
                     text += f"二维码：" + "-" * 24 + "\n\n"
-                    text += "\t" * 4 + code(qrcode) + "\n\n"
+                    text += code(qrcode) + "\n\n"
                     type_list = [glovar.regex[w] for w in glovar.regex if is_regex_text(w, qrcode)]
                     if type_list:
                         text += f"二维码检查：" + "-" * 24 + "\n\n"
@@ -74,7 +74,7 @@ def nospam_test(client: Client, message: Message) -> bool:
                 ocr = get_ocr(image_path, True)
                 if ocr:
                     text += f"OCR 结果：" + "-" * 24 + "\n\n"
-                    text += "\t" * 4 + code(ocr) + "\n\n"
+                    text += code(ocr) + "\n\n"
                     type_list = [glovar.regex[w] for w in glovar.regex if is_regex_text(w, ocr)]
                     if type_list:
                         text += f"OCR 检查：" + "-" * 24 + "\n\n"
