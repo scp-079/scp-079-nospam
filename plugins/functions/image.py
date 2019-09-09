@@ -97,7 +97,7 @@ def get_file_id(message: Message) -> (str, bool):
     return file_id, big
 
 
-def get_ocr(path: str) -> str:
+def get_ocr(path: str, test: bool = False) -> str:
     result = ""
     try:
         image = Image.open(path)
@@ -110,7 +110,9 @@ def get_ocr(path: str) -> str:
             result = image_to_string(image, lang='chi_sim+chi_tra')
 
         if result:
-            result = re.sub(r"\n{2,}", "\n", result)
+            if test:
+                result = re.sub(r"\n{2,}", "\n", result)
+
             result = re.sub(r"\s{2,}", " ", result)
             result = t2s(result)
     except Exception as e:

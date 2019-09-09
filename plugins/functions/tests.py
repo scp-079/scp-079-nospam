@@ -71,7 +71,7 @@ def nospam_test(client: Client, message: Message) -> bool:
                         text += "\t" * 4 + italic("，".join(type_list)) + "\n\n"
 
                 # OCR
-                ocr = get_ocr(image_path)
+                ocr = get_ocr(image_path, True)
                 if ocr:
                     text += f"OCR 结果：" + "-" * 24 + "\n\n"
                     text += "\t" * 4 + code(ocr) + "\n\n"
