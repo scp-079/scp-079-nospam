@@ -80,16 +80,16 @@ def check_join(client: Client, message: Message) -> bool:
                 # Check name
                 name = get_full_name(new)
                 if name and is_nm_text(name) or name in glovar.bad_ids["temp"]:
-                    return terminate_user(client, message, new, "ban nm")
+                    terminate_user(client, message, new, "ban nm")
 
                 # Check bio
                 bio = get_user_bio(client, new.username or new.id)
                 if bio and is_bio_text(bio):
-                    return terminate_user(client, message, new, "ban bio")
+                    terminate_user(client, message, new, "ban bio")
 
                 # Check bot
                 if glovar.configs[gid]["bot"] and new.is_bot:
-                    return terminate_user(client, message, new, "ban bot")
+                    terminate_user(client, message, new, "ban bot")
 
                 # Update user's join status
                 uid = new.id
