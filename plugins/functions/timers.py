@@ -107,7 +107,7 @@ def reset_data() -> bool:
     try:
         glovar.bad_ids = {
             "channels": set(),
-            "temp": set(),
+            "contents": set(),
             "users": set()
         }
         save("bad_ids")

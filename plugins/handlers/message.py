@@ -81,7 +81,7 @@ def check_join(client: Client, message: Message) -> bool:
             for new in message.new_chat_members:
                 # Check name
                 name = get_full_name(new)
-                if name and is_nm_text(name) or name in glovar.bad_ids["temp"]:
+                if name and is_nm_text(name) or name in glovar.bad_ids["contents"]:
                     terminate_user(client, message, new, "ban nm")
 
                 # Check bio

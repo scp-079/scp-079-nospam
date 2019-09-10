@@ -305,7 +305,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if (wb_user or score_user or wd_user) and detection == "wd":
                     return detection
 
-                if content in glovar.bad_ids["temp"]:
+                if content in glovar.bad_ids["contents"]:
                     return "delete record"
 
             # Url
@@ -337,7 +337,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check the forward from name:
             forward_name = get_forward_name(message)
             if forward_name and forward_name not in glovar.except_ids["long"]:
-                if forward_name in glovar.bad_ids["temp"]:
+                if forward_name in glovar.bad_ids["contents"]:
                     return "ban nm-record"
 
                 if is_nm_text(forward_name):
@@ -346,7 +346,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check the user's name:
             name = get_full_name(message.from_user)
             if name and name not in glovar.except_ids["long"]:
-                if forward_name in glovar.bad_ids["temp"]:
+                if forward_name in glovar.bad_ids["contents"]:
                     return "ban nm-record"
 
                 if is_nm_text(name):

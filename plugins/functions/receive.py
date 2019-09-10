@@ -58,18 +58,18 @@ def receive_add_except(client: Client, data: dict) -> bool:
             if "名称" in record["rule"]:
                 if record["name"]:
                     glovar.except_ids["long"].add(record["name"])
-                    glovar.bad_ids["temp"].discard(record["name"])
+                    glovar.bad_ids["contents"].discard(record["name"])
 
                 if record["from"]:
                     glovar.except_ids["long"].add(record["from"])
-                    glovar.bad_ids["temp"].discard(record["from"])
+                    glovar.bad_ids["contents"].discard(record["from"])
 
                 save("bad_ids")
 
             if "简介" in record["rule"]:
                 if record["bio"]:
                     glovar.except_ids["long"].add(record["bio"])
-                    glovar.bad_ids["temp"].discard(record["bio"])
+                    glovar.bad_ids["contents"].discard(record["bio"])
 
                 save("bad_ids")
 
@@ -95,7 +95,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
             content = get_content(message)
             if content:
                 glovar.except_ids[the_type].add(content)
-                glovar.bad_ids["temp"].discard(content)
+                glovar.bad_ids["contents"].discard(content)
                 save("bad_ids")
 
         save("except_ids")
@@ -116,7 +116,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
             glovar.bad_ids["users"].add(the_id)
         elif sender == "MANAGE" and the_type == "channel":
             glovar.bad_ids["channels"].add(the_id)
-        elif sender == "MANAGE" and the_type == "temp":
+        elif sender == "MANAGE" and the_type == "content":
             message = get_message(client, glovar.logging_channel_id, the_id)
             if not message:
                 return True
@@ -127,7 +127,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
 
             if record["type"] == "服务消息":
                 if record["name"]:
-                    glovar.bad_ids["temp"].add(record["name"])
+                    glovar.bad_ids["contents"].add(record["name"])
                     glovar.except_ids["long"].discard(record["name"])
 
                 save("bad_ids")
@@ -140,7 +140,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
 
             content = get_content(message)
             if content:
-                glovar.bad_ids[the_type].add(content)
+                glovar.bad_ids["contents"].add(content)
                 glovar.except_ids["temp"].discard(content)
                 save("except_ids")
 
@@ -429,7 +429,7 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
 
             save("watch_ids")
             save("user_ids")
-        elif sender == "MANAGE" and the_type == "temp":
+        elif sender == "MANAGE" and the_type == "content":
             message = get_message(client, glovar.logging_channel_id, the_id)
             if not message:
                 return True
@@ -440,7 +440,7 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
 
             if record["type"] == "服务消息":
                 if record["name"]:
-                    glovar.bad_ids["temp"].discard(record["name"])
+                    glovar.bad_ids["contents"].discard(record["name"])
 
                 save("bad_ids")
 
@@ -451,7 +451,7 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
 
             content = get_content(message)
             if content:
-                glovar.bad_ids[the_type].discard(content)
+                glovar.bad_ids["contents"].discard(content)
 
         save("bad_ids")
 
