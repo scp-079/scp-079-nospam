@@ -31,8 +31,8 @@ from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_avatar, receive_config_commit
 from ..functions.receive import receive_config_reply, receive_declared_message, receive_preview, receive_leave_approve
 from ..functions.receive import receive_regex, receive_refresh, receive_remove_bad, receive_remove_except
-from ..functions.receive import receive_remove_watch, receive_report_ids, receive_status_ask, receive_text_data
-from ..functions.receive import receive_user_score, receive_watch_user
+from ..functions.receive import receive_remove_score, receive_remove_watch, receive_report_ids
+from ..functions.receive import receive_status_ask, receive_text_data, receive_user_score, receive_watch_user
 from ..functions.telegram import get_admins, get_user_bio, send_message
 from ..functions.tests import nospam_test
 from ..functions.timers import send_count
@@ -281,6 +281,8 @@ def process_data(client: Client, message: Message) -> bool:
                             receive_remove_bad(client, sender, data)
                         elif action_type == "except":
                             receive_remove_except(client, data)
+                        elif action_type == "score":
+                            receive_remove_score(data)
                         elif action_type == "watch":
                             receive_remove_watch(data)
 
