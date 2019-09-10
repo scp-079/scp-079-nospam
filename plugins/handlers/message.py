@@ -288,7 +288,7 @@ def process_data(client: Client, message: Message) -> bool:
                         if action_type == "ask":
                             receive_status_ask(client, data)
 
-                    elif action_type == "update":
+                    elif action == "update":
                         if action_type == "refresh":
                             receive_refresh(client, data)
 
