@@ -859,7 +859,7 @@ def is_tgl(client: Client, message: Message) -> bool:
                         if member is False:
                             return True
 
-                        if member and member.status not in {"creator", "administrator", "member"}:
+                        if member and member.status not in {"creator", "administrator", "member", "restricted"}:
                             return True
     except Exception as e:
         logger.warning(f"Is tgl error: {e}", exc_info=True)
