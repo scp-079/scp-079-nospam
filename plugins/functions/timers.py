@@ -66,6 +66,11 @@ def interval_min_15(client: Client) -> bool:
         now = get_now()
         user_ids = deepcopy(glovar.user_ids)
         for uid in user_ids:
+            # Do not check banned users
+            if uid in glovar.bad_ids["users"]:
+                continue
+
+            # Check new joined users
             if any([now - user_ids[uid]["join"][gid] < glovar.time_new for gid in user_ids[uid]["join"]]):
                 user = get_user(client, uid)
                 if user:
