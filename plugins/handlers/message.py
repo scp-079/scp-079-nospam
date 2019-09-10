@@ -87,7 +87,7 @@ def check_join(client: Client, message: Message) -> bool:
                 # Check bio
                 bio = get_user_bio(client, new.username or new.id)
                 if bio and is_bio_text(bio):
-                    terminate_user(client, message, new, "ban bio")
+                    terminate_user(client, message, new, "ban bio", bio)
 
                 # Check bot
                 if glovar.configs[gid]["bot"] and new.is_bot:
