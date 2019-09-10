@@ -843,8 +843,9 @@ def is_tgl(client: Client, message: Message) -> bool:
             return True
 
         # Check mentions
-        if message.entities:
-            for en in message.entities:
+        entities = message.entities or message.caption_entities
+        if entities:
+            for en in entities:
                 if en.type == "mention":
                     username = get_entity_text(message, en)[1:]
                     if message.chat.username and username == message.chat.username:

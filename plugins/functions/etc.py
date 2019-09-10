@@ -269,8 +269,9 @@ def get_links(message: Message) -> List[str]:
     # Get a message's links
     result = []
     try:
-        if message.entities:
-            for en in message.entities:
+        entities = message.entities or message.caption_entities
+        if entities:
+            for en in entities:
                 link = ""
                 if en.type == "url":
                     link = get_entity_text(message, en)
@@ -406,18 +407,11 @@ def get_text(message: Message) -> str:
     # Get message's text, including link and mentioned user's name
     text = ""
     try:
-        if message.text or message.caption:
-            if message.text:
-                text += message.text
-            else:
-                text += message.caption
-
-            if message.entities or message.caption_entities:
-                if message.entities:
-                    entities = message.entities
-                else:
-                    entities = message.caption_entities
-
+        the_text = message.text or message.caption
+        if the_text:
+            text += the_text
+            entities = message.entities or message.caption_entities
+            if entities:
                 for en in entities:
                     if en.url:
                         text += f"\n{en.url}"
