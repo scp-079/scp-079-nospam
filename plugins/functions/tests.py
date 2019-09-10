@@ -95,7 +95,7 @@ def nospam_test(client: Client, message: Message) -> bool:
                 delete_file(image_path)
 
         if text:
-            text += f"白名单：{code(is_class_e(None, message) or message_text in glovar.except_ids['long'])}\n"
+            text += f"白名单：{code(is_class_e(None, message, True) or message_text in glovar.except_ids['long'])}\n"
             text = f"管理员：{user_mention(aid)}\n\n" + text
             thread(send_message, (client, glovar.test_group_id, text, message.message_id))
 
