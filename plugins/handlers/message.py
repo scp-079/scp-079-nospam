@@ -58,7 +58,7 @@ def check(client: Client, message: Message) -> bool:
             if detection:
                 glovar.contents[content] = detection
                 return terminate_user(client, message, message.from_user, detection)
-            else:
+            elif message.sticker:
                 glovar.except_ids["temp"].add(content)
                 save("except_ids")
 
