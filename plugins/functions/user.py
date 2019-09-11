@@ -141,6 +141,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                     ban_user(client, gid, user.username or user.id)
                     delete_message(client, gid, mid)
                     declare_message(client, gid, mid)
+                    ask_for_help(client, "delete", gid, uid)
                     send_debug(client, message.chat, debug_action, uid, mid, result)
         elif action_type == "wb":
             log_action = "自动封禁"
