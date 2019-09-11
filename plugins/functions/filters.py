@@ -286,6 +286,10 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
         if not (text or image_path):
             # Check detected records
 
+            # If the user is being punished
+            if is_detected_user(message):
+                return "delete"
+
             # Content
             content = get_content(message)
             wb_user = is_watch_user(message, "ban")
@@ -323,10 +327,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 return detected_url
 
             # Start detect ban
-
-            # If the user is being punished
-            if is_detected_user(message):
-                return "delete"
 
             # Check the message's text
             message_text = get_text(message)
