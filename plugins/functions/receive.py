@@ -92,6 +92,10 @@ def receive_add_except(client: Client, data: dict) -> bool:
             else:
                 return True
 
+            if message.sticker and record["more"]:
+                glovar.except_ids["long"].add(message.sticker.set_name)
+                glovar.except_ids["long"].add(record["more"])
+
             content = get_content(message)
             if content:
                 glovar.except_ids[the_type].add(content)
@@ -506,6 +510,10 @@ def receive_remove_except(client: Client, data: dict) -> bool:
                 message = message.reply_to_message
             else:
                 return True
+
+            if message.sticker and record["more"]:
+                glovar.except_ids["long"].discard(message.sticker.set_name)
+                glovar.except_ids["long"].discard(record["more"])
 
             content = get_content(message)
             if content:
