@@ -227,6 +227,12 @@ def get_content(message: Message) -> str:
             if file_id:
                 result += file_id
 
+            if message.audio:
+                result += message.audio.file_id
+
+            if message.document:
+                result += message.document.file_id
+
             if message.sticker and message.sticker.is_animated:
                 result += message.sticker.file_id
 
