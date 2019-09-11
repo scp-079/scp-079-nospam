@@ -124,7 +124,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                     log_rule = "消息收录"
                     debug_action = "收录封禁"
 
-                result = forward_evidence(client, message, log_action, log_rule, bio)
+                result = forward_evidence(client, message, user, log_action, log_rule, bio)
                 if result:
                     add_bad_user(client, uid)
                     ban_user(client, gid, user.username or user.id)
@@ -136,7 +136,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 log_action = "自动封禁"
                 log_rule = "群组自定义"
                 debug_action = "阻止机器人"
-                result = forward_evidence(client, message, log_action, log_rule)
+                result = forward_evidence(client, message, user, log_action, log_rule)
                 if result:
                     ban_user(client, gid, user.username or user.id)
                     delete_message(client, gid, mid)
@@ -159,7 +159,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                     if score_user:
                         log_rule = "名称评分"
 
-            result = forward_evidence(client, message, log_action, log_rule, bio)
+            result = forward_evidence(client, message, user, log_action, log_rule, bio)
             if result:
                 add_bad_user(client, uid)
                 ban_user(client, gid, user.username or user.id)
@@ -184,7 +184,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 add_detected_user(gid, uid)
                 declare_message(client, gid, mid)
             else:
-                result = forward_evidence(client, message, log_action, log_rule, 0.0, more)
+                result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
                 if result:
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
@@ -208,7 +208,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 add_detected_user(gid, uid)
                 declare_message(client, gid, mid)
             else:
-                result = forward_evidence(client, message, log_action, log_rule)
+                result = forward_evidence(client, message, user, log_action, log_rule)
                 if result:
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
@@ -219,7 +219,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
         elif action_type == "bad":
-            result = forward_evidence(client, message, "自动评分", "全局规则")
+            result = forward_evidence(client, message, user, "自动评分", "全局规则")
             if result:
                 gid = message.chat.id
                 if init_user_id(uid):
