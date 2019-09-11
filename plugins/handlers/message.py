@@ -72,13 +72,18 @@ def check(client: Client, message: Message) -> bool:
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & Filters.new_chat_members & ~new_group
-                   & ~class_c & ~class_d & ~declared_message)
+                   & ~class_c & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
     if glovar.locks["message"].acquire():
         try:
             gid = message.chat.id
             for new in message.new_chat_members:
+                uid = new.id
+                # Check record
+                if uid in glovar.bad_ids["users"]:
+                    continue
+
                 # Check name
                 name = get_full_name(new)
                 if name and is_nm_text(name):
@@ -96,7 +101,6 @@ def check_join(client: Client, message: Message) -> bool:
                     terminate_user(client, message, new, "ban bot")
 
                 # Update user's join status
-                uid = new.id
                 if init_user_id(uid):
                     glovar.user_ids[uid]["join"][gid] = get_now()
                     save("user_ids")
