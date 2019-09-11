@@ -25,7 +25,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from .channel import get_content
-from .etc import get_channel_link, get_document_filename, get_entity_text, get_forward_name, get_full_name, get_now
+from .etc import get_channel_link, get_filename, get_entity_text, get_forward_name, get_full_name, get_now
 from .etc import get_links, get_stripped_link, get_text
 from .file import delete_file, get_downloaded_path, save
 from .ids import init_group_id
@@ -352,8 +352,8 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_nm_text(name):
                     return "ban nm"
 
-            # Check the document filename:
-            file_name = get_document_filename(message)
+            # Check the filename:
+            file_name = get_filename(message)
             if file_name:
                 if is_ban_text(file_name):
                     return "ban"
