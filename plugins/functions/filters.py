@@ -677,7 +677,7 @@ def is_declared_message_id(gid: int, mid: int) -> bool:
 
 
 def is_detected_url(message: Message) -> str:
-    # Check if the message include detected url, return detected types as set
+    # Check if the message include detected url, return detected type
     try:
         if is_class_c(None, message):
             return ""
