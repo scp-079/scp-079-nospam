@@ -90,7 +90,7 @@ def get_user(client: Client, uid: int) -> Optional[User]:
     return result
 
 
-def terminate_user(client: Client, message: Message, user: User, the_type: str, bio: str = None) -> bool:
+def terminate_user(client: Client, message: Message, user: User, context: str) -> bool:
     # Delete user's message, or ban the user
     try:
         if is_class_d(None, message) or is_declared_message(None, message):
@@ -99,14 +99,19 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
         gid = message.chat.id
         uid = user.id
         mid = message.message_id
-        type_list = the_type.split()
-        action_type = type_list[0]
-        if len(type_list) == 2:
-            rule = type_list[1]
+        context_list = context.split()
+        the_type = context_list[0]
+        if len(context_list) >= 2:
+            rule = context_list[1]
         else:
             rule = None
 
-        if action_type == "ban":
+        if len(context_list) >= 3:
+            more = " ".join(context_list[2:])
+        else:
+            more = None
+
+        if the_type == "ban":
             log_action = "自动封禁"
             log_rule = "全局规则"
             debug_action = "自动封禁"
@@ -114,17 +119,18 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 if rule == "bio":
                     log_rule = "简介检查"
                     debug_action = "简介封禁"
-                elif rule == "nm":
-                    log_rule = "名称检查"
-                    debug_action = "名称封禁"
-                elif rule == "nm-record":
-                    log_rule = "名称收录"
-                    debug_action = "名称封禁"
+                elif rule == "name":
+                    if more == "record":
+                        log_rule = "名称收录"
+                        debug_action = "名称封禁"
+                    else:
+                        log_rule = "名称检查"
+                        debug_action = "名称封禁"
                 elif rule == "record":
                     log_rule = "消息收录"
                     debug_action = "收录封禁"
 
-                result = forward_evidence(client, message, user, log_action, log_rule, bio)
+                result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
                 if result:
                     add_bad_user(client, uid)
                     ban_user(client, gid, user.username or user.id)
@@ -136,14 +142,14 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 log_action = "自动封禁"
                 log_rule = "群组自定义"
                 debug_action = "阻止机器人"
-                result = forward_evidence(client, message, user, log_action, log_rule)
+                result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
                 if result:
                     ban_user(client, gid, user.username or user.id)
                     delete_message(client, gid, mid)
                     declare_message(client, gid, mid)
                     ask_for_help(client, "delete", gid, uid)
                     send_debug(client, message.chat, debug_action, uid, mid, result)
-        elif action_type == "wb":
+        elif the_type == "wb":
             log_action = "自动封禁"
             log_rule = "敏感追踪"
             debug_action = "追踪封禁"
@@ -152,14 +158,13 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 log_rule = "用户评分"
                 debug_action = "评分封禁"
 
-            if rule:
-                if rule == "nm":
-                    log_rule = "名称追踪"
-                    debug_action = "名称封禁"
-                    if score_user:
-                        log_rule = "名称评分"
+            if rule == "name":
+                log_rule = "名称追踪"
+                debug_action = "名称封禁"
+                if score_user:
+                    log_rule = "名称评分"
 
-            result = forward_evidence(client, message, user, log_action, log_rule, bio)
+            result = forward_evidence(client, message, user, log_action, log_rule, score_user, more)
             if result:
                 add_bad_user(client, uid)
                 ban_user(client, gid, user.username or user.id)
@@ -167,17 +172,13 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 declare_message(client, gid, mid)
                 ask_for_help(client, "ban", gid, uid)
                 send_debug(client, message.chat, debug_action, uid, mid, result)
-        elif action_type == "delete":
+        elif the_type == "delete":
             log_action = "自动删除"
             log_rule = "全局规则"
             debug_action = "自动删除"
-            more = ""
-            if rule:
-                if rule == "record":
-                    log_rule = "消息收录"
-                    debug_action = "收录删除"
-                else:
-                    more = rule
+            if more == "record":
+                log_rule = "消息收录"
+                debug_action = "收录删除"
 
             if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
                 delete_message(client, gid, mid)
@@ -194,7 +195,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                         update_score(client, uid)
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
-        elif action_type == "wd":
+        elif the_type == "wd":
             log_action = "自动删除"
             log_rule = "敏感追踪"
             debug_action = "追踪删除"
@@ -208,7 +209,7 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                 add_detected_user(gid, uid)
                 declare_message(client, gid, mid)
             else:
-                result = forward_evidence(client, message, user, log_action, log_rule)
+                result = forward_evidence(client, message, user, log_action, log_rule, score_user, more)
                 if result:
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
@@ -218,8 +219,8 @@ def terminate_user(client: Client, message: Message, user: User, the_type: str, 
                         update_score(client, uid)
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
-        elif action_type == "bad":
-            result = forward_evidence(client, message, user, "自动评分", "全局规则")
+        elif the_type == "bad":
+            result = forward_evidence(client, message, user, "自动评分", "全局规则", 0.0, more)
             if result:
                 gid = message.chat.id
                 if init_user_id(uid):

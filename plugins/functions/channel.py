@@ -147,7 +147,7 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
 
 
 def forward_evidence(client: Client, message: Message, user: User, level: str, rule: str,
-                     score: Union[float, str] = 0.0, more: str = None) -> Optional[Union[bool, Message]]:
+                     score: float = 0.0, more: str = None) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
     try:
@@ -175,7 +175,7 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
                 text += f"来源名称：{code(forward_name)}\n"
 
         if "简介" in rule:
-            text += f"用户简介：{code(score)}\n"
+            text += f"用户简介：{code(more)}\n"
 
         if message.contact or message.location or message.venue or message.video_note or message.voice:
             text += f"附加信息：{code('可能涉及隐私而未转发')}\n"

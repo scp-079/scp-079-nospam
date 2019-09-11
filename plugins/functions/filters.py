@@ -310,7 +310,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return detection
 
                 if content in glovar.bad_ids["contents"]:
-                    return "delete record"
+                    return "delete content record"
 
             # Url
             detected_url = is_detected_url(message)
@@ -338,19 +338,19 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             forward_name = get_forward_name(message)
             if forward_name and forward_name not in glovar.except_ids["long"]:
                 if forward_name in glovar.bad_ids["contents"]:
-                    return "ban nm-record"
+                    return "ban name record"
 
                 if is_nm_text(forward_name):
-                    return "ban nm"
+                    return "ban name"
 
             # Check the user's name:
             name = get_full_name(message.from_user)
             if name and name not in glovar.except_ids["long"]:
                 if forward_name in glovar.bad_ids["contents"]:
-                    return "ban nm-record"
+                    return "ban name record"
 
                 if is_nm_text(name):
-                    return "ban nm"
+                    return "ban name"
 
             # Check the filename:
             file_name = get_filename(message)
@@ -403,7 +403,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 # Check the forward from name:
                 if forward_name and forward_name not in glovar.except_ids["long"]:
                     if is_wb_text(forward_name):
-                        return "wb nm"
+                        return "wb name"
 
                 # Check the document filename:
                 if file_name:
@@ -465,7 +465,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 sticker_title = get_sticker_title(client, sticker_name)
                 if sticker_title not in glovar.except_ids["long"]:
                     if is_regex_text("sti", sticker_title):
-                        return f"delete {sticker_title}"
+                        return f"delete name {sticker_title}"
 
             # Start detect watch delete
 
