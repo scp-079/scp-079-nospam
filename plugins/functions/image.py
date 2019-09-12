@@ -112,6 +112,8 @@ def get_ocr(path: str, test: bool = False) -> str:
         if result:
             if test:
                 result = re.sub(r"\n{2,}", "\n", result, re.M)
+            else:
+                result = re.sub(r"\n", " ", result, re.M)
 
             result = re.sub(r"\s{2,}", " ", result, re.M)
             result = t2s(result)
