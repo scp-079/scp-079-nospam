@@ -394,7 +394,7 @@ def update_score(client: Client, uid: int) -> bool:
             action_type="score",
             data={
                 "id": uid,
-                "score": score
+                "score": round(score, 1)
             }
         )
 
