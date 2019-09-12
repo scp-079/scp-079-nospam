@@ -21,7 +21,7 @@ import re
 from copy import deepcopy
 from typing import Union
 
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, Filters, Message, User
 
 from .. import glovar
 from .channel import get_content
@@ -171,24 +171,6 @@ def is_new_group(_, message: Message) -> bool:
     return False
 
 
-def is_new_user(_, message: Message) -> bool:
-    # Check if the message is sent from a new joined member
-    try:
-        if message.from_user:
-            gid = message.chat.id
-            uid = message.from_user.id
-            if glovar.user_ids.get(uid, {}):
-                if glovar.user_ids[uid].get("join", {}):
-                    now = get_now()
-                    join = glovar.user_ids[uid]["join"].get(gid, 0)
-                    if now - join < glovar.time_new:
-                        return True
-    except Exception as e:
-        logger.warning(f"Is new user error: {e}", exc_info=True)
-
-    return False
-
-
 def is_test_group(_, message: Message) -> bool:
     # Check if the message is sent from the test group
     try:
@@ -240,11 +222,6 @@ hide_channel = Filters.create(
 new_group = Filters.create(
     func=is_new_group,
     name="New Group"
-)
-
-new_user = Filters.create(
-    name="New User",
-    func=is_new_user
 )
 
 test_group = Filters.create(
@@ -763,6 +740,27 @@ def is_high_score_user(message: Message) -> Union[bool, float]:
                     return score
     except Exception as e:
         logger.warning(f"Is high score user error: {e}", exc_info=True)
+
+    return False
+
+
+def is_new_user(the_object: Union[Message, User]) -> bool:
+    # Check if the message is sent from a new joined member
+    try:
+        if isinstance(the_object, User):
+            uid = the_object.id
+        else:
+            uid = the_object.from_user.id
+
+        if glovar.user_ids.get(uid, {}):
+            if glovar.user_ids[uid].get("join", {}):
+                now = get_now()
+                for gid in list(glovar.user_ids[uid]["join"]):
+                    join = glovar.user_ids[uid]["join"].get(gid, 0)
+                    if now - join < glovar.time_new:
+                        return True
+    except Exception as e:
+        logger.warning(f"Is new user error: {e}", exc_info=True)
 
     return False
 
