@@ -744,14 +744,10 @@ def is_high_score_user(message: Message) -> Union[bool, float]:
     return False
 
 
-def is_new_user(the_object: Union[Message, User]) -> bool:
+def is_new_user(user: User) -> bool:
     # Check if the message is sent from a new joined member
     try:
-        if isinstance(the_object, User):
-            uid = the_object.id
-        else:
-            uid = the_object.from_user.id
-
+        uid = user.id
         if glovar.user_ids.get(uid, {}):
             if glovar.user_ids[uid].get("join", {}):
                 now = get_now()
