@@ -71,7 +71,7 @@ def nospam_test(client: Client, message: Message) -> bool:
                     text += code(qrcode) + "\n\n"
                     type_list = [glovar.regex[w] for w in glovar.regex if is_regex_text(w, qrcode)]
                     if type_list:
-                        text += f"二维码检查：" + "-" * 24 + "\n\n"
+                        text += f"二维码检查：" + "-" * 20 + "\n\n"
                         text += "\t" * 4 + italic("，".join(type_list)) + "\n\n"
 
                 # OCR
