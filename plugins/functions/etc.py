@@ -422,9 +422,6 @@ def get_text(message: Message) -> str:
                     if en.url:
                         text += f"\n{en.url}"
 
-                    if en.user:
-                        text += f"\n{get_full_name(en.user)}"
-
         if message.reply_markup and isinstance(message.reply_markup, InlineKeyboardMarkup):
             reply_markup = message.reply_markup
             if reply_markup.inline_keyboard:
