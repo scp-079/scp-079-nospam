@@ -110,6 +110,7 @@ recorded_ids: Dict[int, Set[int]] = {}
 regex: Dict[str, str] = {
     "ad": "广告用语",
     "aff": "推广链接",
+    "ava": "头像分析",
     "bad": "敏感检测",
     "ban": "自动封禁",
     "bio": "简介封禁",
