@@ -24,7 +24,7 @@ from .. import glovar
 from ..functions.channel import get_content, get_debug_text
 from ..functions.etc import code, get_full_name, get_now, thread, user_mention
 from ..functions.file import save
-from ..functions.filters import class_c, class_d, declared_message, exchange_channel, from_user, hide_channel
+from ..functions.filters import class_c, class_e, class_d, declared_message, exchange_channel, from_user, hide_channel
 from ..functions.filters import is_bad_message, is_bio_text, is_declared_message, is_new_user, is_nm_text
 from ..functions.filters import new_group, test_group
 from ..functions.group import leave_group
@@ -44,7 +44,7 @@ logger = logging.getLogger(__name__)
 
 
 @Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user & ~Filters.service
-                   & ~class_c & ~class_d & ~declared_message)
+                   & ~class_c & ~class_e & ~class_d & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check the messages sent from groups
     if glovar.locks["message"].acquire():
