@@ -125,9 +125,11 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             if rule == "name":
                 log_rule = "名称检查"
 
+            if uid in glovar.recorded_ids[gid] and is_high_score_user(message):
+                return True
+
             result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
             if result:
-                glovar.recorded_ids[gid].add(uid)
                 if init_user_id(uid):
                     count = glovar.user_ids[uid]["bad"].get(gid, 0)
                     count += 1
@@ -136,6 +138,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     if gid in glovar.report_ids and uid not in glovar.recorded_ids[gid]:
                         auto_report(client, message)
 
+                    glovar.recorded_ids[gid].add(uid)
                     send_debug(client, message.chat, debug_action, uid, mid, result)
         # Ban the user
         elif the_type == "ban":
