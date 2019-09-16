@@ -88,17 +88,21 @@ def check_join(client: Client, message: Message) -> bool:
                 if not is_new_user(new):
                     # Check name
                     name = get_full_name(new)
-                    if name and is_nm_text(name):
-                        terminate_user(client, message, new, "ban name")
-                    elif name in glovar.bad_ids["contents"]:
-                        terminate_user(client, message, new, "ban name record")
-                    elif is_regex_text("bad", name) or is_regex_text("sho", name):
-                        terminate_user(client, message, new, "bad name")
+                    if name and name not in glovar.except_ids["long"]:
+                        if is_nm_text(name):
+                            terminate_user(client, message, new, "ban name")
+                        elif name in glovar.bad_ids["contents"]:
+                            terminate_user(client, message, new, "ban name record")
+                        elif is_regex_text("wb", name) and is_regex_text("sho", name):
+                            terminate_user(client, message, new, "ban name")
+                        elif is_regex_text("bad", name) or is_regex_text("sho", name):
+                            terminate_user(client, message, new, "bad name")
 
                     # Check bio
                     bio = get_user_bio(client, new.username or new.id)
-                    if bio and is_bio_text(bio):
-                        terminate_user(client, message, new, f"ban bio {bio}")
+                    if bio and bio not in glovar.except_ids["long"]:
+                        if is_bio_text(bio):
+                            terminate_user(client, message, new, f"ban bio {bio}")
 
                 # Check bot
                 if glovar.configs[gid]["bot"] and new.is_bot:
