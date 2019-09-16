@@ -264,25 +264,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
         # Regular message
         if not (text or image_path):
-            # Bypass
-            message_text = get_text(message)
-            description = get_description(client, gid)
-            if description and message_text in description:
-                return ""
-
-            pinned_message = get_pinned(client, gid)
-            pinned_text = get_text(pinned_message)
-            if pinned_text and message_text in pinned_text:
-                return ""
-
-            group_sticker = get_group_sticker(client, gid)
-            if message.sticker:
-                sticker_name = message.sticker.set_name
-                if sticker_name == group_sticker:
-                    return ""
-            else:
-                sticker_name = ""
-
             # Check detected records
 
             # If the user is being punished
@@ -327,11 +308,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Start detect ban
 
-            # Check the message's text
-            if message_text:
-                if is_ban_text(message_text):
-                    return "ban"
-
             # Check the forward from name:
             forward_name = get_forward_name(message)
             if forward_name and forward_name not in glovar.except_ids["long"]:
@@ -349,6 +325,30 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
                 if is_nm_text(name):
                     return "ban name"
+
+            # Bypass
+            message_text = get_text(message)
+            description = get_description(client, gid)
+            if description and message_text in description:
+                return ""
+
+            pinned_message = get_pinned(client, gid)
+            pinned_text = get_text(pinned_message)
+            if pinned_text and message_text in pinned_text:
+                return ""
+
+            group_sticker = get_group_sticker(client, gid)
+            if message.sticker:
+                sticker_name = message.sticker.set_name
+                if sticker_name == group_sticker:
+                    return ""
+            else:
+                sticker_name = ""
+
+            # Check the message's text
+            if message_text:
+                if is_ban_text(message_text):
+                    return "ban"
 
             # Check the filename:
             file_name = get_filename(message)
