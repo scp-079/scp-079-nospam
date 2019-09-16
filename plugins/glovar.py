@@ -139,7 +139,7 @@ sender: str = "NOSPAM"
 
 should_hide: bool = False
 
-version: str = "0.0.3"
+version: str = "0.0.4"
 
 # Read data from config.ini
 
