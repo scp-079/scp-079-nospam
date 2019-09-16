@@ -96,6 +96,24 @@ def get_admins(client: Client, cid: int) -> Optional[Union[bool, List[ChatMember
     return result
 
 
+def get_chat(client: Client, cid: Union[int, str]) -> Optional[Chat]:
+    # Get a chat
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.get_chat(chat_id=cid)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+    except Exception as e:
+        logger.warning(f"Get chat error: {e}", exc_info=True)
+
+    return result
+
+
 def get_chat_member(client: Client, cid: int, uid: int) -> Optional[ChatMember]:
     # Get information about one member of a chat
     result = None

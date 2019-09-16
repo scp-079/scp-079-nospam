@@ -413,6 +413,9 @@ def get_text(message: Message) -> str:
     # Get message's text, including links and buttons
     text = ""
     try:
+        if not message:
+            return ""
+
         the_text = message.text or message.caption
         if the_text:
             text += the_text

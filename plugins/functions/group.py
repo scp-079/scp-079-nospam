@@ -19,12 +19,12 @@
 import logging
 from typing import Optional
 
-from pyrogram import Client, Message
+from pyrogram import Chat, Client, Message
 
 from .. import glovar
 from .etc import thread
 from .file import save
-from .telegram import delete_messages, get_messages, leave_chat
+from .telegram import delete_messages, get_chat, get_messages, leave_chat
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -43,6 +43,35 @@ def delete_message(client: Client, gid: int, mid: int) -> bool:
     return False
 
 
+def get_description(client: Client, gid: int) -> str:
+    # Get group's description
+    result = ""
+    try:
+        group = get_group(client, gid)
+        if group:
+            if group.description:
+                result = group.description
+    except Exception as e:
+        logger.warning(f"Get description error: {e}", exc_info=True)
+
+    return result
+
+
+def get_group(client: Client, gid: int) -> Optional[Chat]:
+    # Get the group
+    result = None
+    try:
+        cache = glovar.chats.get(gid)
+        if cache:
+            result = cache
+        else:
+            result = get_chat(client, gid)
+    except Exception as e:
+        logger.warning(f"Get group error: {e}", exc_info=True)
+
+    return result
+
+
 def get_message(client: Client, gid: int, mid: int) -> Optional[Message]:
     # Get a single message
     result = None
@@ -53,6 +82,20 @@ def get_message(client: Client, gid: int, mid: int) -> Optional[Message]:
             result = result[0]
     except Exception as e:
         logger.warning(f"Get message error: {e}", exc_info=True)
+
+    return result
+
+
+def get_pinned(client: Client, gid: int) -> Optional[Message]:
+    # Get group's pinned message
+    result = None
+    try:
+        group = get_group(client, gid)
+        if group:
+            if group.pinned_message:
+                result = group.pinned_message
+    except Exception as e:
+        logger.warning(f"Get pinned error: {e}", exc_info=True)
 
     return result
 

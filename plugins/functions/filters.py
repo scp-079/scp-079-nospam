@@ -28,6 +28,7 @@ from .channel import get_content
 from .etc import get_channel_link, get_filename, get_entity_text, get_forward_name, get_full_name, get_now
 from .etc import get_links, get_stripped_link, get_text
 from .file import delete_file, get_downloaded_path, save
+from .group import get_description, get_pinned
 from .ids import init_group_id
 from .image import get_color, get_file_id, get_ocr, get_qrcode
 from .telegram import get_chat_member, get_sticker_title, resolve_username
@@ -259,8 +260,21 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
         need_delete = []
 
     try:
+        gid = message.chat.id
+
         # Regular message
         if not (text or image_path):
+            # Bypass
+            message_text = get_text(message)
+            description = get_description(client, gid)
+            if description and message_text == description:
+                return ""
+
+            pinned_message = get_pinned(client, gid)
+            pinned_text = get_text(pinned_message)
+            if pinned_text and message_text == pinned_text:
+                return ""
+
             # Check detected records
 
             # If the user is being punished
@@ -306,7 +320,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Start detect ban
 
             # Check the message's text
-            message_text = get_text(message)
             if message_text:
                 if is_ban_text(message_text):
                     return "ban"
@@ -825,17 +838,27 @@ def is_regex_text(word_type: str, text: str, again: bool = False) -> bool:
 def is_tgl(client: Client, message: Message) -> bool:
     # Check if the message includes the Telegram link
     try:
+        # Bypass prepare
+        gid = message.chat.id
+        description = get_description(client, gid)
+        pinned_message = get_pinned(client, gid)
+        pinned_text = get_text(pinned_message)
+
         # Check links
         bypass = get_stripped_link(get_channel_link(message))
         links = get_links(message)
         tg_links = list(filter(lambda l: is_regex_text("tgl", l), links))
-        bypass_list = [link for link in tg_links if f"{bypass}/" in f"{link}/"]
+        bypass_list = [link for link in tg_links if (f"{bypass}/" in f"{link}/"
+                                                     or link in description
+                                                     or link in pinned_text)]
         if len(bypass_list) != len(tg_links):
             return True
 
         # Check text
         text = get_text(message)
-        text = text.replace(bypass, "")
+        for bypass in bypass_list:
+            text = text.replace(bypass, "")
+
         if is_regex_text("tgl", text):
             return True
 
@@ -846,6 +869,12 @@ def is_tgl(client: Client, message: Message) -> bool:
                 if en.type == "mention":
                     username = get_entity_text(message, en)[1:]
                     if message.chat.username and username == message.chat.username:
+                        continue
+
+                    if username in description:
+                        continue
+
+                    if username in pinned_text:
                         continue
 
                     peer_type, peer_id = resolve_username(client, username)
