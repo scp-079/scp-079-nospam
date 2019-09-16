@@ -113,7 +113,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             more = None
 
         # Group config
-        report_only = glovar.configs[gid]["report"]
+        report_only = glovar.configs[gid].get("report")
 
         # Start process
 
