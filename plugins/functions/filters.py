@@ -28,7 +28,7 @@ from .channel import get_content
 from .etc import get_channel_link, get_filename, get_entity_text, get_forward_name, get_full_name, get_now
 from .etc import get_links, get_stripped_link, get_text
 from .file import delete_file, get_downloaded_path, save
-from .group import get_description, get_pinned
+from .group import get_description, get_group_sticker, get_pinned
 from .ids import init_group_id
 from .image import get_color, get_file_id, get_ocr, get_qrcode
 from .telegram import get_chat_member, get_sticker_title, resolve_username
@@ -275,6 +275,14 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             if pinned_text and message_text == pinned_text:
                 return ""
 
+            group_sticker = get_group_sticker(client, gid)
+            if message.sticker:
+                sticker_name = message.sticker.set_name
+                if sticker_name == group_sticker:
+                    return ""
+            else:
+                sticker_name = ""
+
             # Check detected records
 
             # If the user is being punished
@@ -446,17 +454,15 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "delete"
 
             # Check sticker
-            if message.sticker:
-                sticker_name = message.sticker.set_name
-                if sticker_name:
-                    if sticker_name not in glovar.except_ids["long"]:
-                        if is_regex_text("sti", sticker_name):
-                            return "delete"
+            if sticker_name:
+                if sticker_name not in glovar.except_ids["long"]:
+                    if is_regex_text("sti", sticker_name):
+                        return "delete"
 
-                    sticker_title = get_sticker_title(client, sticker_name)
-                    if sticker_title not in glovar.except_ids["long"]:
-                        if is_regex_text("sti", sticker_title):
-                            return f"delete name {sticker_title}"
+                sticker_title = get_sticker_title(client, sticker_name)
+                if sticker_title not in glovar.except_ids["long"]:
+                    if is_regex_text("sti", sticker_title):
+                        return f"delete name {sticker_title}"
 
             # Start detect watch delete
 

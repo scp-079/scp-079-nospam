@@ -72,6 +72,20 @@ def get_group(client: Client, gid: int) -> Optional[Chat]:
     return result
 
 
+def get_group_sticker(client: Client, gid: int) -> str:
+    # Get group sticker set name
+    result = ""
+    try:
+        group = get_group(client, gid)
+        if group:
+            if group.sticker_set_name:
+                result = group.sticker_set_name
+    except Exception as e:
+        logger.warning(f"Get group sticker error: {e}", exc_info=True)
+
+    return result
+
+
 def get_message(client: Client, gid: int, mid: int) -> Optional[Message]:
     # Get a single message
     result = None
