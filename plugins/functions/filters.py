@@ -271,12 +271,12 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 return "delete"
 
             # Content
-            content = get_content(message)
+            message_content = get_content(message)
             wb_user = is_watch_user(message, "ban")
             score_user = is_high_score_user(message)
             wd_user = is_watch_user(message, "delete")
-            if content:
-                detection = glovar.contents.get(content, "")
+            if message_content:
+                detection = glovar.contents.get(message_content, "")
                 if detection == "ban":
                     return detection
 
@@ -289,7 +289,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if (wb_user or score_user or wd_user) and detection == "wd":
                     return detection
 
-                if content in glovar.bad_ids["contents"]:
+                if message_content in glovar.bad_ids["contents"]:
                     return "delete record"
 
             # Url
@@ -327,7 +327,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "ban name"
 
             # Bypass
-            message_content = get_content(message)
             description = get_description(client, gid)
             if (description and message_content) and message_content in description:
                 return ""
