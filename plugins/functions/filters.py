@@ -329,12 +329,12 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Bypass
             message_content = get_content(message)
             description = get_description(client, gid)
-            if description and message_content in description:
+            if (description and message_content) and message_content in description:
                 return ""
 
             pinned_message = get_pinned(client, gid)
             pinned_content = get_content(pinned_message)
-            if pinned_content and message_content in pinned_content:
+            if (pinned_content and message_content) and message_content in pinned_content:
                 return ""
 
             group_sticker = get_group_sticker(client, gid)
