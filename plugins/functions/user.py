@@ -179,13 +179,14 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             if more == "record":
                 log_rule = "消息收录"
                 debug_action = "收录删除"
+                more = None
 
             if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
                 delete_message(client, gid, mid)
                 add_detected_user(gid, uid)
                 declare_message(client, gid, mid)
             else:
-                result = forward_evidence(client, message, user, log_action, log_rule, 0.0)
+                result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
                 if result:
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
