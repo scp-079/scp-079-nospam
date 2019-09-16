@@ -309,7 +309,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return detection
 
                 if content in glovar.bad_ids["contents"]:
-                    return "delete content record"
+                    return "delete record"
 
             # Url
             detected_url = is_detected_url(message)

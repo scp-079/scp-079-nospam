@@ -176,10 +176,9 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_action = "自动删除"
             log_rule = "全局规则"
             debug_action = "自动删除"
-            if more == "record":
+            if rule == "record":
                 log_rule = "消息收录"
                 debug_action = "收录删除"
-                more = None
 
             if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
                 delete_message(client, gid, mid)
