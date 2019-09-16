@@ -59,7 +59,8 @@ default_config: Dict[str, Union[bool, int]] = {
     "default": True,
     "lock": 0,
     "auto": False,
-    "bot": True
+    "bot": True,
+    "report": False
 }
 
 default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
@@ -139,7 +140,7 @@ sender: str = "NOSPAM"
 
 should_hide: bool = False
 
-version: str = "0.0.4"
+version: str = "0.0.5"
 
 # Read data from config.ini
 

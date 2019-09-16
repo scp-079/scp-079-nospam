@@ -96,6 +96,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         if is_class_d(None, message) or is_declared_message(None, message):
             return True
 
+        # Basic info
         gid = message.chat.id
         uid = user.id
         mid = message.message_id
@@ -111,7 +112,27 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         else:
             more = None
 
-        if the_type == "ban":
+        # Group config
+        report_only = glovar.configs[gid]["report"]
+
+        # Start process
+
+        # Auto report to WARN
+        if report_only or the_type == "bad":
+            result = forward_evidence(client, message, user, "自动评分", "全局规则", 0.0, more)
+            if result:
+                glovar.recorded_ids[gid].add(uid)
+                if init_user_id(uid):
+                    count = glovar.user_ids[uid]["bad"].get(gid, 0)
+                    count += 1
+                    glovar.user_ids[uid]["bad"][gid] = count
+                    update_score(client, uid)
+                    if gid in glovar.report_ids and uid not in glovar.recorded_ids[gid]:
+                        auto_report(client, message)
+
+                    send_debug(client, message.chat, "微量评分", uid, mid, result)
+        # Ban the user
+        elif the_type == "ban":
             log_action = "自动封禁"
             log_rule = "全局规则"
             debug_action = "自动封禁"
@@ -149,6 +170,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     declare_message(client, gid, mid)
                     ask_for_help(client, "delete", gid, uid)
                     send_debug(client, message.chat, debug_action, uid, mid, result)
+        # Watch ban the user
         elif the_type == "wb":
             log_action = "自动封禁"
             log_rule = "敏感追踪"
@@ -172,6 +194,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 declare_message(client, gid, mid)
                 ask_for_help(client, "ban", gid, uid)
                 send_debug(client, message.chat, debug_action, uid, mid, result)
+        # Delete the message
         elif the_type == "delete":
             log_action = "自动删除"
             log_rule = "全局规则"
@@ -195,6 +218,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         update_score(client, uid)
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
+        # Watch delete the message
         elif the_type == "wd":
             log_action = "自动删除"
             log_rule = "敏感追踪"
@@ -219,19 +243,6 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         update_score(client, uid)
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
-        elif the_type == "bad":
-            result = forward_evidence(client, message, user, "自动评分", "全局规则", 0.0, more)
-            if result:
-                gid = message.chat.id
-                if init_user_id(uid):
-                    count = glovar.user_ids[uid]["bad"].get(gid, 0)
-                    count += 1
-                    glovar.user_ids[uid]["bad"][gid] = count
-                    update_score(client, uid)
-                    if gid in glovar.report_ids:
-                        auto_report(client, message)
-
-                    send_debug(client, message.chat, "微量评分", uid, mid, result)
 
         return True
     except Exception as e:

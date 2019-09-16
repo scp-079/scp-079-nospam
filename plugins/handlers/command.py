@@ -107,7 +107,8 @@ def config_directly(client: Client, message: Message) -> bool:
                     text += (f"操作：{code('查看设置')}\n"
                              f"设置：{code((lambda x: '默认' if x else '自定义')(new_config.get('default')))}\n"
                              f"机器学习：{code((lambda x: '启用' if x else '禁用')(new_config.get('auto')))}\n"
-                             f"阻止机器人进群：{code((lambda x: '启用' if x else '禁用')(new_config.get('bot')))}\n")
+                             f"阻止机器人进群：{code((lambda x: '启用' if x else '禁用')(new_config.get('bot')))}\n"
+                             f"仅自动举报：{code((lambda x: '启用' if x else '禁用')(new_config.get('report')))}\n")
 
                     thread(send_report_message, (30, client, gid, text))
                     thread(delete_message, (client, gid, mid))
@@ -121,7 +122,7 @@ def config_directly(client: Client, message: Message) -> bool:
                             new_config = deepcopy(glovar.default_config)
                     else:
                         if command_context:
-                            if command_type in {"auto", "bot"}:
+                            if command_type in {"auto", "bot", "report"}:
                                 if command_context == "off":
                                     new_config[command_type] = False
                                 elif command_context == "on":
