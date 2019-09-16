@@ -119,7 +119,13 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
         # Auto report to WARN
         if report_only or the_type == "bad":
-            result = forward_evidence(client, message, user, "自动评分", "全局规则", 0.0, more)
+            log_action = "自动评分"
+            log_rule = "全局规则"
+            debug_action = "微量评分"
+            if rule == "name":
+                log_rule = "名称检查"
+
+            result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
             if result:
                 glovar.recorded_ids[gid].add(uid)
                 if init_user_id(uid):
@@ -130,7 +136,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     if gid in glovar.report_ids and uid not in glovar.recorded_ids[gid]:
                         auto_report(client, message)
 
-                    send_debug(client, message.chat, "微量评分", uid, mid, result)
+                    send_debug(client, message.chat, debug_action, uid, mid, result)
         # Ban the user
         elif the_type == "ban":
             log_action = "自动封禁"

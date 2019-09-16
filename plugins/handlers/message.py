@@ -25,7 +25,7 @@ from ..functions.channel import get_content, get_debug_text
 from ..functions.etc import code, general_link, get_full_name, get_now, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import class_c, class_e, class_d, declared_message, exchange_channel, from_user, hide_channel
-from ..functions.filters import is_bad_message, is_bio_text, is_declared_message, is_new_user, is_nm_text
+from ..functions.filters import is_bad_message, is_bio_text, is_declared_message, is_new_user, is_nm_text, is_regex_text
 from ..functions.filters import new_group, test_group
 from ..functions.group import leave_group
 from ..functions.ids import init_group_id, init_user_id
@@ -92,6 +92,8 @@ def check_join(client: Client, message: Message) -> bool:
                         terminate_user(client, message, new, "ban name")
                     elif name in glovar.bad_ids["contents"]:
                         terminate_user(client, message, new, "ban name record")
+                    elif is_regex_text("bad", name) or is_regex_text("sho", name):
+                        terminate_user(client, message, new, "bad name")
 
                     # Check bio
                     bio = get_user_bio(client, new.username or new.id)
