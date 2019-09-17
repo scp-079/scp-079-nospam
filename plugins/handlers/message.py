@@ -57,11 +57,14 @@ def check(client: Client, message: Message) -> bool:
             content = get_content(message)
             detection = is_bad_message(client, message)
             if detection:
-                glovar.contents[content] = detection
+                if content:
+                    glovar.contents[content] = detection
+
                 return terminate_user(client, message, message.from_user, detection)
             elif message.sticker:
-                glovar.except_ids["temp"].add(content)
-                save("except_ids")
+                if content:
+                    glovar.except_ids["temp"].add(content)
+                    save("except_ids")
 
             return True
         except Exception as e:
