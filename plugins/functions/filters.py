@@ -236,6 +236,7 @@ def is_avatar_image(path: str) -> bool:
     try:
         # Check QRCODE
         qrcode = get_qrcode(path)
+        logger.warning(f"qr{qrcode}")
         if qrcode:
             if is_ban_text(qrcode) or is_regex_text("ava", qrcode):
                 return True
