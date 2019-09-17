@@ -263,7 +263,7 @@ def get_debug_text(client: Client, context: Union[int, Chat]) -> str:
     return text
 
 
-def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: Message) -> bool:
+def send_debug(client: Client, chat: Union[int, Chat], action: str, uid: int, mid: int, em: Message) -> bool:
     # Send the debug message
     try:
         text = get_debug_text(client, chat)

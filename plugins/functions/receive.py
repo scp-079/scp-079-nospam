@@ -202,7 +202,7 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
                     delete_message(client, gid, mid)
                     declare_message(client, gid, mid)
                     ask_for_help(client, "ban", gid, uid)
-                    send_debug(client, message.chat, "头像封禁", uid, mid, result)
+                    send_debug(client, gid, "头像封禁", uid, mid, result)
 
             return True
         except Exception as e:
