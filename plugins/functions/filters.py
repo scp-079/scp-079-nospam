@@ -564,7 +564,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Check the text
             if text:
-                if is_delete_text(text):
+                if is_regex_text("del", text):
                     return "delete"
 
             # Check image
