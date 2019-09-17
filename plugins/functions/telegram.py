@@ -385,22 +385,21 @@ def send_photo(client: Client, cid: int, path: str, text: str = "", mid: int = N
                markup: InlineKeyboardMarkup = None) -> Optional[Message]:
     result = None
     try:
-        if text.strip():
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    result = client.send_photo(
-                        chat_id=cid,
-                        photo=path,
-                        caption=text,
-                        parse_mode="html",
-                        reply_to_message_id=mid,
-                        reply_markup=markup
-                    )
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.send_photo(
+                    chat_id=cid,
+                    photo=path,
+                    caption=text,
+                    parse_mode="html",
+                    reply_to_message_id=mid,
+                    reply_markup=markup
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
     except Exception as e:
         logger.warning(f"Send photo to {cid} error: {e}", exc_info=True)
 
