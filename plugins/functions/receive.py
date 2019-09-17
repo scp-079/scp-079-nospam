@@ -20,6 +20,7 @@ import logging
 import pickle
 from copy import deepcopy
 from json import loads
+from os import rename
 from typing import Any
 
 from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -181,6 +182,8 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
                 image_path = get_new_path()
                 image.save(image_path, "PNG")
                 if is_avatar_image(image_path):
+                    rename(image_path, f"{image_path}.png")
+                    image_path = f"{image_path}.png"
                     result = send_photo(client, glovar.logging_channel_id, image_path)
                     if not result:
                         return True
