@@ -525,7 +525,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             ocr = ""
             all_text = text
             if image_path:
-                need_delete.append(image_path)
                 qrcode = get_qrcode(image_path)
                 if qrcode:
                     if is_ban_text(qrcode):
