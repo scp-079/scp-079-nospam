@@ -432,12 +432,12 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Check the message's text
             if message_text:
-                if is_delete_text(message_text):
+                if is_regex_text("del", message_text):
                     return "delete"
 
             # Check the document filename:
             if file_name:
-                if is_delete_text(file_name):
+                if is_regex_text("del", file_name):
                     return "delete"
 
             # Check image
