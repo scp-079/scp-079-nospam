@@ -108,13 +108,14 @@ def check_join(client: Client, message: Message) -> bool:
                             terminate_user(client, message, new, f"ban bio {bio}")
 
                 # Check bot
-                if glovar.configs[gid]["bot"] and new.is_bot:
+                if glovar.configs[gid].get("bot", True) and new.is_bot:
                     terminate_user(client, message, new, "ban bot")
 
                 # Update user's join status
                 if init_user_id(uid):
-                    glovar.user_ids[uid]["join"][gid] = get_now()
-                    save("user_ids")
+                    if not glovar.configs[gid].get("report", False):
+                        glovar.user_ids[uid]["join"][gid] = get_now()
+                        save("user_ids")
 
             return True
         except Exception as e:

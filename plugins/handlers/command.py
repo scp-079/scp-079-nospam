@@ -106,10 +106,10 @@ def config_directly(client: Client, message: Message) -> bool:
             if command_type:
                 if command_type == "show":
                     text += (f"操作：{code('查看设置')}\n"
-                             f"设置：{code((lambda x: '默认' if x else '自定义')(new_config.get('default')))}\n"
-                             f"机器学习：{code((lambda x: '启用' if x else '禁用')(new_config.get('auto')))}\n"
-                             f"阻止机器人进群：{code((lambda x: '启用' if x else '禁用')(new_config.get('bot')))}\n"
-                             f"仅自动举报：{code((lambda x: '启用' if x else '禁用')(new_config.get('report')))}\n")
+                             f"设置：{code((lambda x: '默认' if x else '自定义')(new_config.get('default', False)))}\n"
+                             f"机器学习：{code((lambda x: '启用' if x else '禁用')(new_config.get('auto', False)))}\n"
+                             f"阻止机器人进群：{code((lambda x: '启用' if x else '禁用')(new_config.get('bot', True)))}\n"
+                             f"仅自动举报：{code((lambda x: '启用' if x else '禁用')(new_config.get('report', False)))}\n")
 
                     thread(send_report_message, (30, client, gid, text))
                     thread(delete_message, (client, gid, mid))
