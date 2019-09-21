@@ -624,7 +624,7 @@ def is_ban_text(text: str) -> bool:
         if is_regex_text("ban", text):
             return True
 
-        if is_regex_text("ad", text) and is_regex_text("con", text):
+        if is_regex_text("ad", text) and (is_regex_text("con", text) or is_regex_text("iml", text)):
             return True
     except Exception as e:
         logger.warning(f"Is ban text error: {e}", exc_info=True)
