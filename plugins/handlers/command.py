@@ -23,8 +23,9 @@ from copy import deepcopy
 from pyrogram import Client, Filters, Message
 
 from .. import glovar
-from ..functions.channel import get_debug_text, share_data
-from ..functions.etc import bold, code, delay, get_command_context, get_command_type, get_now, thread, user_mention
+from ..functions.channel import get_content, get_debug_text, share_data
+from ..functions.etc import bold, code, code_block, delay, get_command_context, get_command_type, get_now
+from ..functions.etc import thread, user_mention
 from ..functions.file import save
 from ..functions.filters import from_user, is_class_c, test_group
 from ..functions.group import delete_message
@@ -162,6 +163,35 @@ def config_directly(client: Client, message: Message) -> bool:
         logger.warning(f"Config directly error: {e}", exc_info=True)
 
     return False
+
+
+@Client.on_message(Filters.incoming & Filters.group & test_group & from_user
+                   & Filters.command(["content"], glovar.prefix))
+def content(client: Client, message: Message) -> bool:
+    # Show message's content
+    try:
+        cid = message.chat.id
+        aid = message.from_user.id
+        mid = message.message_id
+        text = f"管理员：{user_mention(aid)}\n\n"
+        if message.reply_to_message:
+            result = get_content(message.reply_to_message)
+            if result:
+                text += f"内容标识：" + "-" * 24 + "\n\n"
+                text += code_block(result) + "\n"
+            else:
+                text += f"结果：{code('无标识可显示')}\n"
+        else:
+            text = f"结果：{code('用法有误')}\n"
+
+        thread(send_message, (client, cid, text, mid))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Content error: {e}", exc_info=True)
+
+    return False
+
 
 @Client.on_message(Filters.incoming & Filters.group & test_group & from_user
                    & Filters.command(["version"], glovar.prefix))

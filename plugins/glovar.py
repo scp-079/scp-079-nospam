@@ -36,112 +36,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# Init
-
-all_commands: List[str] = ["config", "config_nospam", "version"]
-
-chats: Dict[int, Chat] = {}
-# chats = {
-#     -10012345678: Chat
-# }
-
-contents: Dict[str, str] = {}
-# contents = {
-#     "content": "ban"
-# }
-
-declared_message_ids: Dict[int, Set[int]] = {}
-# declared_message_ids = {
-#     -10012345678: {123}
-# }
-
-default_config: Dict[str, Union[bool, int]] = {
-    "default": True,
-    "lock": 0,
-    "auto": False,
-    "bot": True,
-    "report": False
-}
-
-default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
-    "bad": {},
-    "detected": {},
-    "join": {},
-    "score": {
-        "captcha": 0.0,
-        "clean": 0.0,
-        "lang": 0.0,
-        "long": 0.0,
-        "noflood": 0.0,
-        "noporn": 0.0,
-        "nospam": 0.0,
-        "recheck": 0.0,
-        "warn": 0.0
-    }
-}
-
-eme_group_ids: Set[int] = set()
-
-left_group_ids: Set[int] = set()
-
-locks: Dict[str, Lock] = {
-    "admin": Lock(),
-    "message": Lock(),
-    "regex": Lock(),
-    "test": Lock()
-}
-
-names: Dict[str, str] = {
-    "bad": "自动举报",
-    "ban": "自动封禁",
-    "delete": "自动删除",
-    "wb": "追踪封禁",
-    "wd": "追踪删除"
-}
-
-receivers: Dict[str, List[str]] = {
-    "bad": ["ANALYZE", "APPLY", "APPEAL", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
-            "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WATCH"],
-    "declare": ["ANALYZE", "AVATAR", "CLEAN", "LANG", "LONG",
-                "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
-    "score": ["ANALYZE", "CAPTCHA", "CLEAN", "LANG", "LONG",
-              "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"],
-    "watch": ["ANALYZE", "CAPTCHA", "CLEAN", "LANG", "LONG",
-              "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "WATCH"]
-}
-
-recorded_ids: Dict[int, Set[int]] = {}
-# recorded_ids = {
-#     -10012345678: {12345678}
-# }
-
-regex: Dict[str, str] = {
-    "ad": "广告用语",
-    "aff": "推广链接",
-    "ava": "头像分析",
-    "bad": "敏感检测",
-    "ban": "自动封禁",
-    "bio": "简介封禁",
-    "con": "联系方式",
-    "del": "自动删除",
-    "iml": "IM 链接",
-    "nm": "名称封禁",
-    "sho": "短链接",
-    "spc": "特殊中文",
-    "spe": "特殊英文",
-    "sti": "贴纸删除",
-    "tgl": "TG 链接",
-    "tgp": "TG 代理",
-    "wb": "追踪封禁",
-    "wd": "追踪删除"
-}
-
-sender: str = "NOSPAM"
-
-should_hide: bool = False
-
-version: str = "0.0.5"
-
 # Read data from config.ini
 
 # [basic]
@@ -258,8 +152,114 @@ if (bot_token in {"", "[DATA EXPUNGED]"}
     logger.critical("No proper settings")
     raise SystemExit("No proper settings")
 
-bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, lang_id, long_id,
-                     noflood_id, noporn_id, nospam_id, recheck_id, tip_id, user_id, warn_id}
+bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, lang_id, long_id, noflood_id,
+                     noporn_id, nospam_id, recheck_id, tip_id, user_id, warn_id}
+
+# Init
+
+all_commands: List[str] = ["config", "config_nospam", "content", "version"]
+
+chats: Dict[int, Chat] = {}
+# chats = {
+#     -10012345678: Chat
+# }
+
+contents: Dict[str, str] = {}
+# contents = {
+#     "content": "ban"
+# }
+
+declared_message_ids: Dict[int, Set[int]] = {}
+# declared_message_ids = {
+#     -10012345678: {123}
+# }
+
+default_config: Dict[str, Union[bool, int]] = {
+    "default": True,
+    "lock": 0,
+    "auto": False,
+    "bot": True,
+    "report": False
+}
+
+default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
+    "bad": {},
+    "detected": {},
+    "join": {},
+    "score": {
+        "captcha": 0.0,
+        "clean": 0.0,
+        "lang": 0.0,
+        "long": 0.0,
+        "noflood": 0.0,
+        "noporn": 0.0,
+        "nospam": 0.0,
+        "recheck": 0.0,
+        "warn": 0.0
+    }
+}
+
+eme_group_ids: Set[int] = set()
+
+left_group_ids: Set[int] = set()
+
+locks: Dict[str, Lock] = {
+    "admin": Lock(),
+    "message": Lock(),
+    "regex": Lock(),
+    "test": Lock()
+}
+
+names: Dict[str, str] = {
+    "bad": "自动举报",
+    "ban": "自动封禁",
+    "delete": "自动删除",
+    "wb": "追踪封禁",
+    "wd": "追踪删除"
+}
+
+receivers: Dict[str, List[str]] = {
+    "bad": ["ANALYZE", "APPLY", "APPEAL", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
+            "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WATCH"],
+    "declare": ["ANALYZE", "AVATAR", "CLEAN", "LANG", "LONG",
+                "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "USER", "WATCH"],
+    "score": ["ANALYZE", "CAPTCHA", "CLEAN", "LANG", "LONG",
+              "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK"],
+    "watch": ["ANALYZE", "CAPTCHA", "CLEAN", "LANG", "LONG",
+              "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "WATCH"]
+}
+
+recorded_ids: Dict[int, Set[int]] = {}
+# recorded_ids = {
+#     -10012345678: {12345678}
+# }
+
+regex: Dict[str, str] = {
+    "ad": "广告用语",
+    "aff": "推广链接",
+    "ava": "头像分析",
+    "bad": "敏感检测",
+    "ban": "自动封禁",
+    "bio": "简介封禁",
+    "con": "联系方式",
+    "del": "自动删除",
+    "iml": "IM 链接",
+    "nm": "名称封禁",
+    "sho": "短链接",
+    "spc": "特殊中文",
+    "spe": "特殊英文",
+    "sti": "贴纸删除",
+    "tgl": "TG 链接",
+    "tgp": "TG 代理",
+    "wb": "追踪封禁",
+    "wd": "追踪删除"
+}
+
+sender: str = "NOSPAM"
+
+should_hide: bool = False
+
+version: str = "0.0.6"
 
 # Load data from pickle
 
