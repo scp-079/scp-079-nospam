@@ -34,6 +34,9 @@ logger = logging.getLogger(__name__)
 def get_color(path: str) -> bool:
     # Get the picture's color, check if most of it is yellow
     try:
+        if not path:
+            return False
+
         image = Image.open(path).convert('YCbCr')
         w, h = image.size
         data = image.getdata()
@@ -100,6 +103,9 @@ def get_file_id(message: Message) -> (str, bool):
 def get_ocr(path: str, test: bool = False) -> str:
     result = ""
     try:
+        if not path:
+            return ""
+
         image = Image.open(path)
         enhancer = ImageEnhance.Contrast(image)
         image = enhancer.enhance(2)
@@ -147,6 +153,9 @@ def get_qrcode(path: str) -> str:
     # Get QR code
     result = ""
     try:
+        if not path:
+            return ""
+
         # Open
         image = Image.open(path)
 

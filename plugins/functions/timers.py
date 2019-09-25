@@ -97,7 +97,7 @@ def interval_min_15(client: Client) -> bool:
 
         return True
     except Exception as e:
-        logger.warning(f"Interval min 10 error: {e}", exc_info=True)
+        logger.warning(f"Interval min 15 error: {e}", exc_info=True)
 
     return False
 

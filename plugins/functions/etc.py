@@ -370,6 +370,8 @@ def get_report_record(message: Message) -> Dict[str, str]:
                 record_type = "rule"
             elif re.search("^消息类别", r):
                 record_type = "type"
+            elif re.search("^游戏标识", r):
+                record_type = "game"
             elif re.search("^消息语言", r):
                 record_type = "lang"
             elif re.search("^消息频率", r):

@@ -102,6 +102,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
                 glovar.except_ids[the_type].add(content)
                 glovar.bad_ids["contents"].discard(content)
                 save("bad_ids")
+                glovar.contents.pop(content, "")
 
         save("except_ids")
 
