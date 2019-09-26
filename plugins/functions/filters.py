@@ -268,7 +268,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # If the user is being punished
             if is_detected_user(message):
-                return "delete"
+                return "true"
 
             # Content
             message_content = get_content(message)

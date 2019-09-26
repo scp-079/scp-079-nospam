@@ -48,7 +48,8 @@ def nospam_test(client: Client, message: Message) -> bool:
         content = get_content(message)
         detection = glovar.contents.get(content, "")
         if detection:
-            text += f"检测记录：{code(glovar.names[detection.split()[0]])}\n"
+            text += (f"内容标识：{code(content)}\n"
+                     f"检测记录：{code(glovar.names[detection.split()[0]])}\n")
 
         # Detected url
         detection = is_detected_url(message)

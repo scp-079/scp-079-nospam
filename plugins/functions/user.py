@@ -204,7 +204,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 ask_for_help(client, "ban", gid, uid)
                 send_debug(client, message.chat, debug_action, uid, mid, result)
         # Delete the message
-        elif the_type == "delete":
+        elif the_type in {"delete", "true"}:
             log_action = "自动删除"
             log_rule = "全局规则"
             debug_action = "自动删除"
@@ -212,7 +212,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 log_rule = "消息收录"
                 debug_action = "收录删除"
 
-            if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
+            if is_detected_user(message) or uid in glovar.recorded_ids[gid] or the_type == "true":
                 delete_message(client, gid, mid)
                 add_detected_user(gid, uid)
                 declare_message(client, gid, mid)

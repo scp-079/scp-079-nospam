@@ -332,8 +332,10 @@ def receive_preview(client: Client, message: Message, data: dict) -> bool:
 
                         detection = is_bad_message(client, the_message, text, image_path)
                         if detection:
-                            url = get_stripped_link(preview["url"])
-                            glovar.contents[url] = detection
+                            if detection != "true":
+                                url = get_stripped_link(preview["url"])
+                                glovar.contents[url] = detection
+
                             terminate_user(client, the_message, the_message.from_user, detection)
 
             return True

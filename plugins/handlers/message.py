@@ -56,8 +56,8 @@ def check(client: Client, message: Message) -> bool:
             # Check bad message
             content = get_content(message)
             detection = is_bad_message(client, message)
-            if detection:
-                if content:
+            if content and detection:
+                if detection != "true":
                     glovar.contents[content] = detection
 
                 return terminate_user(client, message, message.from_user, detection)
