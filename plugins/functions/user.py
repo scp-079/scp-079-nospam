@@ -77,7 +77,7 @@ def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     return False
 
 
-def get_user(client: Client, uid: int) -> Optional[User]:
+def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
     # Get a user
     result = None
     try:
