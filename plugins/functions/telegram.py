@@ -228,7 +228,7 @@ def get_user_bio(client: Client, uid: int) -> Optional[str]:
     return result
 
 
-def get_users(client: Client, uids: Iterable[int]) -> Optional[List[User]]:
+def get_users(client: Client, uids: Iterable[Union[int, str]]) -> Optional[List[User]]:
     # Get users
     result = None
     try:
@@ -240,6 +240,8 @@ def get_users(client: Client, uids: Iterable[int]) -> Optional[List[User]]:
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
+            except PeerIdInvalid:
+                return None
     except Exception as e:
         logger.warning(f"Get users error: {e}", exc_info=True)
 

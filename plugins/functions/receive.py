@@ -162,55 +162,55 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
 def receive_avatar(client: Client, message: Message, data: dict) -> bool:
     # Receive avatar
     image_path = ""
-    if glovar.locks["message"].acquire():
-        try:
-            gid = data["group_id"]
-            uid = data["user_id"]
-            mid = data["message_id"]
-            if glovar.admin_ids.get(gid):
-                # Do not check admin's avatar
-                if uid in glovar.admin_ids[gid]:
+    glovar.locks["message"].acquire()
+    try:
+        gid = data["group_id"]
+        uid = data["user_id"]
+        mid = data["message_id"]
+        if glovar.admin_ids.get(gid):
+            # Do not check admin's avatar
+            if uid in glovar.admin_ids[gid]:
+                return True
+
+            # Do not check Class D personnel's avatar
+            if uid in glovar.bad_ids["users"]:
+                return True
+
+            image = receive_file_data(client, message)
+            if not image:
+                return True
+
+            image_path = get_new_path()
+            image.save(image_path, "PNG")
+            if is_avatar_image(image_path):
+                rename(image_path, f"{image_path}.png")
+                image_path = f"{image_path}.png"
+                result = send_photo(client, glovar.logging_channel_id, image_path)
+                if not result:
                     return True
 
-                # Do not check Class D personnel's avatar
-                if uid in glovar.bad_ids["users"]:
+                text = (f"项目编号：{code(glovar.sender)}\n"
+                        f"用户 ID：{code(uid)}\n"
+                        f"操作等级：{code('自动封禁')}\n"
+                        f"规则：{code('头像分析')}\n")
+                result = result.message_id
+                result = send_message(client, glovar.logging_channel_id, text, result)
+                if not result:
                     return True
 
-                image = receive_file_data(client, message)
-                if not image:
-                    return True
+                add_bad_user(client, uid)
+                ban_user(client, gid, uid)
+                delete_message(client, gid, mid)
+                declare_message(client, gid, mid)
+                ask_for_help(client, "ban", gid, uid)
+                send_debug(client, gid, "头像封禁", uid, mid, result)
 
-                image_path = get_new_path()
-                image.save(image_path, "PNG")
-                if is_avatar_image(image_path):
-                    rename(image_path, f"{image_path}.png")
-                    image_path = f"{image_path}.png"
-                    result = send_photo(client, glovar.logging_channel_id, image_path)
-                    if not result:
-                        return True
-
-                    text = (f"项目编号：{code(glovar.sender)}\n"
-                            f"用户 ID：{code(uid)}\n"
-                            f"操作等级：{code('自动封禁')}\n"
-                            f"规则：{code('头像分析')}\n")
-                    result = result.message_id
-                    result = send_message(client, glovar.logging_channel_id, text, result)
-                    if not result:
-                        return True
-
-                    add_bad_user(client, uid)
-                    ban_user(client, gid, uid)
-                    delete_message(client, gid, mid)
-                    declare_message(client, gid, mid)
-                    ask_for_help(client, "ban", gid, uid)
-                    send_debug(client, gid, "头像封禁", uid, mid, result)
-
-            return True
-        except Exception as e:
-            logger.warning(f"Receive avatar error: {e}", exc_info=True)
-        finally:
-            delete_file(image_path)
-            glovar.locks["message"].release()
+        return True
+    except Exception as e:
+        logger.warning(f"Receive avatar error: {e}", exc_info=True)
+    finally:
+        delete_file(image_path)
+        glovar.locks["message"].release()
 
     return False
 
@@ -304,45 +304,45 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
 
 def receive_preview(client: Client, message: Message, data: dict) -> bool:
     # Receive message's preview
-    if glovar.locks["message"].acquire():
-        try:
-            gid = data["group_id"]
-            uid = data["user_id"]
-            mid = data["message_id"]
-            if glovar.admin_ids.get(gid):
-                # Do not check admin's message
-                if uid in glovar.admin_ids[gid]:
-                    return True
+    glovar.locks["message"].acquire()
+    try:
+        gid = data["group_id"]
+        uid = data["user_id"]
+        mid = data["message_id"]
+        if glovar.admin_ids.get(gid):
+            # Do not check admin's message
+            if uid in glovar.admin_ids[gid]:
+                return True
 
-                preview = receive_file_data(client, message)
-                if preview:
-                    text = preview["text"]
-                    image = preview["image"]
-                    if image:
-                        image_path = get_new_path()
-                        image.save(image_path, "PNG")
-                    else:
-                        image_path = None
+            preview = receive_file_data(client, message)
+            if preview:
+                text = preview["text"]
+                image = preview["image"]
+                if image:
+                    image_path = get_new_path()
+                    image.save(image_path, "PNG")
+                else:
+                    image_path = None
 
-                    if (not is_declared_message_id(gid, mid)
-                            and not is_detected_user_id(gid, uid)):
-                        the_message = get_message(client, gid, mid)
-                        if not the_message or is_class_e(None, the_message):
-                            return True
+                if (not is_declared_message_id(gid, mid)
+                        and not is_detected_user_id(gid, uid)):
+                    the_message = get_message(client, gid, mid)
+                    if not the_message or is_class_e(None, the_message):
+                        return True
 
-                        detection = is_bad_message(client, the_message, text, image_path)
-                        if detection:
-                            if detection != "true":
-                                url = get_stripped_link(preview["url"])
-                                glovar.contents[url] = detection
+                    detection = is_bad_message(client, the_message, text, image_path)
+                    if detection:
+                        if detection != "true":
+                            url = get_stripped_link(preview["url"])
+                            glovar.contents[url] = detection
 
-                            terminate_user(client, the_message, the_message.from_user, detection)
+                        terminate_user(client, the_message, the_message.from_user, detection)
 
-            return True
-        except Exception as e:
-            logger.warning(f"Receive preview error: {e}", exc_info=True)
-        finally:
-            glovar.locks["message"].release()
+        return True
+    except Exception as e:
+        logger.warning(f"Receive preview error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
@@ -394,30 +394,30 @@ def receive_refresh(client: Client, data: int) -> bool:
 
 def receive_regex(client: Client, message: Message, data: str) -> bool:
     # Receive regex
-    if glovar.locks["regex"].acquire():
-        try:
-            file_name = data
-            word_type = file_name.split("_")[0]
-            if word_type not in glovar.regex:
-                return True
-
-            words_data = receive_file_data(client, message)
-            if words_data:
-                pop_set = set(eval(f"glovar.{file_name}")) - set(words_data)
-                new_set = set(words_data) - set(eval(f"glovar.{file_name}"))
-                for word in pop_set:
-                    eval(f"glovar.{file_name}").pop(word, 0)
-
-                for word in new_set:
-                    eval(f"glovar.{file_name}")[word] = 0
-
-                save(file_name)
-
+    glovar.locks["regex"].acquire()
+    try:
+        file_name = data
+        word_type = file_name.split("_")[0]
+        if word_type not in glovar.regex:
             return True
-        except Exception as e:
-            logger.warning(f"Receive regex error: {e}", exc_info=True)
-        finally:
-            glovar.locks["regex"].release()
+
+        words_data = receive_file_data(client, message)
+        if words_data:
+            pop_set = set(eval(f"glovar.{file_name}")) - set(words_data)
+            new_set = set(words_data) - set(eval(f"glovar.{file_name}"))
+            for word in pop_set:
+                eval(f"glovar.{file_name}").pop(word, 0)
+
+            for word in new_set:
+                eval(f"glovar.{file_name}")[word] = 0
+
+            save(file_name)
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive regex error: {e}", exc_info=True)
+    finally:
+        glovar.locks["regex"].release()
 
     return False
 

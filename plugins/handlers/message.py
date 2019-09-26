@@ -47,30 +47,30 @@ logger = logging.getLogger(__name__)
                    & ~class_c & ~class_e & ~class_d & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check the messages sent from groups
-    if glovar.locks["message"].acquire():
-        try:
-            # Check declare status
-            if is_declared_message(None, message):
-                return True
-
-            # Check bad message
-            content = get_content(message)
-            detection = is_bad_message(client, message)
-            if content and detection:
-                if detection != "true":
-                    glovar.contents[content] = detection
-
-                return terminate_user(client, message, message.from_user, detection)
-            elif message.sticker:
-                if content:
-                    glovar.except_ids["temp"].add(content)
-                    save("except_ids")
-
+    glovar.locks["message"].acquire()
+    try:
+        # Check declare status
+        if is_declared_message(None, message):
             return True
-        except Exception as e:
-            logger.warning(f"Check error: {e}", exc_info=True)
-        finally:
-            glovar.locks["message"].release()
+
+        # Check bad message
+        content = get_content(message)
+        detection = is_bad_message(client, message)
+        if content and detection:
+            if detection != "true":
+                glovar.contents[content] = detection
+
+            return terminate_user(client, message, message.from_user, detection)
+        elif message.sticker:
+            if content:
+                glovar.except_ids["temp"].add(content)
+                save("except_ids")
+
+        return True
+    except Exception as e:
+        logger.warning(f"Check error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
@@ -79,54 +79,54 @@ def check(client: Client, message: Message) -> bool:
                    & ~class_c & ~declared_message)
 def check_join(client: Client, message: Message) -> bool:
     # Check new joined user
-    if glovar.locks["message"].acquire():
-        try:
-            gid = message.chat.id
-            for new in message.new_chat_members:
-                uid = new.id
+    glovar.locks["message"].acquire()
+    try:
+        gid = message.chat.id
+        for new in message.new_chat_members:
+            uid = new.id
 
-                # Check if the user is Class D personnel
-                if uid in glovar.bad_ids["users"]:
-                    continue
+            # Check if the user is Class D personnel
+            if uid in glovar.bad_ids["users"]:
+                continue
 
-                # Avoid check repeatedly
-                if not is_new_user(new) and init_user_id(uid):
-                    # Check declare status
-                    if is_declared_message(None, message):
-                        return True
+            # Avoid check repeatedly
+            if not is_new_user(new) and init_user_id(uid):
+                # Check declare status
+                if is_declared_message(None, message):
+                    return True
 
-                    # Check name
-                    name = get_full_name(new)
-                    if name and name not in glovar.except_ids["long"]:
-                        if is_nm_text(name):
-                            terminate_user(client, message, new, "ban name")
-                        elif name in glovar.bad_ids["contents"]:
-                            terminate_user(client, message, new, "ban name record")
-                        elif is_regex_text("wb", name) and is_regex_text("sho", name):
-                            terminate_user(client, message, new, "ban name")
-                        elif is_regex_text("bad", name) or is_regex_text("sho", name):
-                            terminate_user(client, message, new, "bad name")
+                # Check name
+                name = get_full_name(new)
+                if name and name not in glovar.except_ids["long"]:
+                    if is_nm_text(name):
+                        terminate_user(client, message, new, "ban name")
+                    elif name in glovar.bad_ids["contents"]:
+                        terminate_user(client, message, new, "ban name record")
+                    elif is_regex_text("wb", name) and is_regex_text("sho", name):
+                        terminate_user(client, message, new, "ban name")
+                    elif is_regex_text("bad", name) or is_regex_text("sho", name):
+                        terminate_user(client, message, new, "bad name")
 
-                    # Check bio
-                    bio = get_user_bio(client, new.username or new.id)
-                    if bio and bio not in glovar.except_ids["long"]:
-                        if is_bio_text(bio):
-                            terminate_user(client, message, new, f"ban bio {bio}")
+                # Check bio
+                bio = get_user_bio(client, new.username or new.id)
+                if bio and bio not in glovar.except_ids["long"]:
+                    if is_bio_text(bio):
+                        terminate_user(client, message, new, f"ban bio {bio}")
 
-                # Check bot
-                if glovar.configs[gid].get("bot", True) and new.is_bot:
-                    terminate_user(client, message, new, "ban bot")
+            # Check bot
+            if glovar.configs[gid].get("bot", True) and new.is_bot:
+                terminate_user(client, message, new, "ban bot")
 
-                # Update user's join status
-                if not glovar.configs[gid].get("report", False):
-                    glovar.user_ids[uid]["join"][gid] = get_now()
-                    save("user_ids")
+            # Update user's join status
+            if not glovar.configs[gid].get("report", False):
+                glovar.user_ids[uid]["join"][gid] = get_now()
+                save("user_ids")
 
-            return True
-        except Exception as e:
-            logger.warning(f"Check join error: {e}", exc_info=True)
-        finally:
-            glovar.locks["message"].release()
+        return True
+    except Exception as e:
+        logger.warning(f"Check join error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return False
 
@@ -138,24 +138,26 @@ def exchange_emergency(client: Client, message: Message) -> bool:
     try:
         # Read basic information
         data = receive_text_data(message)
-        if data:
-            sender = data["from"]
-            receivers = data["to"]
-            action = data["action"]
-            action_type = data["type"]
-            data = data["data"]
-            if "EMERGENCY" in receivers:
-                if action == "backup":
-                    if action_type == "hide":
-                        if data is True:
-                            glovar.should_hide = data
-                        elif data is False and sender == "MANAGE":
-                            glovar.should_hide = data
+        if not data:
+            return True
 
-                        text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                                f"执行操作：{code('频道转移')}\n"
-                                f"应急频道：{code((lambda x: '启用' if x else '禁用')(glovar.should_hide))}\n")
-                        thread(send_message, (client, glovar.debug_channel_id, text))
+        sender = data["from"]
+        receivers = data["to"]
+        action = data["action"]
+        action_type = data["type"]
+        data = data["data"]
+        if "EMERGENCY" in receivers:
+            if action == "backup":
+                if action_type == "hide":
+                    if data is True:
+                        glovar.should_hide = data
+                    elif data is False and sender == "MANAGE":
+                        glovar.should_hide = data
+
+                    text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
+                            f"执行操作：{code('频道转移')}\n"
+                            f"应急频道：{code((lambda x: '启用' if x else '禁用')(glovar.should_hide))}\n")
+                    thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
@@ -410,14 +412,14 @@ def process_data(client: Client, message: Message) -> bool:
                    & ~Filters.command(glovar.all_commands, glovar.prefix))
 def test(client: Client, message: Message) -> bool:
     # Show test results in TEST group
-    if glovar.locks["test"].acquire():
-        try:
-            nospam_test(client, message)
+    glovar.locks["test"].acquire()
+    try:
+        nospam_test(client, message)
 
-            return True
-        except Exception as e:
-            logger.warning(f"Test error: {e}", exc_info=True)
-        finally:
-            glovar.locks["test"].release()
+        return True
+    except Exception as e:
+        logger.warning(f"Test error: {e}", exc_info=True)
+    finally:
+        glovar.locks["test"].release()
 
     return False
