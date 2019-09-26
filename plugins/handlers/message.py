@@ -22,7 +22,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_content, get_debug_text
-from ..functions.etc import code, general_link, get_full_name, get_now, get_text, thread, user_mention
+from ..functions.etc import code, general_link, get_full_name, get_now, thread, user_mention
 from ..functions.file import save
 from ..functions.filters import class_c, class_e, class_d, declared_message, exchange_channel, from_user, hide_channel
 from ..functions.filters import is_bad_message, is_bio_text, is_declared_message, is_new_user, is_nm_text, is_regex_text
@@ -47,8 +47,7 @@ logger = logging.getLogger(__name__)
                    & ~class_c & ~class_e & ~class_d & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check the messages sent from groups
-    message_text = get_text(message)
-    if message_text:
+    if message and message.text:
         glovar.locks["text"].acquire()
     else:
         glovar.locks["message"].acquire()
@@ -75,7 +74,7 @@ def check(client: Client, message: Message) -> bool:
     except Exception as e:
         logger.warning(f"Check error: {e}", exc_info=True)
     finally:
-        if message_text:
+        if message and message.text:
             glovar.locks["text"].release()
         else:
             glovar.locks["message"].release()
