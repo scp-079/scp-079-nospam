@@ -381,7 +381,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
     return result
 
 
-def send_photo(client: Client, cid: int, photo: str, text: str = None, mid: int = None,
+def send_photo(client: Client, cid: int, photo: str, text: str = "", mid: int = None,
                markup: InlineKeyboardMarkup = None) -> Optional[Union[bool, Message]]:
     # Send a photo to a chat
     result = None

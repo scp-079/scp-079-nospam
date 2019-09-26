@@ -162,11 +162,11 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
                 result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
                 if result:
-                    add_bad_user(client, uid)
+                    declare_message(client, gid, mid)
                     ban_user(client, gid, user.username or user.id)
                     delete_message(client, gid, mid)
-                    declare_message(client, gid, mid)
                     ask_for_help(client, "ban", gid, uid)
+                    add_bad_user(client, uid)
                     send_debug(client, message.chat, debug_action, uid, mid, result)
             else:
                 log_action = "自动封禁"
