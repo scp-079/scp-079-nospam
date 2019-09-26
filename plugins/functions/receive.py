@@ -28,7 +28,7 @@ from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from .. import glovar
 from .channel import ask_for_help, declare_message, get_content, get_debug_text, send_debug, share_data
 from .etc import code, crypt_str, general_link, get_int, get_now, get_report_record, get_stripped_link, get_text
-from .etc import thread, user_mention
+from .etc import message_link, thread, user_mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .filters import is_avatar_image, is_bad_message, is_class_e, is_declared_message_id, is_detected_user_id
 from .group import delete_message, get_message, leave_group
@@ -189,21 +189,40 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
                 if not result:
                     return True
 
-                text = (f"项目编号：{code(glovar.sender)}\n"
-                        f"用户 ID：{code(uid)}\n"
-                        f"操作等级：{code('自动封禁')}\n"
-                        f"规则：{code('头像分析')}\n")
-                result = result.message_id
-                result = send_message(client, glovar.logging_channel_id, text, result)
-                if not result:
-                    return True
+                if mid:
+                    text = (f"项目编号：{code(glovar.sender)}\n"
+                            f"用户 ID：{code(uid)}\n"
+                            f"操作等级：{code('自动封禁')}\n"
+                            f"规则：{code('头像分析')}\n")
+                    result = result.message_id
+                    result = send_message(client, glovar.logging_channel_id, text, result)
+                    if not result:
+                        return True
 
-                add_bad_user(client, uid)
-                ban_user(client, gid, uid)
-                delete_message(client, gid, mid)
-                declare_message(client, gid, mid)
-                ask_for_help(client, "ban", gid, uid)
-                send_debug(client, gid, "头像封禁", uid, mid, result)
+                    declare_message(client, gid, mid)
+                    ban_user(client, gid, uid)
+                    delete_message(client, gid, mid)
+                    ask_for_help(client, "ban", gid, uid)
+                    add_bad_user(client, uid)
+                    send_debug(client, gid, "头像封禁", uid, mid, result)
+                else:
+                    text = (f"项目编号：{code(glovar.sender)}\n"
+                            f"用户 ID：{code(uid)}\n"
+                            f"操作等级：{code('自动封禁')}\n"
+                            f"规则：{code('头像复查')}\n")
+                    result = result.message_id
+                    result = send_message(client, glovar.logging_channel_id, text, result)
+                    if not result:
+                        return True
+
+                    ban_user(client, gid, uid)
+                    ask_for_help(client, "ban", gid, uid)
+                    add_bad_user(client, uid)
+                    text = get_debug_text(client, gid)
+                    text += (f"用户 ID：{code(uid)}\n"
+                             f"执行操作：{code('头像封禁')}\n"
+                             f"证据留存：{general_link(result.message_id, message_link(result))}\n")
+                    thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
