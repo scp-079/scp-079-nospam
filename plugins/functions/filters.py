@@ -853,9 +853,26 @@ def is_tgl(client: Client, message: Message) -> bool:
         bypass = get_stripped_link(get_channel_link(message))
         links = get_links(message)
         tg_links = list(filter(lambda l: is_regex_text("tgl", l), links))
-        bypass_list = [link for link in tg_links if (f"{bypass}/" in f"{link}/"
-                                                     or link in description
-                                                     or link in pinned_text)]
+
+        # Define a bypass link filter function
+        def is_bypass_link(link: str) -> bool:
+            try:
+                link_username = re.match("t.me/(.+?)/", link)
+                if link_username:
+                    link_username = link_username.group(1)
+
+                if (f"{bypass}/" in f"{link}/"
+                        or link in description
+                        or (link_username and link_username in description)
+                        or link in pinned_text
+                        or (link_username and link_username in pinned_text)):
+                    return True
+            except Exception as ee:
+                logger.warning(f"Is bypass link error: {ee}", exc_info=True)
+
+            return False
+
+        bypass_list = [link for link in tg_links if is_bypass_link(link)]
         if len(bypass_list) != len(tg_links):
             return True
 
