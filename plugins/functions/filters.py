@@ -857,7 +857,7 @@ def is_tgl(client: Client, message: Message) -> bool:
         # Define a bypass link filter function
         def is_bypass_link(link: str) -> bool:
             try:
-                link_username = re.match("t.me/(.+?)/", link)
+                link_username = re.match("t.me/(.+?)/", f"{link}/")
                 if link_username:
                     link_username = link_username.group(1)
 
