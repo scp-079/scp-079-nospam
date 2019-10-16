@@ -8,12 +8,12 @@ See [this article](https://scp-079.org/nospam/).
 
 ## To Do List
 
-- [ ] Basic functions
+- [x] Basic functions
 
 ## Requirements
 
 - Python 3.6 or higher
-- Ubuntu: `sudo apt update && sudo apt install libzbar0 opencc tesseract-ocr tesseract-ocr-chi-sim tesseract-ocr-chi-tra -y`
+- Debian 10: `sudo apt update && sudo apt install libzbar0 opencc tesseract-ocr tesseract-ocr-chi-sim tesseract-ocr-chi-tra -y`
 - pip: `pip install -r requirements.txt` or `pip install -U APScheduler OpenCC Pillow pyAesCrypt pyrogram[fast] pytesseract pyzbar`
 
 ## Files
