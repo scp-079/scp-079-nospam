@@ -308,7 +308,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Start detect ban
 
-            # Check the forward from name:
+            # Check the forward from name
             forward_name = get_forward_name(message)
             if forward_name and forward_name not in glovar.except_ids["long"]:
                 if forward_name in glovar.bad_ids["contents"]:
@@ -317,10 +317,10 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_nm_text(forward_name):
                     return "ban name"
 
-            # Check the user's name:
+            # Check the user's name
             name = get_full_name(message.from_user)
             if name and name not in glovar.except_ids["long"]:
-                if forward_name in glovar.bad_ids["contents"]:
+                if name in glovar.bad_ids["contents"]:
                     return "ban name record"
 
                 if is_nm_text(name):
@@ -408,6 +408,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     if is_wb_text(file_name):
                         return "wb"
 
+                # TODO check aff
                 # Check exe file
                 if is_exe(message):
                     return "wb"
@@ -763,17 +764,23 @@ def is_high_score_user(message: Message) -> Union[bool, float]:
     return False
 
 
-def is_new_user(user: User) -> bool:
+def is_new_user(user: User, now: int, joined: bool = False) -> bool:
     # Check if the message is sent from a new joined member
     try:
         uid = user.id
-        if glovar.user_ids.get(uid, {}):
-            if glovar.user_ids[uid].get("join", {}):
-                now = get_now()
-                for gid in list(glovar.user_ids[uid]["join"]):
-                    join = glovar.user_ids[uid]["join"].get(gid, 0)
-                    if now - join < glovar.time_new:
-                        return True
+        if not glovar.user_ids.get(uid, {}):
+            return False
+
+        if not glovar.user_ids[uid].get("join", {}):
+            return False
+
+        if joined:
+            return True
+
+        for gid in list(glovar.user_ids[uid]["join"]):
+            join = glovar.user_ids[uid]["join"].get(gid, 0)
+            if now - join < glovar.time_new:
+                return True
     except Exception as e:
         logger.warning(f"Is new user error: {e}", exc_info=True)
 
@@ -784,8 +791,7 @@ def is_nm_text(text: str) -> bool:
     # Check if the text is nm text
     try:
         if (is_regex_text("nm", text)
-                or is_regex_text("ban", text)
-                or (is_regex_text("ad", text) and is_regex_text("con", text))
+                or is_ban_text(text)
                 or is_regex_text("bio", text)):
             return True
     except Exception as e:

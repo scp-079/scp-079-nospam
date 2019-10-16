@@ -93,8 +93,11 @@ def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
 def terminate_user(client: Client, message: Message, user: User, context: str) -> bool:
     # Delete user's message, or ban the user
     try:
+        result = None
+
+        # Check if it is necessary
         if is_class_d(None, message) or is_declared_message(None, message):
-            return True
+            return False
 
         # Basic info
         gid = message.chat.id
@@ -126,7 +129,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 log_rule = "名称检查"
 
             if uid in glovar.recorded_ids[gid] and is_high_score_user(message):
-                return True
+                return False
 
             result = forward_evidence(client, message, user, log_action, log_rule, 0.0, more)
             if result:
@@ -253,7 +256,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
                     send_debug(client, message.chat, debug_action, uid, mid, result)
 
-        return True
+        return bool(result)
     except Exception as e:
         logger.warning(f"Terminate user error: {e}", exc_info=True)
 
