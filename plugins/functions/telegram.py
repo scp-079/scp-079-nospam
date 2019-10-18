@@ -19,7 +19,7 @@
 import logging
 from typing import Iterable, List, Optional, Union
 
-from pyrogram import Chat, ChatMember, Client, InlineKeyboardMarkup, Message, User
+from pyrogram import Chat, ChatMember, ChatPermissions, Client, InlineKeyboardMarkup, Message, User
 from pyrogram.api.functions.messages import GetStickerSet
 from pyrogram.api.functions.users import GetFullUser
 from pyrogram.api.types import InputPeerUser, InputPeerChannel, InputStickerSetShortName, StickerSet, UserFull
@@ -51,14 +51,14 @@ def delete_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[b
                         flood_wait = True
                         wait_flood(e)
             except Exception as e:
-                logger.warning(f"Delete message in {cid} for loop error: {e}", exc_info=True)
+                logger.warning(f"Delete message {mids} in {cid} for loop error: {e}", exc_info=True)
     except Exception as e:
         logger.warning(f"Delete messages in {cid} error: {e}", exc_info=True)
 
     return result
 
 
-def download_media(client: Client, file_id: str, file_path: str):
+def download_media(client: Client, file_id: str, file_ref: str, file_path: str):
     # Download a media file
     result = None
     try:
@@ -66,7 +66,7 @@ def download_media(client: Client, file_id: str, file_path: str):
         while flood_wait:
             flood_wait = False
             try:
-                result = client.download_media(message=file_id, file_name=file_path)
+                result = client.download_media(message=file_id, file_ref=file_ref, file_name=file_path)
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
@@ -183,7 +183,7 @@ def get_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[List
     return result
 
 
-def get_sticker_title(client: Client, short_name: str) -> Optional[str]:
+def get_sticker_title(client: Client, short_name: str, normal: bool = False) -> Optional[str]:
     # Get sticker set's title
     result = None
     try:
@@ -196,7 +196,7 @@ def get_sticker_title(client: Client, short_name: str) -> Optional[str]:
                 if isinstance(the_set, messages_StickerSet):
                     inner_set = the_set.set
                     if isinstance(inner_set, StickerSet):
-                        result = t2t(inner_set.title, True)
+                        result = t2t(inner_set.title, normal)
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
@@ -206,22 +206,24 @@ def get_sticker_title(client: Client, short_name: str) -> Optional[str]:
     return result
 
 
-def get_user_bio(client: Client, uid: int) -> Optional[str]:
+def get_user_bio(client: Client, uid: int, normal: bool = False) -> Optional[str]:
     # Get user's bio
     result = None
     try:
         user_id = resolve_peer(client, uid)
-        if user_id:
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    user: UserFull = client.send(GetFullUser(id=user_id))
-                    if user and user.about:
-                        result = t2t(user.about, True)
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
+        if not user_id:
+            return None
+
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                user: UserFull = client.send(GetFullUser(id=user_id))
+                if user and user.about:
+                    result = t2t(user.about, normal)
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
     except Exception as e:
         logger.warning(f"Get user bio error: {e}", exc_info=True)
 
@@ -305,28 +307,64 @@ def resolve_peer(client: Client, pid: Union[int, str]) -> Optional[Union[bool, I
     return result
 
 
-def resolve_username(client: Client, username: str) -> (str, int):
+def resolve_username(client: Client, username: str, cache: bool = True) -> (str, int):
     # Resolve peer by username
     peer_type = ""
     peer_id = 0
     try:
-        if username:
-            result = resolve_peer(client, username)
-            if result:
-                if isinstance(result, InputPeerChannel):
-                    peer_type = "channel"
-                    peer_id = result.channel_id
-                    peer_id = get_int(f"-100{peer_id}")
-                elif isinstance(result, InputPeerUser):
-                    peer_type = "user"
-                    peer_id = result.user_id
+        username = username.strip("@")
+        if not username:
+            return "", 0
+
+        result = glovar.usernames.get(username)
+        if result and cache:
+            return result["peer_type"], result["peer_id"]
+
+        result = resolve_peer(client, username)
+        if result:
+            if isinstance(result, InputPeerChannel):
+                peer_type = "channel"
+                peer_id = result.channel_id
+                peer_id = get_int(f"-100{peer_id}")
+            elif isinstance(result, InputPeerUser):
+                peer_type = "user"
+                peer_id = result.user_id
+
+        glovar.usernames[username] = {
+            "peer_type": peer_type,
+            "peer_id": peer_id
+        }
     except Exception as e:
         logger.warning(f"Resolve username error: {e}", exc_info=True)
 
     return peer_type, peer_id
 
 
-def send_document(client: Client, cid: int, file: str, text: str = None, mid: int = None,
+def restrict_chat_member(client: Client, cid: int, uid: int, permissions: ChatPermissions,
+                         until_date: int = 0) -> Optional[Chat]:
+    # Restrict a user in a supergroup
+    result = None
+    try:
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.restrict_chat_member(
+                    chat_id=cid,
+                    user_id=uid,
+                    permissions=permissions,
+                    until_date=until_date
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+    except Exception as e:
+        logger.warning(f"Restrict chat member error: {e}", exc_info=True)
+
+    return result
+
+
+def send_document(client: Client, cid: int, document: str, file_ref: str = None, caption: str = "", mid: int = None,
                   markup: InlineKeyboardMarkup = None) -> Optional[Union[bool, Message]]:
     # Send a document to a chat
     result = None
@@ -337,8 +375,9 @@ def send_document(client: Client, cid: int, file: str, text: str = None, mid: in
             try:
                 result = client.send_document(
                     chat_id=cid,
-                    document=file,
-                    caption=text,
+                    document=document,
+                    file_ref=file_ref,
+                    caption=caption,
                     parse_mode="html",
                     reply_to_message_id=mid,
                     reply_markup=markup
@@ -359,24 +398,26 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
     # Send a message to a chat
     result = None
     try:
-        if text.strip():
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    result = client.send_message(
-                        chat_id=cid,
-                        text=text,
-                        parse_mode="html",
-                        disable_web_page_preview=True,
-                        reply_to_message_id=mid,
-                        reply_markup=markup
-                    )
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
-                except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
-                    return False
+        if not text.strip():
+            return None
+
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.send_message(
+                    chat_id=cid,
+                    text=text,
+                    parse_mode="html",
+                    disable_web_page_preview=True,
+                    reply_to_message_id=mid,
+                    reply_markup=markup
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+            except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+                return False
     except Exception as e:
         logger.warning(f"Send message to {cid} error: {e}", exc_info=True)
 
@@ -388,24 +429,26 @@ def send_photo(client: Client, cid: int, photo: str, text: str = "", mid: int = 
     # Send a photo to a chat
     result = None
     try:
-        if photo.strip():
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    result = client.send_photo(
-                        chat_id=cid,
-                        photo=photo,
-                        caption=text,
-                        parse_mode="html",
-                        reply_to_message_id=mid,
-                        reply_markup=markup
-                    )
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
-                except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
-                    return False
+        if not photo.strip():
+            return None
+
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.send_photo(
+                    chat_id=cid,
+                    photo=photo,
+                    caption=text,
+                    parse_mode="html",
+                    reply_to_message_id=mid,
+                    reply_markup=markup
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+            except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+                return False
     except Exception as e:
         logger.warning(f"Send photo to {cid} error: {e}", exc_info=True)
 
@@ -417,26 +460,31 @@ def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int
     # Send a message that will be auto deleted to a chat
     result = None
     try:
-        if text.strip():
-            flood_wait = True
-            while flood_wait:
-                flood_wait = False
-                try:
-                    result = client.send_message(
-                        chat_id=cid,
-                        text=text,
-                        parse_mode="html",
-                        disable_web_page_preview=True,
-                        reply_to_message_id=mid,
-                        reply_markup=markup
-                    )
-                except FloodWait as e:
-                    flood_wait = True
-                    wait_flood(e)
+        if not text.strip():
+            return None
 
-            mid = result.message_id
-            mids = [mid]
-            delay(secs, delete_messages, [client, cid, mids])
+        flood_wait = True
+        while flood_wait:
+            flood_wait = False
+            try:
+                result = client.send_message(
+                    chat_id=cid,
+                    text=text,
+                    parse_mode="html",
+                    disable_web_page_preview=True,
+                    reply_to_message_id=mid,
+                    reply_markup=markup
+                )
+            except FloodWait as e:
+                flood_wait = True
+                wait_flood(e)
+
+        if not result:
+            return None
+
+        mid = result.message_id
+        mids = [mid]
+        delay(secs, delete_messages, [client, cid, mids])
     except Exception as e:
         logger.warning(f"Send message to {cid} error: {e}", exc_info=True)
 

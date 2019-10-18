@@ -115,7 +115,7 @@ def check_join(client: Client, message: Message) -> bool:
                         terminate_user(client, message, new, "bad name")
 
                 # Check bio
-                bio = get_user_bio(client, new.username or new.id)
+                bio = get_user_bio(client, new.username or new.id, True)
                 if bio and bio not in glovar.except_ids["long"]:
                     if is_bio_text(bio):
                         terminate_user(client, message, new, f"ban bio {bio}")
