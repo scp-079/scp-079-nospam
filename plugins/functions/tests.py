@@ -36,7 +36,7 @@ logger = logging.getLogger(__name__)
 def nospam_test(client: Client, message: Message) -> bool:
     # Test image porn score in the test group
     try:
-        message_text = get_text(message)
+        message_text = get_text(message, True)
         if re.search("^管理员：[0-9]", message_text):
             aid = get_int(message_text.split("\n\n")[0].split("：")[1])
         else:

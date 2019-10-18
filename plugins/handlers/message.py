@@ -103,7 +103,7 @@ def check_join(client: Client, message: Message) -> bool:
                     return True
 
                 # Check name
-                name = get_full_name(new)
+                name = get_full_name(new, True)
                 if name and name not in glovar.except_ids["long"]:
                     if is_nm_text(name):
                         terminate_user(client, message, new, "ban name")

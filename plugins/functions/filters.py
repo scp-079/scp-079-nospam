@@ -309,7 +309,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Start detect ban
 
             # Check the forward from name
-            forward_name = get_forward_name(message)
+            forward_name = get_forward_name(message, True)
             if forward_name and forward_name not in glovar.except_ids["long"]:
                 if forward_name in glovar.bad_ids["contents"]:
                     return "ban name record"
@@ -318,7 +318,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "ban name"
 
             # Check the user's name
-            name = get_full_name(message.from_user)
+            name = get_full_name(message.from_user, True)
             if name and name not in glovar.except_ids["long"]:
                 if name in glovar.bad_ids["contents"]:
                     return "ban name record"
@@ -345,13 +345,13 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 sticker_name = ""
 
             # Check the message's text
-            message_text = get_text(message)
+            message_text = get_text(message, True)
             if message_text:
                 if is_ban_text(message_text):
                     return "ban"
 
             # Check the filename:
-            file_name = get_filename(message)
+            file_name = get_filename(message, True)
             if file_name:
                 if is_ban_text(file_name):
                     return "ban"

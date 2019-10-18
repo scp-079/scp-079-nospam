@@ -25,7 +25,7 @@ from pytesseract import image_to_string
 from pyzbar.pyzbar import decode
 
 from .. import glovar
-from .etc import t2s
+from .etc import t2t
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -122,7 +122,7 @@ def get_ocr(path: str, test: bool = False) -> str:
                 result = re.sub(r"\n", " ", result)
 
             result = re.sub(r"\s{2,}", " ", result)
-            result = t2s(result)
+            result = t2t(result, False)
     except Exception as e:
         logger.warning(f"Get OCR error: {e}", exc_info=True)
 
@@ -177,7 +177,7 @@ def get_qrcode(path: str) -> str:
 
             if result:
                 result = result[:-1]
-                result = t2s(result)
+                result = t2t(result, False)
     except Exception as e:
         logger.warning(f"Get qrcode error: {e}", exc_info=True)
 

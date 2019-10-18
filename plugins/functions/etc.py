@@ -26,6 +26,7 @@ from string import ascii_letters, digits
 from threading import Thread, Timer
 from time import sleep, time
 from typing import Any, Callable, Dict, List, Optional, Union
+from unicodedata import normalize
 
 from cryptography.fernet import Fernet
 from opencc import convert
@@ -43,7 +44,7 @@ def bold(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            return f"<b>{escape(str(text))}</b>"
+            return f"<b>{escape(text)}</b>"
     except Exception as e:
         logger.warning(f"Bold error: {e}", exc_info=True)
 
@@ -71,7 +72,7 @@ def code(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            return f"<code>{escape(str(text))}</code>"
+            return f"<code>{escape(text)}</code>"
     except Exception as e:
         logger.warning(f"Code error: {e}", exc_info=True)
 
@@ -83,7 +84,7 @@ def code_block(text: Any) -> str:
     try:
         text = str(text)
         if text.strip():
-            return f"<pre>{escape(str(text))}</pre>"
+            return f"<pre>{escape(text.rstrip())}</pre>"
     except Exception as e:
         logger.warning(f"Code block error: {e}", exc_info=True)
 
@@ -126,7 +127,9 @@ def general_link(text: Union[int, str], link: str) -> str:
     # Get a general markdown link
     result = ""
     try:
-        result = f'<a href="{link}">{escape(str(text))}</a>'
+        text = str(text)
+        if text.strip() and link.strip():
+            result = f'<a href="{link}">{escape(str(text))}</a>'
     except Exception as e:
         logger.warning(f"General link error: {e}", exc_info=True)
 
@@ -202,7 +205,7 @@ def get_entity_text(message: Message, entity: MessageEntity) -> str:
     return result
 
 
-def get_filename(message: Message) -> str:
+def get_filename(message: Message, normal: bool = False) -> str:
     # Get file's filename
     text = ""
     try:
@@ -214,20 +217,20 @@ def get_filename(message: Message) -> str:
                 text += message.audio.file_name
 
         if text:
-            text = t2s(text)
+            text = t2t(text, normal)
     except Exception as e:
         logger.warning(f"Get filename error: {e}", exc_info=True)
 
     return text
 
 
-def get_forward_name(message: Message) -> str:
+def get_forward_name(message: Message, normal: bool = False) -> str:
     # Get forwarded message's origin sender's name
     text = ""
     try:
         if message.forward_from:
             user = message.forward_from
-            text = get_full_name(user)
+            text = get_full_name(user, normal)
         elif message.forward_sender_name:
             text = message.forward_sender_name
         elif message.forward_from_chat:
@@ -235,14 +238,14 @@ def get_forward_name(message: Message) -> str:
             text = chat.title
 
         if text:
-            text = t2s(text)
+            text = t2t(text, normal)
     except Exception as e:
         logger.warning(f"Get forward name error: {e}", exc_info=True)
 
     return text
 
 
-def get_full_name(user: User) -> str:
+def get_full_name(user: User, normal: bool = False) -> str:
     # Get user's full name
     text = ""
     try:
@@ -252,7 +255,7 @@ def get_full_name(user: User) -> str:
                 text += f" {user.last_name}"
 
         if text:
-            text = t2s(text)
+            text = t2t(text, normal)
     except Exception as e:
         logger.warning(f"Get full name error: {e}", exc_info=True)
 
@@ -309,16 +312,18 @@ def get_md5sum(the_type: str, ctx: str) -> str:
     # Get the md5sum of a string or file
     result = ""
     try:
-        if ctx:
-            if the_type == "file":
-                hash_md5 = md5()
-                with open(ctx, "rb") as f:
-                    for chunk in iter(lambda: f.read(4096), b""):
-                        hash_md5.update(chunk)
+        if not ctx.strip():
+            return ""
 
-                result = hash_md5.hexdigest()
-            elif the_type == "string":
-                result = md5(ctx.encode()).hexdigest()
+        if the_type == "file":
+            hash_md5 = md5()
+            with open(ctx, "rb") as f:
+                for chunk in iter(lambda: f.read(4096), b""):
+                    hash_md5.update(chunk)
+
+            result = hash_md5.hexdigest()
+        elif the_type == "string":
+            result = md5(ctx.encode()).hexdigest()
     except Exception as e:
         logger.warning(f"Get md5sum error: {e}", exc_info=True)
 
@@ -346,7 +351,9 @@ def get_report_record(message: Message) -> Dict[str, str]:
         "level": "",
         "rule": "",
         "type": "",
+        "game": "",
         "lang": "",
+        "length": "",
         "freq": "",
         "score": "",
         "bio": "",
@@ -356,42 +363,47 @@ def get_report_record(message: Message) -> Dict[str, str]:
         "unknown": ""
     }
     try:
+        if not message.text:
+            return record
+
         record_list = message.text.split("\n")
         for r in record_list:
-            if re.search("^项目编号：", r):
+            if re.search(f"^{lang('project')}{lang('colon')}", r):
                 record_type = "project"
-            elif re.search("^原始项目：", r):
+            elif re.search(f"^{lang('project_origin')}{lang('colon')}", r):
                 record_type = "origin"
-            elif re.search("^状态：", r):
+            elif re.search(f"^{lang('status')}{lang('colon')}", r):
                 record_type = "status"
-            elif re.search("^用户 ID：", r):
+            elif re.search(f"^{lang('user_id')}{lang('colon')}", r):
                 record_type = "uid"
-            elif re.search("^操作等级：", r):
+            elif re.search(f"^{lang('level')}{lang('colon')}", r):
                 record_type = "level"
-            elif re.search("^规则：", r):
+            elif re.search(f"^{lang('rule')}{lang('colon')}", r):
                 record_type = "rule"
-            elif re.search("^消息类别", r):
+            elif re.search(f"^{lang('message_type')}{lang('colon')}", r):
                 record_type = "type"
-            elif re.search("^游戏标识", r):
+            elif re.search(f"^{lang('message_game')}{lang('colon')}", r):
                 record_type = "game"
-            elif re.search("^消息语言", r):
+            elif re.search(f"^{lang('message_lang')}{lang('colon')}", r):
                 record_type = "lang"
-            elif re.search("^消息频率", r):
+            elif re.search(f"^{lang('message_len')}{lang('colon')}", r):
+                record_type = "length"
+            elif re.search(f"^{lang('message_freq')}{lang('colon')}", r):
                 record_type = "freq"
-            elif re.search("^用户得分", r):
+            elif re.search(f"^{lang('user_score')}{lang('colon')}", r):
                 record_type = "score"
-            elif re.search("^用户简介", r):
+            elif re.search(f"^{lang('user_bio')}{lang('colon')}", r):
                 record_type = "bio"
-            elif re.search("^用户昵称", r):
+            elif re.search(f"^{lang('user_name')}{lang('colon')}", r):
                 record_type = "name"
-            elif re.search("^来源名称", r):
+            elif re.search(f"^{lang('from_name')}{lang('colon')}", r):
                 record_type = "from"
-            elif re.search("^附加信息", r):
+            elif re.search(f"^{lang('more')}{lang('colon')}", r):
                 record_type = "more"
             else:
                 record_type = "unknown"
 
-            record[record_type] = r.split("：")[-1]
+            record[record_type] = r.split(f"{lang('colon')}")[-1]
     except Exception as e:
         logger.warning(f"Get report record error: {e}", exc_info=True)
 
@@ -402,18 +414,20 @@ def get_stripped_link(link: str) -> str:
     # Get stripped link
     result = ""
     try:
-        if link:
-            result = link.replace("http://", "")
-            result = result.replace("https://", "")
-            if result and result[-1] == "/":
-                result = result[:-1]
+        if not link.strip():
+            return ""
+
+        result = link.replace("http://", "")
+        result = result.replace("https://", "")
+        if result and result[-1] == "/":
+            result = result[:-1]
     except Exception as e:
         logger.warning(f"Get stripped link error: {e}", exc_info=True)
 
     return result
 
 
-def get_text(message: Message) -> str:
+def get_text(message: Message, normal: bool = False) -> str:
     # Get message's text, including links and buttons
     text = ""
     try:
@@ -444,7 +458,7 @@ def get_text(message: Message) -> str:
                                     text += f"\n{button.url}"
 
         if text:
-            text = t2s(text)
+            text = t2t(text, normal)
     except Exception as e:
         logger.warning(f"Get text error: {e}", exc_info=True)
 
@@ -455,8 +469,8 @@ def italic(text: Any) -> str:
     # Get italic text
     try:
         text = str(text)
-        if text:
-            return f"<i>{escape(str(text))}</i>"
+        if text.strip():
+            return f"<i>{escape(text)}</i>"
     except Exception as e:
         logger.warning(f"Italic error: {e}", exc_info=True)
 
@@ -497,12 +511,25 @@ def random_str(i: int) -> str:
     return text
 
 
-def t2s(text: str) -> str:
-    # Convert Traditional Chinese to Simplified Chinese
+def t2t(text: str, normal: bool, printable: bool = True) -> str:
+    # Convert the string, text to text
     try:
-        text = convert(text, config="t2s.json")
+        if not text:
+            return ""
+
+        if normal:
+            for special in ["spc", "spe"]:
+                text = "".join(eval(f"glovar.{special}_dict").get(t, t) for t in text)
+
+            text = normalize("NFKC", text)
+
+        if printable:
+            text = "".join(t for t in text if t.isprintable() or t in {"\n", "\r", "\t"})
+
+        if glovar.zh_cn:
+            text = convert(text, config="t2s.json")
     except Exception as e:
-        logger.warning(f"T2S error: {e}", exc_info=True)
+        logger.warning(f"T2T error: {e}", exc_info=True)
 
     return text
 

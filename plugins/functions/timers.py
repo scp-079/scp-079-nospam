@@ -76,7 +76,7 @@ def interval_min_15(client: Client) -> bool:
                 if not user:
                     continue
 
-                name = get_full_name(user)
+                name = get_full_name(user, True)
                 if name and name not in glovar.except_ids["long"] and is_nm_text(name):
                     text = (f"项目编号：{code(glovar.sender)}\n"
                             f"用户 ID：{code(uid)}\n"
