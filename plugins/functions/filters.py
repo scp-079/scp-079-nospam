@@ -712,7 +712,7 @@ def is_detected_user_id(gid: int, uid: int) -> bool:
         if user:
             status = user["detected"].get(gid, 0)
             now = get_now()
-            if now - status < glovar.punish_time:
+            if now - status < glovar.time_punish:
                 return True
     except Exception as e:
         logger.warning(f"Is detected user id error: {e}", exc_info=True)
