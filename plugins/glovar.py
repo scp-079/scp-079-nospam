@@ -203,6 +203,7 @@ lang: Dict[str, str] = {
     "action": (zh_cn and "执行操作") or "Action",
     "clear": (zh_cn and "清空数据") or "Clear Data",
     "colon": (zh_cn and "：") or ": ",
+    "comma": (zh_cn and "，") or ", ",
     "description": (zh_cn and "说明") or "Description",
     "disabled": (zh_cn and "禁用") or "Disabled",
     "enabled": (zh_cn and "启用") or "Enabled",
@@ -304,7 +305,7 @@ lang: Dict[str, str] = {
     "tgp": (zh_cn and "TG 代理") or "TG Proxy",
     "wb": (zh_cn and "追踪封禁") or "Watch Ban",
     "wd": (zh_cn and "追踪删除") or "Watch Delete",
-    "adx": (zh_cn and "广告 {} 组") or "Ad {}",
+    "ad_": (zh_cn and "广告 {} 组") or "Ad {}",
     # Special
     "blacklist": (zh_cn and "黑名单") or "Blacklisted",
     # Terminate
@@ -332,9 +333,18 @@ lang: Dict[str, str] = {
     "record_content": (zh_cn and "过滤记录") or "Recorded content",
     "record_link": (zh_cn and "过滤链接") or "Recorded link",
     "white_listed": (zh_cn and "白名单") or "White Listed",
+    "all_text": (zh_cn and "综合文字") or "All Text",
+    "content": (zh_cn and "内容标识") or "Content",
+    "ocr": (zh_cn and "OCR 结果") or "OCR Result",
+    "ocr_examine": (zh_cn and "OCR 检查") or "OCR Examination",
+    "qrcode": (zh_cn and "二维码") or "QR Code",
+    "qrcode_examine": (zh_cn and "二维码检查") or "QR Code Examination",
+    "record_bad": (zh_cn and "已被收录") or "Recorded as Bad",
     # Unit
     "members": (zh_cn and "名") or "member(s)"
 }
+for c in ascii_lowercase:
+    lang[f"ad{c}"] = lang.get("ad_", "ad{}").format(c.upper())
 
 # Init
 
