@@ -153,7 +153,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     log_rule = "简介检查"
                     debug_action = "简介封禁"
                 elif rule == "name":
-                    if more == "record":
+                    if more == "content":
                         log_rule = "名称收录"
                         debug_action = "名称封禁"
                     else:
@@ -211,7 +211,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_action = "自动删除"
             log_rule = "全局规则"
             debug_action = "自动删除"
-            if rule == "record":
+            if rule == "content":
                 log_rule = "消息收录"
                 debug_action = "收录删除"
 

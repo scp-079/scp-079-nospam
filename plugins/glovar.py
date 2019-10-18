@@ -474,6 +474,7 @@ admin_ids: Dict[int, Set[int]] = {}
 
 bad_ids: Dict[str, Set[Union[int, str]]] = {
     "channels": set(),
+    "contacts": set(),
     "contents": set(),
     "users": set()
 }
