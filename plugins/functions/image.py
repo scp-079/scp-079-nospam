@@ -20,12 +20,13 @@ import logging
 import re
 
 from PIL import Image, ImageEnhance
-from pyrogram import Message
+from pyrogram import Client, Message
 from pytesseract import image_to_string
 from pyzbar.pyzbar import decode
 
 from .. import glovar
-from .etc import t2t
+from .etc import get_md5sum, t2t
+from .file import delete_file, get_downloaded_path
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -54,9 +55,10 @@ def get_color(path: str) -> bool:
     return False
 
 
-def get_file_id(message: Message) -> (str, bool):
+def get_file_id(message: Message) -> (str, str, bool):
     # Get media message's image file id
     file_id = ""
+    file_ref = ""
     big = False
     try:
         if (message.photo
@@ -65,8 +67,10 @@ def get_file_id(message: Message) -> (str, bool):
                 or message.game):
             if message.photo:
                 file_id = message.photo.file_id
+                file_ref = message.photo.file_ref
             elif message.sticker:
                 file_id = message.sticker.file_id
+                file_ref = message.sticker.file_ref
             elif message.document:
                 if (message.document.mime_type
                         and "image" in message.document.mime_type
@@ -74,8 +78,10 @@ def get_file_id(message: Message) -> (str, bool):
                         and message.document.file_size
                         and message.document.file_size < glovar.image_size):
                     file_id = message.document.file_id
+                    file_ref = message.document.file_ref
             elif message.game:
                 file_id = message.game.photo.file_id
+                file_ref = message.game.photo.file_ref
 
         if file_id:
             big = True
@@ -86,18 +92,43 @@ def get_file_id(message: Message) -> (str, bool):
               or (message.document and message.document.thumbs)):
             if message.animation:
                 file_id = message.animation.thumbs[-1].file_id
+                file_ref = message.animation.file_ref
             elif message.audio:
                 file_id = message.audio.thumbs[-1].file_id
+                file_ref = message.audio.file_ref
             elif message.video:
                 file_id = message.video.thumbs[-1].file_id
+                file_ref = message.video.file_ref
             elif message.video_note:
                 file_id = message.video_note.thumbs[-1].file_id
+                file_ref = message.video_note.file_ref
             elif message.document:
                 file_id = message.document.thumbs[-1].file_id
+                file_ref = message.document.file_ref
     except Exception as e:
         logger.warning(f"Get image status error: {e}", exc_info=True)
 
-    return file_id, big
+    return file_id, file_ref, big
+
+
+def get_image_hash(client: Client, message: Message) -> str:
+    # Get the image's hash
+    result = ""
+    try:
+        file_id, file_ref, big = get_file_id(message)
+        if not file_id:
+            return ""
+
+        image_path = get_downloaded_path(client, file_id, file_ref)
+        if not image_path:
+            return ""
+
+        result = get_md5sum("file", image_path)
+        delete_file(image_path)
+    except Exception as e:
+        logger.warning(f"Get image hash error: {e}", exc_info=True)
+
+    return result
 
 
 def get_ocr(path: str, test: bool = False) -> str:
@@ -110,6 +141,7 @@ def get_ocr(path: str, test: bool = False) -> str:
         enhancer = ImageEnhance.Contrast(image)
         image = enhancer.enhance(2)
         result = image_to_string(image, lang='chi_sim+chi_tra')
+
         if not result:
             image = image.convert('L')
             image = get_processed_image(image)
@@ -134,6 +166,7 @@ def get_processed_image(image: Image.Image) -> Image.Image:
         image.thumbnail((200, 200))
         s = 0
         total = 0
+
         for count, color in image.getcolors(image.size[0] * image.size[1]):
             s += count * color
             total += count

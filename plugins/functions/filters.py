@@ -256,7 +256,7 @@ def is_ad_text(text: str, matched: str = "") -> str:
 def is_avatar_image(path: str) -> bool:
     # Check if the image is avatar image
     try:
-        # Check QRCODE
+        # Check QR code
         qrcode = get_qrcode(path)
         if qrcode:
             if is_regex_text("ava", qrcode) or is_ban_text(qrcode):
