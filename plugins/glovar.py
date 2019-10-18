@@ -18,6 +18,7 @@
 
 import logging
 import pickle
+from codecs import getdecoder
 from configparser import RawConfigParser
 from os import mkdir
 from os.path import exists
@@ -26,6 +27,7 @@ from string import ascii_lowercase
 from threading import Lock
 from typing import Dict, List, Set, Union
 
+from emoji import UNICODE_EMOJI
 from pyrogram import Chat, ChatMember
 
 # Enable logging
@@ -80,6 +82,14 @@ time_short: int = 0
 time_track: int = 0
 zh_cn: Union[bool, str] = ""
 
+# [emoji]
+emoji_ad_single: int = 0
+emoji_ad_total: int = 0
+emoji_many: int = 0
+emoji_protect: str = ""
+emoji_wb_single: int = 0
+emoji_wb_total: int = 0
+
 # [encrypt]
 key: Union[str, bytes] = ""
 password: str = ""
@@ -125,6 +135,13 @@ try:
     time_track = int(config["custom"].get("time_track", time_track))
     zh_cn = config["custom"].get("zh_cn", zh_cn)
     zh_cn = eval(zh_cn)
+    # [emoji]
+    emoji_ad_single = int(config["emoji"].get("emoji_ad_single", emoji_ad_single))
+    emoji_ad_total = int(config["emoji"].get("emoji_ad_total", emoji_ad_total))
+    emoji_many = int(config["emoji"].get("emoji_many", emoji_many))
+    emoji_protect = getdecoder("unicode_escape")(config["emoji"].get("emoji_protect", emoji_protect))[0]
+    emoji_wb_single = int(config["emoji"].get("emoji_wb_single", emoji_wb_single))
+    emoji_wb_total = int(config["emoji"].get("emoji_wb_total", emoji_wb_total))
     # [encrypt]
     key = config["encrypt"].get("key", key)
     key = key.encode("utf-8")
@@ -165,6 +182,12 @@ if (bot_token in {"", "[DATA EXPUNGED]"}
         or time_short == 0
         or time_track == 0
         or zh_cn not in {False, True}
+        or emoji_ad_single == 0
+        or emoji_ad_total == 0
+        or emoji_many == 0
+        or emoji_protect in {"", "[DATA EXPUNGED]"}
+        or emoji_wb_single == 0
+        or emoji_wb_total == 0
         or key in {b"", b"[DATA EXPUNGED]", "", "[DATA EXPUNGED]"}
         or password in {"", "[DATA EXPUNGED]"}):
     logger.critical("No proper settings")
@@ -208,6 +231,11 @@ lang: Dict[str, str] = {
     "default": (zh_cn and "默认") or "Default",
     "delete": (zh_cn and "协助删除") or "Help Delete",
     "restrict": (zh_cn and "禁言模式") or "Restriction Mode",
+    "bot": (zh_cn and "阻止机器人进群") or "Prevent Bot from Joining",
+    "new": (zh_cn and "新入群限制") or "Limit the New Joined User",
+    "deleter": (zh_cn and "仅删除") or "Delete Only",
+    "reporter": (zh_cn and "仅举报") or "Report Only",
+    "ml": (zh_cn and "机器学习") or "Machine Learning",
     # Debug
     "triggered_by": (zh_cn and "触发消息") or "Triggered By",
     # Emergency
@@ -256,30 +284,33 @@ lang: Dict[str, str] = {
     "from_name": (zh_cn and "来源名称") or "Forward Name",
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Regex
-    "ad": (zh_cn and "广告用语") or "Ad Words",
+    "ad": (zh_cn and "广告用语") or "Ad",
     "aff": (zh_cn and "推广链接") or "AFF Link",
     "ava": (zh_cn and "头像分析") or "Avatar",
-    "bad": "敏感检测",
-    "ban": "自动封禁",
-    "bio": "简介封禁",
-    "con": "联系方式",
-    "del": "自动删除",
-    "iml": "IM 链接",
-    "nm": "名称封禁",
-    "sho": "短链接",
-    "spc": "特殊中文",
-    "spe": "特殊英文",
-    "sti": "贴纸删除",
-    "tgl": "TG 链接",
-    "tgp": "TG 代理",
-    "wb": "追踪封禁",
-    "wd": "追踪删除",
-    "adx": "广告 {} 组",
+    "bad": (zh_cn and "敏感检测") or "Bad",
+    "ban": (zh_cn and "自动封禁") or "Ban",
+    "bio": (zh_cn and "简介封禁") or "Bio",
+    "con": (zh_cn and "联系方式") or "Contact",
+    "del": (zh_cn and "自动删除") or "Delete",
+    "iml": (zh_cn and "IM 链接") or "IM Link",
+    "pho": (zh_cn and "电话号码") or "Phone Number",
+    "nm": (zh_cn and "名称封禁") or "Name",
+    "sho": (zh_cn and "短链接") or "Short Link",
+    "spc": (zh_cn and "特殊中文") or "Special Chinese",
+    "spe": (zh_cn and "特殊英文") or "Special English",
+    "sti": (zh_cn and "贴纸删除") or "Sticker",
+    "tgl": (zh_cn and "TG 链接") or "TG Link",
+    "tgp": (zh_cn and "TG 代理") or "TG Proxy",
+    "wb": (zh_cn and "追踪封禁") or "Watch Ban",
+    "wd": (zh_cn and "追踪删除") or "Watch Delete",
+    "adx": (zh_cn and "广告 {} 组") or "Ad {}",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
+    "global_delete": (zh_cn and "全局删除") or "Global Delete",
     "name_ban": (zh_cn and "名称封禁") or "Ban by Name",
     "name_examine": (zh_cn and "名称检查") or "Name Examination",
+    "name_recheck": (zh_cn and "名称复查") or "Name Recheck",
     "op_downgrade": (zh_cn and "操作降级") or "Operation Downgrade",
     "op_upgrade": (zh_cn and "操作升级") or "Operation Upgrade",
     "rule_custom": (zh_cn and "群组自定义") or "Custom Rule",
@@ -347,6 +378,8 @@ default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
     }
 }
 
+emoji_set: Set[str] = set(UNICODE_EMOJI)
+
 left_group_ids: Set[int] = set()
 
 locks: Dict[str, Lock] = {
@@ -364,14 +397,6 @@ members: Dict[int, Dict[int, ChatMember]] = {}
 #     }
 # }
 
-names: Dict[str, str] = {
-    "bad": "自动举报",
-    "ban": "自动封禁",
-    "delete": "自动删除",
-    "wb": "追踪封禁",
-    "wd": "追踪删除"
-}
-
 receivers: Dict[str, List[str]] = {
     "bad": ["ANALYZE", "APPLY", "APPEAL", "AVATAR", "CAPTCHA", "CLEAN", "LANG", "LONG",
             "MANAGE", "NOFLOOD", "NOPORN", "NOSPAM", "RECHECK", "TIP", "USER", "WATCH"],
@@ -388,33 +413,41 @@ recorded_ids: Dict[int, Set[int]] = {}
 #     -10012345678: {12345678}
 # }
 
-regex: Dict[str, str] = {
-    "ad": "广告用语",
-    "aff": "推广链接",
-    "ava": "头像分析",
-    "bad": "敏感检测",
-    "ban": "自动封禁",
-    "bio": "简介封禁",
-    "con": "联系方式",
-    "del": "自动删除",
-    "fil": "文件名称",
-    "iml": "IM 链接",
-    "nm": "名称封禁",
-    "sho": "短链接",
-    "spc": "特殊中文",
-    "spe": "特殊英文",
-    "sti": "贴纸删除",
-    "tgl": "TG 链接",
-    "tgp": "TG 代理",
-    "wb": "追踪封禁",
-    "wd": "追踪删除"
+regex: Dict[str, bool] = {
+    "ad": True,
+    "aff": True,
+    "ava": True,
+    "bad": True,
+    "ban": True,
+    "bio": True,
+    "con": True,
+    "del": True,
+    "fil": True,
+    "iml": True,
+    "nm": True,
+    "sho": True,
+    "spc": True,
+    "spe": True,
+    "sti": True,
+    "tgl": True,
+    "tgp": True,
+    "wb": True,
+    "wd": True
 }
 for c in ascii_lowercase:
-    regex[f"ad{c}"] = False
+    regex[f"ad{c}"] = True
 
 sender: str = "NOSPAM"
 
 should_hide: bool = False
+
+usernames: Dict[str, Dict[str, Union[int, str]]] = {}
+# usernames = {
+#     "SCP_079": {
+#         "peer_type": "channel",
+#         "peer_id": -1001196128009
+#     }
+# }
 
 version: str = "0.0.9"
 
@@ -507,7 +540,7 @@ configs: Dict[int, Dict[str, Union[bool, int]]] = {}
 # configs = {
 #     -10012345678: {
 #         "default": True,
-#         "lock": 0,
+#         "lock": 1512345678,
 #         "delete": True,
 #         "restrict": False,
 #         "bio": True,
