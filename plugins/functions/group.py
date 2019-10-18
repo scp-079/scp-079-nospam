@@ -19,12 +19,12 @@
 import logging
 from typing import Optional
 
-from pyrogram import Chat, Client, Message
+from pyrogram import Chat, ChatMember, Client, Message
 
 from .. import glovar
-from .etc import thread
+from .etc import code, lang, thread
 from .file import save
-from .telegram import delete_messages, get_chat, get_messages, leave_chat
+from .telegram import delete_messages, get_chat, get_chat_member, get_messages, leave_chat
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -33,6 +33,9 @@ logger = logging.getLogger(__name__)
 def delete_message(client: Client, gid: int, mid: int) -> bool:
     # Delete a single message
     try:
+        if not gid or not mid:
+            return True
+
         mids = [mid]
         thread(delete_messages, (client, gid, mids))
 
@@ -43,14 +46,54 @@ def delete_message(client: Client, gid: int, mid: int) -> bool:
     return False
 
 
+def get_config_text(config: dict) -> str:
+    # Get config text
+    result = ""
+    try:
+        # Basic
+        default_text = (lambda x: lang("default") if x else lang("custom"))(config.get("default"))
+        delete_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("delete"))
+        restrict_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("restrict"))
+        result += (f"{lang('config')}{lang('colon')}{code(default_text)}\n"
+                   f"{lang('delete')}{lang('colon')}{code(delete_text)}\n"
+                   f"{lang('restrict')}{lang('colon')}{code(restrict_text)}\n")
+
+        # Bio
+        bio_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("bio"))
+        result += f"{lang('bio')}{lang('colon')}{code(bio_text)}\n"
+        
+        # Bot
+        bot_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("bot"))
+        result += f"{lang('bot')}{lang('colon')}{code(bot_text)}\n"
+        
+        # New
+        new_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("new"))
+        result += f"{lang('new')}{lang('colon')}{code(new_text)}\n"
+        
+        # Deleter
+        deleter_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("deleter"))
+        result += f"{lang('deleter')}{lang('colon')}{code(deleter_text)}\n"
+        
+        # Reporter
+        reporter_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("reporter"))
+        result += f"{lang('reporter')}{lang('colon')}{code(reporter_text)}\n"
+        
+        # ML
+        ml_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("ml"))
+        result += f"{lang('ml')}{lang('colon')}{code(ml_text)}\n"
+    except Exception as e:
+        logger.warning(f"Get config text error: {e}", exc_info=True)
+
+    return result
+
+
 def get_description(client: Client, gid: int) -> str:
     # Get group's description
     result = ""
     try:
         group = get_group(client, gid)
-        if group:
-            if group.description:
-                result = group.description
+        if group and group.description:
+            result = group.description
     except Exception as e:
         logger.warning(f"Get description error: {e}", exc_info=True)
 
@@ -77,11 +120,25 @@ def get_group_sticker(client: Client, gid: int) -> str:
     result = ""
     try:
         group = get_group(client, gid)
-        if group:
-            if group.sticker_set_name:
-                result = group.sticker_set_name
+        if group and group.sticker_set_name:
+            result = group.sticker_set_name
     except Exception as e:
         logger.warning(f"Get group sticker error: {e}", exc_info=True)
+
+    return result
+
+
+def get_member(client: Client, gid: int, uid: int) -> Optional[ChatMember]:
+    # Get a member in the group
+    result = None
+    try:
+        cache = glovar.members[gid].get(uid)
+        if cache:
+            result = cache
+        else:
+            result = get_chat_member(client, gid, uid)
+    except Exception as e:
+        logger.warning(f"Get member error: {e}", exc_info=True)
 
     return result
 
@@ -105,9 +162,8 @@ def get_pinned(client: Client, gid: int) -> Optional[Message]:
     result = None
     try:
         group = get_group(client, gid)
-        if group:
-            if group.pinned_message:
-                result = group.pinned_message
+        if group and group.pinned_message:
+            result = group.pinned_message
     except Exception as e:
         logger.warning(f"Get pinned error: {e}", exc_info=True)
 
