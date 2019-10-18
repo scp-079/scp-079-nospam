@@ -237,6 +237,7 @@ lang: Dict[str, str] = {
     "reporter": (zh_cn and "仅举报") or "Report Only",
     "ml": (zh_cn and "机器学习") or "Machine Learning",
     # Debug
+    "evidence": (zh_cn and "证据留存") or "Evidence",
     "triggered_by": (zh_cn and "触发消息") or "Triggered By",
     # Emergency
     "issue": (zh_cn and "发现状况") or "Issue",
@@ -304,9 +305,14 @@ lang: Dict[str, str] = {
     "wb": (zh_cn and "追踪封禁") or "Watch Ban",
     "wd": (zh_cn and "追踪删除") or "Watch Delete",
     "adx": (zh_cn and "广告 {} 组") or "Ad {}",
+    # Special
+    "blacklist": (zh_cn and "黑名单") or "Blacklisted",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
+    "avatar_ban": (zh_cn and "头像封禁") or "Avatar Ban",
+    "avatar_examine": (zh_cn and "头像分析") or "Avatar Examination",
+    "avatar_recheck": (zh_cn and "头像复查") or "Avatar Recheck",
     "bio_ban": (zh_cn and "简介封禁") or "Bio Ban",
     "bio_examine": (zh_cn and "简介检查") or "Bio Examination",
     "global_delete": (zh_cn and "全局删除") or "Global Delete",
@@ -325,7 +331,9 @@ lang: Dict[str, str] = {
     # Test
     "record_content": (zh_cn and "过滤记录") or "Recorded content",
     "record_link": (zh_cn and "过滤链接") or "Recorded link",
-    "white_listed": (zh_cn and "白名单") or "White Listed"
+    "white_listed": (zh_cn and "白名单") or "White Listed",
+    # Unit
+    "members": (zh_cn and "名") or "member(s)"
 }
 
 # Init
