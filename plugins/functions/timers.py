@@ -24,7 +24,7 @@ from pyrogram import Client
 
 from .. import glovar
 from .channel import ask_for_help, get_debug_text, share_data, share_regex_count
-from .etc import code, general_link, get_full_name, get_now, message_link, thread
+from .etc import code, general_link, get_full_name, get_now, lang, message_link, thread
 from .file import save
 from .filters import is_nm_text
 from .group import leave_group
@@ -39,18 +39,20 @@ def backup_files(client: Client) -> bool:
     # Backup data files to BACKUP
     try:
         for file in glovar.file_list:
-            try:
-                share_data(
-                    client=client,
-                    receivers=["BACKUP"],
-                    action="backup",
-                    action_type="pickle",
-                    data=file,
-                    file=f"data/{file}"
-                )
-                sleep(5)
-            except Exception as e:
-                logger.warning(f"Send backup file {file} error: {e}", exc_info=True)
+            # Check
+            if not eval(f"glovar.{file}"):
+                continue
+
+            # Share
+            share_data(
+                client=client,
+                receivers=["BACKUP"],
+                action="backup",
+                action_type="data",
+                data=file,
+                file=f"data/{file}"
+            )
+            sleep(5)
 
         return True
     except Exception as e:
@@ -71,31 +73,44 @@ def interval_min_15(client: Client) -> bool:
                 continue
 
             # Check new joined users
-            if any([now - user_ids[uid]["join"][gid] < glovar.time_new for gid in user_ids[uid]["join"]]):
-                user = get_user(client, uid)
-                if not user:
-                    continue
+            if not any(now - user_ids[uid]["join"][gid] < glovar.time_new for gid in user_ids[uid]["join"]):
+                continue
 
-                name = get_full_name(user, True)
-                if name and name not in glovar.except_ids["long"] and is_nm_text(name):
-                    text = (f"项目编号：{code(glovar.sender)}\n"
-                            f"用户 ID：{code(uid)}\n"
-                            f"操作等级：{code('自动封禁')}\n"
-                            f"规则：{code('名称复查')}\n"
-                            f"消息类别：{code('服务消息')}\n"
-                            f"用户昵称：{code(name)}\n")
-                    result = send_message(client, glovar.logging_channel_id, text)
-                    if result:
-                        g_list = list(user_ids[uid]["join"])
-                        gid = sorted(g_list, key=lambda g: user_ids[uid]["join"][g], reverse=True)[0]
-                        add_bad_user(client, uid)
-                        ban_user(client, gid, uid)
-                        ask_for_help(client, "ban", gid, uid)
-                        text = get_debug_text(client, gid)
-                        text += (f"用户 ID：{code(uid)}\n"
-                                 f"执行操作：{code('名称封禁')}\n"
-                                 f"证据留存：{general_link(result.message_id, message_link(result))}\n")
-                        thread(send_message, (client, glovar.debug_channel_id, text))
+            # Get user
+            user = get_user(client, uid)
+            if not user:
+                continue
+
+            # Get name
+            name = get_full_name(user, True)
+            if not name or name in glovar.except_ids["long"]:
+                continue
+
+            # Check name
+            if not is_nm_text(name):
+                continue
+
+            text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                    f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                    f"{lang('level')}{lang('colon')}{code(lang('auto_ban'))}\n"
+                    f"{lang('rule')}{lang('colon')}{code(lang('name_recheck'))}\n"
+                    f"{lang('message_type')}{lang('colon')}{code(lang('ser'))}\n"
+                    f"{lang('user_name')}{lang('colon')}{code(name)}\n")
+            result = send_message(client, glovar.logging_channel_id, text)
+
+            if not result:
+                continue
+
+            g_list = list(user_ids[uid]["join"])
+            gid = sorted(g_list, key=lambda g: user_ids[uid]["join"][g], reverse=True)[0]
+            add_bad_user(client, uid)
+            ban_user(client, gid, uid)
+            ask_for_help(client, "ban", gid, uid)
+            text = get_debug_text(client, gid)
+            text += (f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                     f"{lang('action')}{lang('colon')}{code(lang('name_ban'))}\n"
+                     f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, message_link(result))}\n")
+            thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
@@ -104,11 +119,12 @@ def interval_min_15(client: Client) -> bool:
     return False
 
 
-def reset_data() -> bool:
+def reset_data(client: Client) -> bool:
     # Reset user data every month
     try:
         glovar.bad_ids = {
             "channels": set(),
+            "contacts": set(),
             "contents": set(),
             "users": set()
         }
@@ -125,6 +141,11 @@ def reset_data() -> bool:
             "delete": {}
         }
         save("watch_ids")
+
+        # Send debug message
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('reset'))}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True
     except Exception as e:
@@ -190,15 +211,12 @@ def update_admins(client: Client) -> bool:
                                 "reason": reason
                             }
                         )
-                        if reason == "permissions":
-                            reason = "权限缺失"
-                        elif reason == "user":
-                            reason = "缺失 USER"
-
-                        debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                                      f"群组名称：{general_link(group_name, group_link)}\n"
-                                      f"群组 ID：{code(gid)}\n"
-                                      f"状态：{code(reason)}\n")
+                        reason = lang(f"reason_{reason}")
+                        project_link = general_link(glovar.project_name, glovar.project_link)
+                        debug_text = (f"{lang('project')}{lang('colon')}{project_link}\n"
+                                      f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                                      f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
+                                      f"{lang('status')}{lang('colon')}{code(reason)}\n")
                         thread(send_message, (client, glovar.debug_channel_id, debug_text))
                     else:
                         save("admin_ids")
@@ -213,25 +231,26 @@ def update_admins(client: Client) -> bool:
                         action_type="info",
                         data=gid
                     )
-                    debug_text = (f"项目编号：{general_link(glovar.project_name, glovar.project_link)}\n"
-                                  f"群组名称：{general_link(group_name, group_link)}\n"
-                                  f"群组 ID：{code(gid)}\n"
-                                  f"状态：{code('自动退出并清空数据')}\n"
-                                  f"原因：{code('非管理员或已不在群组中')}\n")
+                    project_text = general_link(glovar.project_name, glovar.project_link)
+                    debug_text = (f"{lang('project')}{lang('colon')}{project_text}\n"
+                                  f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                                  f"{lang('group_id')}{lang('colon')}{code(gid)}\n"
+                                  f"{lang('status')}{lang('colon')}{code(lang('leave_auto'))}\n"
+                                  f"{lang('reason')}{lang('colon')}{code(lang('reason_leave'))}\n")
                     thread(send_message, (client, glovar.debug_channel_id, debug_text))
             except Exception as e:
                 logger.warning(f"Update admin in {gid} error: {e}", exc_info=True)
 
         return True
     except Exception as e:
-        logger.warning(f"Update admins error: {e}", exc_info=True)
+        logger.warning(f"Update admin error: {e}", exc_info=True)
     finally:
         glovar.locks["admin"].release()
 
     return False
 
 
-def update_status(client: Client) -> bool:
+def update_status(client: Client, the_type: str) -> bool:
     # Update running status to BACKUP
     try:
         share_data(
@@ -239,7 +258,10 @@ def update_status(client: Client) -> bool:
             receivers=["BACKUP"],
             action="backup",
             action_type="status",
-            data="awake"
+            data={
+                "type": the_type,
+                "backup": glovar.backup
+            }
         )
 
         return True
