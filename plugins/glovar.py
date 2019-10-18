@@ -289,7 +289,7 @@ lang: Dict[str, str] = {
     "ava": (zh_cn and "头像分析") or "Avatar",
     "bad": (zh_cn and "敏感检测") or "Bad",
     "ban": (zh_cn and "自动封禁") or "Ban",
-    "bio": (zh_cn and "简介封禁") or "Bio",
+    "bio": (zh_cn and "简介检查") or "Bio",
     "con": (zh_cn and "联系方式") or "Contact",
     "del": (zh_cn and "自动删除") or "Delete",
     "iml": (zh_cn and "IM 链接") or "IM Link",
@@ -307,6 +307,8 @@ lang: Dict[str, str] = {
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
+    "bio_ban": (zh_cn and "简介封禁") or "Bio Ban",
+    "bio_examine": (zh_cn and "简介检查") or "Bio Examination",
     "global_delete": (zh_cn and "全局删除") or "Global Delete",
     "name_ban": (zh_cn and "名称封禁") or "Ban by Name",
     "name_examine": (zh_cn and "名称检查") or "Name Examination",
@@ -449,7 +451,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.0.9"
+version: str = "0.1.0"
 
 # Load data from pickle
 

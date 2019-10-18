@@ -32,6 +32,8 @@ from opencc import convert
 from pyrogram import InlineKeyboardMarkup, Message, MessageEntity, User
 from pyrogram.errors import FloodWait
 
+from .. import glovar
+
 # Enable logging
 logger = logging.getLogger(__name__)
 
@@ -459,6 +461,17 @@ def italic(text: Any) -> str:
         logger.warning(f"Italic error: {e}", exc_info=True)
 
     return ""
+
+
+def lang(text: str) -> str:
+    # Get the text
+    result = ""
+    try:
+        result = glovar.lang.get(text, text)
+    except Exception as e:
+        logger.warning(f"Lang error: {e}", exc_info=True)
+
+    return result
 
 
 def message_link(message: Message) -> str:
