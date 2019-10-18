@@ -110,17 +110,6 @@ def is_class_e(_, message: Message, test: bool = False) -> bool:
     return False
 
 
-def is_contact(text: str) -> bool:
-    # Check if the text contains bad contacts
-    try:
-        if any(contact in text for contact in glovar.bad_ids["contacts"]):
-            return True
-    except Exception as e:
-        logger.warning(f"Is contact error: {e}", exc_info=True)
-
-    return False
-
-
 def is_declared_message(_, message: Message) -> bool:
     # Check if the message is declared by other bots
     try:
@@ -312,6 +301,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             wb_user = is_watch_user(message, "ban")
             score_user = is_high_score_user(message)
             wd_user = is_watch_user(message, "delete")
+            limited_user = is_limited_user(gid, message.from_user, now)
             if message_content:
                 detection = glovar.contents.get(message_content, "")
                 if detection == "ban":
@@ -323,7 +313,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if detection == "del":
                     return detection
 
-                if (wb_user or score_user or wd_user) and detection == "wd":
+                if (wb_user or score_user or wd_user or limited_user) and detection == "wd":
                     return detection
 
                 if message_content in glovar.bad_ids["contents"]:
@@ -340,7 +330,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             if detected_url == "del":
                 return detected_url
 
-            if (wb_user or score_user or wd_user) and detected_url == "wd":
+            if (wb_user or score_user or wd_user or limited_user) and detected_url == "wd":
                 return detected_url
 
             # Start detect ban
@@ -524,7 +514,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             # Start detect watch delete
 
-            if wb_user or score_user or wd_user or is_limited_user(gid, message.from_user, now):
+            if wb_user or score_user or wd_user or limited_user:
                 # Some media type
                 if (message.animation
                         or message.audio
@@ -648,8 +638,9 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             wb_user = is_watch_user(message, "ban")
             score_user = is_high_score_user(message)
             wd_user = is_watch_user(message, "delete")
+            limited_user = is_limited_user(gid, message.from_user, now)
 
-            if wb_user or score_user or wd_user or is_limited_user(gid, message.from_user, now):
+            if wb_user or score_user or wd_user or limited_user:
                 # Check the text
                 if text:
                     if is_wd_text(text):
@@ -734,6 +725,17 @@ def is_class_e_user(user: User) -> bool:
                 return True
     except Exception as e:
         logger.warning(f"Is class e user error: {e}", exc_info=True)
+
+    return False
+
+
+def is_contact(text: str) -> bool:
+    # Check if the text contains bad contacts
+    try:
+        if any(contact in text for contact in glovar.bad_ids["contacts"]):
+            return True
+    except Exception as e:
+        logger.warning(f"Is contact error: {e}", exc_info=True)
 
     return False
 
