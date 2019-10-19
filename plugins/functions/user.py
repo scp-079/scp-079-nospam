@@ -475,7 +475,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     log_rule = lang("bio_examine")
                     debug_action = lang("bio_ban")
                 elif rule == "name":
-                    if more == "content":
+                    if more in {"contact", "content"}:
                         log_rule = lang("record_name")
                         debug_action = lang("name_ban")
                     else:
@@ -524,7 +524,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     if result:
                         if rule == "bio":
                             thread(record_contact_info, (client, more))
-                        elif rule == "name" and more != "content":
+                        elif rule == "name" and more not in {"contact", "content"}:
                             forward_name = get_forward_name(message, True)
                             full_name = get_full_name(user, True)
                             thread(record_contact_info, (client, forward_name))
