@@ -481,6 +481,9 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 def watch_global_delete(client: Client, uid: int) -> bool:
     # Watch global delete
     try:
+        if uid in glovar.bad_ids["users"]:
+            return True
+
         text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
                 f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                 f"{lang('level')}{lang('colon')}{code(lang('global_delete'))}\n"
