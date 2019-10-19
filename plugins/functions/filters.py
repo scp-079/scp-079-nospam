@@ -970,6 +970,25 @@ def is_nm_text(text: str) -> bool:
     return False
 
 
+def is_old_user(client: Client, user: User, now: int, gid: int) -> bool:
+    # Check if the user is old member
+    try:
+        if is_limited_user(gid, user, now):
+            return False
+
+        member = get_member(client, gid, user.id)
+        if not member:
+            return False
+
+        joined = member.joined_date
+        if now - joined > glovar.time_long:
+            return True
+    except Exception as e:
+        logger.warning(f"Is old user error: {e}", exc_info=True)
+
+    return False
+
+
 def is_restricted_channel(message: Message) -> bool:
     # Check if the message is forwarded form restricted channel
     try:

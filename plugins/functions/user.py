@@ -27,7 +27,7 @@ from .channel import ask_for_help, auto_report, declare_message, forward_evidenc
 from .channel import update_score
 from .file import save
 from .group import delete_message
-from .filters import is_class_d, is_declared_message, is_detected_user, is_high_score_user, is_limited_user
+from .filters import is_class_d, is_declared_message, is_detected_user, is_high_score_user, is_limited_user, is_old_user
 from .ids import init_user_id
 from .telegram import get_users, kick_chat_member, restrict_chat_member, send_message
 
@@ -420,28 +420,56 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     log_rule = lang("record_message")
                     debug_action = lang("record_ban")
 
-                result = forward_evidence(
-                    client=client,
-                    message=message,
-                    user=user,
-                    level=log_level,
-                    rule=log_rule,
-                    more=more
-                )
-                if result:
-                    add_bad_user(client, uid)
-                    ban_user(client, gid, uid)
-                    delete_message(client, gid, mid)
-                    declare_message(client, gid, mid)
-                    ask_for_help(client, "ban", gid, uid)
-                    send_debug(
+                # Operation downgrade if possible
+                if is_old_user(client, user, now, gid):
+                    log_level = lang("auto_delete")
+                    more = lang("op_downgrade")
+                    result = forward_evidence(
                         client=client,
-                        chat=message.chat,
-                        action=debug_action,
-                        uid=uid,
-                        mid=mid,
-                        em=result
+                        message=message,
+                        user=user,
+                        level=log_level,
+                        rule=log_rule,
+                        more=more
                     )
+                    if result:
+                        delete_message(client, gid, mid)
+                        declare_message(client, gid, mid)
+                        ask_for_help(client, "delete", gid, uid, "global")
+                        previous = add_detected_user(gid, uid, now)
+                        not previous and update_score(client, uid)
+                        send_debug(
+                            client=client,
+                            chat=message.chat,
+                            action=debug_action,
+                            uid=uid,
+                            mid=mid,
+                            em=result
+                        )
+                    result = False
+                else:
+                    result = forward_evidence(
+                        client=client,
+                        message=message,
+                        user=user,
+                        level=log_level,
+                        rule=log_rule,
+                        more=more
+                    )
+                    if result:
+                        add_bad_user(client, uid)
+                        ban_user(client, gid, uid)
+                        delete_message(client, gid, mid)
+                        declare_message(client, gid, mid)
+                        ask_for_help(client, "ban", gid, uid)
+                        send_debug(
+                            client=client,
+                            chat=message.chat,
+                            action=debug_action,
+                            uid=uid,
+                            mid=mid,
+                            em=result
+                        )
 
         return bool(result)
     except Exception as e:
