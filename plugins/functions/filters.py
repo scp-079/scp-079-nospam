@@ -461,7 +461,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "wb"
 
                 # Check Telegram link
-                if is_tgl(client, message):
+                if is_tgl(client, message, True):
                     return "wb"
 
                 # Check image
