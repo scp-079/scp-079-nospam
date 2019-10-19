@@ -25,7 +25,7 @@ from .. import glovar
 from .channel import get_content
 from .etc import code, get_int, get_md5sum, get_text, italic, lang, thread, user_mention
 from .file import delete_file, get_downloaded_path
-from .filters import is_class_e, is_detected_url, is_regex_text
+from .filters import is_class_e, is_contact, is_detected_url, is_regex_text
 from .image import get_file_id, get_ocr, get_qrcode
 from .telegram import send_message
 
@@ -59,6 +59,11 @@ def nospam_test(client: Client, message: Message) -> bool:
         # Bad record
         if content in glovar.bad_ids["contents"] or message_text in glovar.bad_ids["contents"]:
             text += f"{lang('recorded')}{lang('colon')}{code('True')}\n"
+
+        # Recorded contact
+        detection = is_contact(message_text)
+        if detection:
+            text += f"{lang('record_contact')}{lang('colon')}{code('True')}\n"
 
         # Image
         file_id, file_ref, big = get_file_id(message)
