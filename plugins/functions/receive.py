@@ -918,7 +918,8 @@ def receive_user_score(client: Client, project: str, data: dict) -> bool:
                 if not result:
                     return True
 
-                ask_for_help(client, "delete", 0, uid, "global")
+                gid = list(glovar.configs)[0]
+                ask_for_help(client, "delete", gid, uid, "global")
                 text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
                         f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                         f"{lang('action')}{lang('colon')}{code(lang('global_delete'))}\n"
