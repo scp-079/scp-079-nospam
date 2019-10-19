@@ -529,7 +529,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                             forward_name = get_forward_name(message, True)
                             full_name = get_full_name(user, True)
                             thread(record_contact_info, (client, forward_name))
-                            thread(remove_contact_info, (client, full_name))
+                            thread(record_contact_info, (client, full_name))
                         else:
                             thread(record_contact_info, (client, message_text))
 
