@@ -99,7 +99,7 @@ def nospam_test(client: Client, message: Message) -> bool:
             whitelisted = (is_class_e(None, message, True)
                            or message_text in glovar.except_ids["long"]
                            or image_hash in glovar.except_ids["temp"])
-            text = f"{lang('white_listed')}{lang('colon')}{code(whitelisted)}\n" + text
+            text = f"{lang('white_listed')}{lang('colon')}{code(whitelisted)}\n\n" + text
             text = f"{lang('admin')}{lang('colon')}{user_mention(aid)}\n\n" + text
             thread(send_message, (client, glovar.test_group_id, text, message.message_id))
 
