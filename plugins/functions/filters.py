@@ -630,7 +630,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "del"
 
             if all_text:
-                if is_regex_text("del", all_text):
+                if is_regex_text("del", all_text) or is_contact(all_text):
                     return "del"
 
             # Start detect watch delete
