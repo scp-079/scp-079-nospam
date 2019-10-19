@@ -128,46 +128,19 @@ def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
     return result
 
 
-def record_contact_info(client: Client, message: Message = None, user: User = None, text: str = "") -> bool:
+def record_contact_info(client: Client, text: str) -> bool:
     # Record the contact information in the message
     try:
-        # Basic data
-        gid = message.chat.id
+        if not text.strip():
+            return True
 
-        if text:
-            contact = get_contact(text)
-            if (contact and contact not in glovar.bad_ids["contacts"]
-                    and not is_friend_username(client, gid, contact, True)):
-                glovar.bad_ids["contacts"].add(contact)
-                save("bad_ids")
-                send_debug_contact(client, "record", contact)
-        else:
-            # Check forward name
-            forward_name = get_forward_name(message, True)
-            contact = get_contact(forward_name)
-            if (contact and contact not in glovar.bad_ids["contacts"]
-                    and not is_friend_username(client, gid, contact, True)):
-                glovar.bad_ids["contacts"].add(contact)
-                save("bad_ids")
-                send_debug_contact(client, "record", contact)
-
-            # Check full name
-            full_name = get_full_name(user)
-            contact = get_contact(full_name)
-            if (contact and contact not in glovar.bad_ids["contacts"]
-                    and not is_friend_username(client, gid, contact, True)):
-                glovar.bad_ids["contacts"].add(contact)
-                save("bad_ids")
-                send_debug_contact(client, "record", contact)
-
-            # Check text
-            text = get_text(message, True)
-            contact = get_contact(text)
-            if (contact and contact not in glovar.bad_ids["contacts"]
-                    and not is_friend_username(client, gid, contact, True)):
-                glovar.bad_ids["contacts"].add(contact)
-                save("bad_ids")
-                send_debug_contact(client, "record", contact)
+        gid = list(glovar.configs)[0]
+        contact = get_contact(text)
+        if (contact and contact not in glovar.bad_ids["contacts"]
+                and not is_friend_username(client, gid, contact, True)):
+            glovar.bad_ids["contacts"].add(contact)
+            save("bad_ids")
+            send_debug_contact(client, "record", contact)
     except Exception as e:
         logger.warning(f"Record contact error: {e}", exc_info=True)
 
@@ -213,6 +186,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             more = None
 
         now = message.date or get_now()
+        message_text = get_text(message, True)
 
         # Group config
         report_only = glovar.configs[gid].get("reporter")
@@ -549,6 +523,16 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         more=more
                     )
                     if result:
+                        if rule == "bio":
+                            thread(record_contact_info, (client, more))
+                        elif rule == "name" and more != "content":
+                            forward_name = get_forward_name(message, True)
+                            full_name = get_full_name(user, True)
+                            thread(record_contact_info, (client, forward_name))
+                            thread(remove_contact_info, (client, full_name))
+                        else:
+                            thread(record_contact_info, (client, message_text))
+
                         add_bad_user(client, uid)
                         ban_user(client, gid, uid)
                         delete_message(client, gid, mid)
@@ -562,10 +546,6 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                             mid=mid,
                             em=result
                         )
-                        if rule == "bio":
-                            thread(record_contact_info, (client, None, None, more))
-                        else:
-                            thread(record_contact_info, (client, message, user))
 
         return bool(result)
     except Exception as e:

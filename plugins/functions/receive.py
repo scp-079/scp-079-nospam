@@ -158,7 +158,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                     glovar.except_ids["long"].discard(record["name"])
                     glovar.except_ids["temp"].discard(record["name"])
                     save("except_ids")
-                    thread(record_contact_info, (client, None, None, record["name"]))
+                    thread(record_contact_info, (client, record["name"]))
 
             if message.reply_to_message:
                 message = message.reply_to_message
@@ -171,7 +171,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                 glovar.except_ids["long"].discard(content)
                 glovar.except_ids["temp"].discard(content)
                 save("except_ids")
-                thread(record_contact_info, (client, None, None, content))
+                thread(record_contact_info, (client, content))
 
         save("bad_ids")
 
