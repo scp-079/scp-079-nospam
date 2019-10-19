@@ -501,6 +501,9 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_regex_text("del", all_text):
                     return "del"
 
+                if is_contact(all_text):
+                    return "del contact"
+
             # Check sticker
             if sticker_name:
                 if sticker_name not in glovar.except_ids["long"]:
@@ -630,8 +633,11 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "del"
 
             if all_text:
-                if is_regex_text("del", all_text) or is_contact(all_text):
+                if is_regex_text("del", all_text):
                     return "del"
+
+                if is_contact(all_text):
+                    return "del contact"
 
             # Start detect watch delete
 

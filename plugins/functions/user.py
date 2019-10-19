@@ -282,7 +282,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_rule = lang("rule_global")
             debug_action = lang("auto_delete")
 
-            if rule == "content":
+            if rule in {"contact", "content"}:
                 log_rule = lang("record_message")
                 debug_action = lang("record_delete")
 
