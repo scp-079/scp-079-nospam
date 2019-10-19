@@ -458,6 +458,7 @@ regex: Dict[str, bool] = {
     "del": True,
     "fil": True,
     "iml": True,
+    "pho": True,
     "nm": True,
     "sho": True,
     "spc": True,
