@@ -287,7 +287,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "bad":
                         receive_add_bad(client, sender, data)
                     elif action_type == "watch":
-                        receive_watch_user(data)
+                        receive_watch_user(client, data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -301,7 +301,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "bad":
                         receive_add_bad(client, sender, data)
                     elif action_type == "watch":
-                        receive_watch_user(data)
+                        receive_watch_user(client, data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -315,7 +315,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "bad":
                         receive_add_bad(client, sender, data)
                     elif action_type == "watch":
-                        receive_watch_user(data)
+                        receive_watch_user(client, data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -372,7 +372,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "bad":
                         receive_add_bad(client, sender, data)
                     elif action_type == "watch":
-                        receive_watch_user(data)
+                        receive_watch_user(client, data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -386,7 +386,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "bad":
                         receive_add_bad(client, sender, data)
                     elif action_type == "watch":
-                        receive_watch_user(data)
+                        receive_watch_user(client, data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -400,7 +400,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "bad":
                         receive_add_bad(client, sender, data)
                     elif action_type == "watch":
-                        receive_watch_user(data)
+                        receive_watch_user(client, data)
 
                 elif action == "update":
                     if action_type == "declare":
@@ -441,7 +441,7 @@ def process_data(client: Client, message: Message) -> bool:
 
                 if action == "add":
                     if action_type == "watch":
-                        receive_watch_user(data)
+                        receive_watch_user(client, data, True)
 
         return True
     except Exception as e:

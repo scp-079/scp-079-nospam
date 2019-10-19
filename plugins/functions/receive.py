@@ -27,8 +27,8 @@ from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from .channel import ask_for_help, declare_message, get_content, get_debug_text, send_debug, share_data
-from .etc import code, crypt_str, general_link, get_int, get_now, get_report_record, get_stripped_link, get_text, lang
-from .etc import message_link, thread, user_mention
+from .etc import code, crypt_str, delay, general_link, get_int, get_now, get_report_record, get_stripped_link, get_text
+from .etc import lang, message_link, thread, user_mention
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .filters import is_avatar_image, is_bad_message, is_class_e, is_declared_message_id, is_detected_user_id
 from .group import delete_message, get_config_text, get_message, leave_group
@@ -36,7 +36,7 @@ from .ids import init_group_id, init_user_id
 from .image import get_image_hash
 from .telegram import send_message, send_photo, send_report_message
 from .timers import update_admins
-from .user import add_bad_user, ban_user, terminate_user
+from .user import add_bad_user, ban_user, terminate_user, watch_global_delete
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -905,6 +905,7 @@ def receive_user_score(client: Client, project: str, data: dict) -> bool:
             glovar.user_ids[uid][project] = score
             save("user_ids")
 
+            # Global delete
             total_score = sum(glovar.user_ids[uid]["score"].values())
             if total_score >= 3.0:
                 text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
@@ -931,7 +932,7 @@ def receive_user_score(client: Client, project: str, data: dict) -> bool:
     return False
 
 
-def receive_watch_user(data: dict) -> bool:
+def receive_watch_user(client: Client, data: dict, from_watch: bool = False) -> bool:
     # Receive watch users that other bots shared
     try:
         # Basic data
@@ -946,6 +947,10 @@ def receive_watch_user(data: dict) -> bool:
         # Add to list
         if the_type == "ban":
             glovar.watch_ids["ban"][uid] = until
+
+            # Global delete
+            if from_watch and glovar.user_ids.get(uid) and glovar.user_ids[uid].get("join"):
+                delay(10, watch_global_delete, [client, uid])
         elif the_type == "delete":
             glovar.watch_ids["delete"][uid] = until
         else:

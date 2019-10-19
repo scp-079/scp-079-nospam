@@ -22,14 +22,14 @@ from typing import Optional, Union
 from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
-from .etc import get_now, lang, thread
+from .etc import code, general_link, get_now, lang, message_link, thread
 from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug, share_bad_user
 from .channel import update_score
 from .file import save
 from .group import delete_message
 from .filters import is_class_d, is_declared_message, is_detected_user, is_high_score_user, is_limited_user
 from .ids import init_user_id
-from .telegram import get_users, kick_chat_member, restrict_chat_member
+from .telegram import get_users, kick_chat_member, restrict_chat_member, send_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -446,5 +446,31 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         return bool(result)
     except Exception as e:
         logger.warning(f"Terminate user error: {e}", exc_info=True)
+
+    return False
+
+
+def watch_global_delete(client: Client, uid: int) -> bool:
+    # Watch global delete
+    try:
+        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('level')}{lang('colon')}{code(lang('global_delete'))}\n"
+                f"{lang('rule')}{lang('colon')}{code(lang('watch_user'))}\n")
+        result = send_message(client, glovar.logging_channel_id, text)
+
+        if not result:
+            return True
+
+        ask_for_help(client, "delete", 0, uid, "global")
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('global_delete'))}\n"
+                f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, message_link(result))}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Watch global delete error: {e}", exc_info=True)
 
     return False
