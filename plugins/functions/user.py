@@ -207,7 +207,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 )
 
         # Delete the message
-        elif the_type in {"delete", "true"}:
+        elif the_type in {"del", "true"}:
             # Basic info
             log_level = lang("auto_delete")
             log_rule = lang("rule_global")
