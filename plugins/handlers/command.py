@@ -152,6 +152,11 @@ def config_directly(client: Client, message: Message) -> bool:
                             else:
                                 success = False
                                 reason = lang("command_para")
+
+                            if command_type == "deleter" and new_config[command_type]:
+                                new_config["reporter"] = False
+                            elif command_type == "reporter" and new_config[command_type]:
+                                new_config["deleter"] = False
                         else:
                             success = False
                             reason = lang("command_type")
