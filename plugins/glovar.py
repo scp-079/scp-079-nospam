@@ -76,6 +76,7 @@ image_size: int = 0
 limit_track: int = 0
 project_link: str = ""
 project_name: str = ""
+time_long: int = 0
 time_new: int = 0
 time_punish: int = 0
 time_short: int = 0
@@ -129,6 +130,7 @@ try:
     limit_track = int(config["custom"].get("limit_track", limit_track))
     project_link = config["custom"].get("project_link", project_link)
     project_name = config["custom"].get("project_name", project_name)
+    time_long = int(config["custom"].get("time_long", time_long))
     time_new = int(config["custom"].get("time_new", time_new))
     time_punish = int(config["custom"].get("time_punish", time_punish))
     time_short = int(config["custom"].get("time_short", time_short))
@@ -177,6 +179,7 @@ if (bot_token in {"", "[DATA EXPUNGED]"}
         or limit_track == 0
         or project_link in {"", "[DATA EXPUNGED]"}
         or project_name in {"", "[DATA EXPUNGED]"}
+        or time_long == 0
         or time_new == 0
         or time_punish == 0
         or time_short == 0
@@ -307,15 +310,26 @@ lang: Dict[str, str] = {
     "wd": (zh_cn and "追踪删除") or "Watch Delete",
     "ad_": (zh_cn and "广告 {} 组") or "Ad {}",
     # Special
-    "blacklist": (zh_cn and "黑名单") or "Blacklisted",
-    # Terminate
-    "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
-    "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
     "avatar_ban": (zh_cn and "头像封禁") or "Avatar Ban",
     "avatar_examine": (zh_cn and "头像分析") or "Avatar Examination",
     "avatar_recheck": (zh_cn and "头像复查") or "Avatar Recheck",
     "bio_ban": (zh_cn and "简介封禁") or "Bio Ban",
     "bio_examine": (zh_cn and "简介检查") or "Bio Examination",
+    "blacklist": (zh_cn and "黑名单") or "Blacklisted",
+    "limited_user": (zh_cn and "新用户受限") or "Limited New Joined User",
+    "limited_delete": (zh_cn and "受限删除") or "Limited Delete",
+    "name_score": (zh_cn and "名称评分") or "Name and Score",
+    "name_watch": (zh_cn and "名称追踪") or "Name and Watch",
+    "record_ban": (zh_cn and "收录封禁") or "Record Ban",
+    "record_delete": (zh_cn and "收录删除") or "Record Delete",
+    "record_message": (zh_cn and "消息收录") or "Recorded Message",
+    "record_name": (zh_cn and "名称收录") or "Recorded Name",
+    "score_auto": (zh_cn and "自动评分") or "Auto Score",
+    "score_delete": (zh_cn and "评分删除") or "Score Delete",
+    "score_micro": (zh_cn and "微量评分") or "Micro Score",
+    # Terminate
+    "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
+    "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
     "global_delete": (zh_cn and "全局删除") or "Global Delete",
     "name_ban": (zh_cn and "名称封禁") or "Ban by Name",
     "name_examine": (zh_cn and "名称检查") or "Name Examination",
