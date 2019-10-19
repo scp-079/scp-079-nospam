@@ -96,6 +96,7 @@ def get_contact(text: str) -> str:
                 continue
 
             match_text = match.group()
+            logger.warning(match_text)
             for regex in eval(f"glovar.{the_type}_words"):
                 if "?P<con>" not in regex:
                     continue
@@ -531,6 +532,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                             thread(record_contact_info, (client, forward_name))
                             thread(record_contact_info, (client, full_name))
                         else:
+                            logger.warning(message_text)
                             thread(record_contact_info, (client, message_text))
 
                         add_bad_user(client, uid)
