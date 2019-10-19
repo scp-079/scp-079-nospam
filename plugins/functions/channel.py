@@ -293,6 +293,21 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
     return False
 
 
+def send_debug_contact(client: Client, action: str, contact: str) -> bool:
+    # Send contact debug message
+    try:
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang(f'{action}_contact'))}\n"
+                f"{lang('more')}{lang('colon')}{code(contact)}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Send debug contact error: {e}", exc_info=True)
+
+    return False
+
+
 def share_bad_user(client: Client, uid: int) -> bool:
     # Share a bad user with other bots
     try:

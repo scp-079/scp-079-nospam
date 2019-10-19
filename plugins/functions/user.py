@@ -17,17 +17,19 @@
 # along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import logging
+import re
 from typing import Optional, Union
 
 from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
-from .etc import code, general_link, get_now, lang, message_link, thread
-from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug, share_bad_user
-from .channel import update_score
+from .etc import code, general_link, get_forward_name, get_full_name, get_now, get_text, lang, message_link, thread
+from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug, send_debug_contact
+from .channel import share_bad_user, update_score
 from .file import save
 from .group import delete_message
-from .filters import is_class_d, is_declared_message, is_detected_user, is_high_score_user, is_limited_user, is_old_user
+from .filters import is_class_d, is_declared_message, is_detected_user, is_friend_username, is_high_score_user
+from .filters import is_limited_user, is_old_user, is_regex_text
 from .ids import init_user_id
 from .telegram import get_users, kick_chat_member, restrict_chat_member, send_message
 
@@ -83,6 +85,36 @@ def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     return False
 
 
+def get_contact(text: str) -> str:
+    # Get the contact information in the text
+    result = ""
+    try:
+        for the_type in ["con", "iml"]:
+            match = is_regex_text(the_type, text)
+
+            if not match:
+                continue
+
+            match_text = match.group()
+            for regex in eval(f"glovar.{the_type}_words"):
+                if "?P<con>" not in regex:
+                    continue
+
+                sub_match = re.search(regex, match_text, re.I | re.M | re.S)
+                if not sub_match:
+                    continue
+
+                group_dict = sub_match.groupdict()
+                if not group_dict or not group_dict.get("con"):
+                    continue
+
+                return group_dict["con"]
+    except Exception as e:
+        logger.warning(f"Get contact error: {e}", exc_info=True)
+
+    return result
+
+
 def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
     # Get a user
     result = None
@@ -94,6 +126,66 @@ def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
         logger.warning(f"Get user error: {e}", exc_info=True)
 
     return result
+
+
+def record_contact_info(client: Client, message: Message = None, user: User = None, text: str = "") -> bool:
+    # Record the contact information in the message
+    try:
+        # Basic data
+        gid = message.chat.id
+
+        if text:
+            contact = get_contact(text)
+            if (contact and contact not in glovar.bad_ids["contacts"]
+                    and not is_friend_username(client, gid, contact, True)):
+                glovar.bad_ids["contacts"].add(contact)
+                save("bad_ids")
+                send_debug_contact(client, "record", contact)
+        else:
+            # Check forward name
+            forward_name = get_forward_name(message, True)
+            contact = get_contact(forward_name)
+            if (contact and contact not in glovar.bad_ids["contacts"]
+                    and not is_friend_username(client, gid, contact, True)):
+                glovar.bad_ids["contacts"].add(contact)
+                save("bad_ids")
+                send_debug_contact(client, "record", contact)
+
+            # Check full name
+            full_name = get_full_name(user)
+            contact = get_contact(full_name)
+            if (contact and contact not in glovar.bad_ids["contacts"]
+                    and not is_friend_username(client, gid, contact, True)):
+                glovar.bad_ids["contacts"].add(contact)
+                save("bad_ids")
+                send_debug_contact(client, "record", contact)
+
+            # Check text
+            text = get_text(message, True)
+            contact = get_contact(text)
+            if (contact and contact not in glovar.bad_ids["contacts"]
+                    and not is_friend_username(client, gid, contact, True)):
+                glovar.bad_ids["contacts"].add(contact)
+                save("bad_ids")
+                send_debug_contact(client, "record", contact)
+    except Exception as e:
+        logger.warning(f"Record contact error: {e}", exc_info=True)
+
+    return False
+
+
+def remove_contact_info(client: Client, text: str) -> bool:
+    # Remove the contact information in the message
+    try:
+        contact = get_contact(text)
+        if contact and contact in glovar.bad_ids["contacts"]:
+            glovar.bad_ids["contacts"].discard(contact)
+            save("bad_ids")
+            send_debug_contact(client, "remove", contact)
+    except Exception as e:
+        logger.warning(f"Remove contact error: {e}", exc_info=True)
+
+    return False
 
 
 def terminate_user(client: Client, message: Message, user: User, context: str) -> bool:
@@ -470,6 +562,10 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                             mid=mid,
                             em=result
                         )
+                        if rule == "bio":
+                            thread(record_contact_info, (client, None, None, more))
+                        else:
+                            thread(record_contact_info, (client, message, user))
 
         return bool(result)
     except Exception as e:

@@ -321,9 +321,11 @@ lang: Dict[str, str] = {
     "name_score": (zh_cn and "名称评分") or "Name and Score",
     "name_watch": (zh_cn and "名称追踪") or "Name and Watch",
     "record_ban": (zh_cn and "收录封禁") or "Record Ban",
+    "record_contact": (zh_cn and "收录联系方式") or "Record Contact",
     "record_delete": (zh_cn and "收录删除") or "Record Delete",
     "record_message": (zh_cn and "消息收录") or "Recorded Message",
     "record_name": (zh_cn and "名称收录") or "Recorded Name",
+    "remove_contact": (zh_cn and "移除联系方式") or "Remove Contact",
     "score_auto": (zh_cn and "自动评分") or "Auto Score",
     "score_delete": (zh_cn and "评分删除") or "Score Delete",
     "score_micro": (zh_cn and "微量评分") or "Micro Score",
@@ -484,7 +486,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.1.2"
+version: str = "0.1.3"
 
 # Load data from pickle
 

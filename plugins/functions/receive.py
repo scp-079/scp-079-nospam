@@ -36,7 +36,7 @@ from .ids import init_group_id, init_user_id
 from .image import get_image_hash
 from .telegram import send_message, send_photo, send_report_message
 from .timers import update_admins
-from .user import add_bad_user, ban_user, terminate_user, watch_global_delete
+from .user import add_bad_user, ban_user, record_contact_info, remove_contact_info, terminate_user, watch_global_delete
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -64,10 +64,12 @@ def receive_add_except(client: Client, data: dict) -> bool:
                 if record["name"]:
                     glovar.except_ids["long"].add(record["name"])
                     glovar.bad_ids["contents"].discard(record["name"])
+                    thread(remove_contact_info, (client, record["name"]))
 
                 if record["from"]:
                     glovar.except_ids["long"].add(record["from"])
                     glovar.bad_ids["contents"].discard(record["from"])
+                    thread(remove_contact_info, (client, record["from"]))
 
                 save("bad_ids")
 
@@ -75,6 +77,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
                 if record["bio"]:
                     glovar.except_ids["long"].add(record["bio"])
                     glovar.bad_ids["contents"].discard(record["bio"])
+                    thread(remove_contact_info, (client, record["bio"]))
 
                 save("bad_ids")
 
@@ -109,6 +112,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
                 glovar.bad_ids["contents"].discard(content)
                 save("bad_ids")
                 glovar.contents.pop(content, "")
+                thread(remove_contact_info, (client, content))
 
             image_hash = get_image_hash(client, message)
             if image_hash:
@@ -154,6 +158,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                     glovar.except_ids["long"].discard(record["name"])
                     glovar.except_ids["temp"].discard(record["name"])
                     save("except_ids")
+                    thread(record_contact_info, (client, None, None, record["name"]))
 
             if message.reply_to_message:
                 message = message.reply_to_message
@@ -166,6 +171,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                 glovar.except_ids["long"].discard(content)
                 glovar.except_ids["temp"].discard(content)
                 save("except_ids")
+                thread(record_contact_info, (client, None, None, content))
 
         save("bad_ids")
 
