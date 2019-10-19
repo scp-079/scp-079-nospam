@@ -665,6 +665,10 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
             glovar.user_ids[the_id] = deepcopy(glovar.default_user_status)
             save("user_ids")
 
+        # Remove bad contact
+        if sender == "MANAGE" and the_type == "contact":
+            thread(remove_contact_info, (client, the_id, True))
+
         # Remove bad content
         if sender == "MANAGE" and the_type == "content":
             message = get_message(client, glovar.logging_channel_id, the_id)

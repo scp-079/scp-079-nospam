@@ -146,10 +146,14 @@ def record_contact_info(client: Client, text: str) -> bool:
     return False
 
 
-def remove_contact_info(client: Client, text: str) -> bool:
+def remove_contact_info(client: Client, text: str, pure: bool = False) -> bool:
     # Remove the contact information in the message
     try:
-        contact = get_contact(text)
+        if pure:
+            contact = text
+        else:
+            contact = get_contact(text)
+
         if contact and contact in glovar.bad_ids["contacts"]:
             glovar.bad_ids["contacts"].discard(contact)
             save("bad_ids")
