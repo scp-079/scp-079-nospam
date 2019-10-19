@@ -237,7 +237,7 @@ def get_content(message: Message) -> str:
         if not message:
             return ""
 
-        file_id, _ = get_file_id(message)
+        file_id, _, _ = get_file_id(message)
         text = get_text(message)
 
         if file_id:
