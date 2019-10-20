@@ -58,7 +58,7 @@ def nospam_test(client: Client, message: Message) -> bool:
 
         # Bad record
         if content in glovar.bad_ids["contents"] or message_text in glovar.bad_ids["contents"]:
-            text += f"{lang('recorded')}{lang('colon')}{code('True')}\n"
+            text += f"{lang('record_bad')}{lang('colon')}{code('True')}\n"
 
         # Recorded contact
         detection = is_contact(message_text)
