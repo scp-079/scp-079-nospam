@@ -418,9 +418,9 @@ def share_regex_count(client: Client, word_type: str) -> bool:
 def update_score(client: Client, uid: int) -> bool:
     # Update a user's score, share it
     try:
-        delete = len(glovar.user_ids[uid]["detected"])
-        bad = sum(glovar.user_ids[uid]["bad"][gid] for gid in list(glovar.user_ids[uid]["bad"]))
-        score = delete * 0.6 + bad * 0.1
+        delete_count = len(glovar.user_ids[uid]["detected"])
+        bad_count = sum(glovar.user_ids[uid]["bad"][gid] for gid in list(glovar.user_ids[uid]["bad"]))
+        score = delete_count * 0.6 + bad_count * 0.1
         glovar.user_ids[uid]["score"][glovar.sender.lower()] = score
         save("user_ids")
         share_data(
