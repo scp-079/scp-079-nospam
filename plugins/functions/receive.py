@@ -64,12 +64,12 @@ def receive_add_except(client: Client, data: dict) -> bool:
                 if record["name"]:
                     glovar.except_ids["long"].add(record["name"])
                     glovar.bad_ids["contents"].discard(record["name"])
-                    thread(remove_contact_info, (client, record["name"]))
+                    thread(remove_contact_info, (client, record["name"], message))
 
                 if record["from"]:
                     glovar.except_ids["long"].add(record["from"])
                     glovar.bad_ids["contents"].discard(record["from"])
-                    thread(remove_contact_info, (client, record["from"]))
+                    thread(remove_contact_info, (client, record["from"], message))
 
                 save("bad_ids")
 
@@ -77,7 +77,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
                 if record["bio"]:
                     glovar.except_ids["long"].add(record["bio"])
                     glovar.bad_ids["contents"].discard(record["bio"])
-                    thread(remove_contact_info, (client, record["bio"]))
+                    thread(remove_contact_info, (client, record["bio"], message))
 
                 save("bad_ids")
 
@@ -112,7 +112,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
                 glovar.bad_ids["contents"].discard(content)
                 save("bad_ids")
                 glovar.contents.pop(content, "")
-                thread(remove_contact_info, (client, content))
+                thread(remove_contact_info, (client, content, message))
 
             image_hash = get_image_hash(client, message)
             if image_hash:
@@ -158,7 +158,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                     glovar.except_ids["long"].discard(record["name"])
                     glovar.except_ids["temp"].discard(record["name"])
                     save("except_ids")
-                    thread(record_contact_info, (client, record["name"]))
+                    thread(record_contact_info, (client, record["name"], message))
 
             if message.reply_to_message:
                 message = message.reply_to_message
@@ -171,7 +171,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                 glovar.except_ids["long"].discard(content)
                 glovar.except_ids["temp"].discard(content)
                 save("except_ids")
-                thread(record_contact_info, (client, content))
+                thread(record_contact_info, (client, content, message))
 
         save("bad_ids")
 
@@ -670,7 +670,7 @@ def receive_remove_bad(client: Client, sender: str, data: dict) -> bool:
 
         # Remove bad contact
         if sender == "MANAGE" and the_type == "contact":
-            thread(remove_contact_info, (client, the_id, True))
+            thread(remove_contact_info, (client, the_id, None, True))
 
         # Remove bad content
         if sender == "MANAGE" and the_type == "content":
@@ -956,6 +956,7 @@ def receive_watch_user(client: Client, data: dict, from_watch: bool = False) -> 
         the_type = data["type"]
         uid = data["id"]
         until = data["until"]
+        mid = data["message_id"]
 
         # Decrypt the data
         until = crypt_str("decrypt", until, glovar.key)
@@ -967,7 +968,8 @@ def receive_watch_user(client: Client, data: dict, from_watch: bool = False) -> 
 
             # Global delete
             if from_watch and glovar.user_ids.get(uid) and glovar.user_ids[uid].get("join"):
-                delay(10, watch_global_delete, [client, uid])
+                delay(10, watch_global_delete, [client, uid, mid])
+
         elif the_type == "delete":
             glovar.watch_ids["delete"][uid] = until
         else:

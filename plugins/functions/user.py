@@ -23,7 +23,8 @@ from typing import Optional, Union
 from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
-from .etc import code, general_link, get_forward_name, get_full_name, get_now, get_text, lang, message_link, thread
+from .etc import code, general_link, get_channel_link, get_forward_name, get_full_name, get_now, get_text, lang
+from .etc import message_link, thread
 from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug, send_debug_contact
 from .channel import share_bad_user, update_score
 from .file import save
@@ -127,7 +128,7 @@ def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
     return result
 
 
-def record_contact_info(client: Client, text: str) -> bool:
+def record_contact_info(client: Client, text: str, em: Message) -> bool:
     # Record the contact information in the message
     try:
         if not text.strip():
@@ -139,14 +140,14 @@ def record_contact_info(client: Client, text: str) -> bool:
                 and not is_friend_username(client, gid, contact, True)):
             glovar.bad_ids["contacts"].add(contact)
             save("bad_ids")
-            send_debug_contact(client, "record", contact)
+            send_debug_contact(client, "record", contact, em)
     except Exception as e:
         logger.warning(f"Record contact error: {e}", exc_info=True)
 
     return False
 
 
-def remove_contact_info(client: Client, text: str, pure: bool = False) -> bool:
+def remove_contact_info(client: Client, text: str, em: Message = None, pure: bool = False) -> bool:
     # Remove the contact information in the message
     try:
         if pure:
@@ -157,7 +158,7 @@ def remove_contact_info(client: Client, text: str, pure: bool = False) -> bool:
         if contact and contact in glovar.bad_ids["contacts"]:
             glovar.bad_ids["contacts"].discard(contact)
             save("bad_ids")
-            send_debug_contact(client, "remove", contact)
+            send_debug_contact(client, "remove", contact, em)
     except Exception as e:
         logger.warning(f"Remove contact error: {e}", exc_info=True)
 
@@ -527,14 +528,14 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     )
                     if result:
                         if rule == "bio":
-                            thread(record_contact_info, (client, more))
+                            thread(record_contact_info, (client, more, result))
                         elif rule == "name" and more not in {"contact", "content"}:
                             forward_name = get_forward_name(message, True)
                             full_name = get_full_name(user, True)
-                            thread(record_contact_info, (client, forward_name))
-                            thread(record_contact_info, (client, full_name))
+                            thread(record_contact_info, (client, forward_name, result))
+                            thread(record_contact_info, (client, full_name, result))
                         else:
-                            thread(record_contact_info, (client, message_text))
+                            thread(record_contact_info, (client, message_text, result))
 
                         add_bad_user(client, uid)
                         ban_user(client, gid, uid)
@@ -557,7 +558,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
     return False
 
 
-def watch_global_delete(client: Client, uid: int) -> bool:
+def watch_global_delete(client: Client, uid: int, mid: int) -> bool:
     # Watch global delete
     try:
         if uid in glovar.bad_ids["users"]:
@@ -574,9 +575,11 @@ def watch_global_delete(client: Client, uid: int) -> bool:
 
         gid = list(glovar.configs)[0]
         ask_for_help(client, "delete", gid, uid, "global")
+        triggered_link = f"{get_channel_link(glovar.watch_channel_id)}/{mid}"
         text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
                 f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                 f"{lang('action')}{lang('colon')}{code(lang('global_delete'))}\n"
+                f"{lang('triggered_by')}{lang('colon')}{general_link(mid, triggered_link)}\n"
                 f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, message_link(result))}\n")
         thread(send_message, (client, glovar.debug_channel_id, text))
 

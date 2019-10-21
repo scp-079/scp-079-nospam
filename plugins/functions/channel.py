@@ -293,12 +293,19 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
     return False
 
 
-def send_debug_contact(client: Client, action: str, contact: str) -> bool:
+def send_debug_contact(client: Client, action: str, contact: str, em: Message) -> bool:
     # Send contact debug message
     try:
+        mid = em.message_id
         text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang(f'{action}_contact'))}\n"
-                f"{lang('more')}{lang('colon')}{code(contact)}\n")
+                f"{lang('action')}{lang('colon')}{code(lang(f'{action}_contact'))}\n")
+
+        if em:
+            text += f"{lang('triggered_by')}{lang('colon')}{general_link(mid, message_link(em))}\n"
+
+        if contact:
+            text += f"{lang('more')}{lang('colon')}{code(contact)}\n"
+
         thread(send_message, (client, glovar.debug_channel_id, text))
 
         return True

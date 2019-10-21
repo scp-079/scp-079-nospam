@@ -67,6 +67,7 @@ exchange_channel_id: int = 0
 hide_channel_id: int = 0
 logging_channel_id: int = 0
 test_group_id: int = 0
+watch_channel_id: int = 0
 
 # [custom]
 backup: Union[bool, str] = ""
@@ -122,6 +123,7 @@ try:
     hide_channel_id = int(config["channels"].get("hide_channel_id", hide_channel_id))
     logging_channel_id = int(config["channels"].get("logging_channel_id", logging_channel_id))
     test_group_id = int(config["channels"].get("test_group_id", test_group_id))
+    watch_channel_id = int(config["channels"].get("watch_channel_id", watch_channel_id))
     # [custom]
     backup = config["custom"].get("backup", backup)
     backup = eval(backup)
@@ -176,6 +178,7 @@ if (bot_token in {"", "[DATA EXPUNGED]"}
         or hide_channel_id == 0
         or logging_channel_id == 0
         or test_group_id == 0
+        or watch_channel_id == 0
         or backup not in {False, True}
         or date_reset in {"", "[DATA EXPUNGED]"}
         or default_group_link in {"", "[DATA EXPUNGED]"}
