@@ -84,11 +84,11 @@ def nospam_test(client: Client, message: Message) -> bool:
 
         # OCR
         if ocr:
-            text += f"{lang('ocr')}{lang('colon')}" + "-" * 24 + "\n\n"
+            text += f"\n{lang('ocr')}{lang('colon')}" + "-" * 24 + "\n\n"
             text += code(ocr) + "\n\n"
             type_list = [lang(t) for t in glovar.regex if is_regex_text(t, ocr)]
             if type_list:
-                text += f"\n{lang('ocr_examine')}{lang('colon')}" + "-" * 24 + "\n\n"
+                text += f"{lang('ocr_examine')}{lang('colon')}" + "-" * 24 + "\n\n"
                 text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
 
             # All text
