@@ -1080,26 +1080,25 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
     try:
         # Bypass prepare
         gid = message.chat.id
-        description = get_description(client, gid)
+        description = get_description(client, gid).lower()
         pinned_message = get_pinned(client, gid)
-        pinned_text = get_text(pinned_message)
-        invalid = {"admin", "admins"}
+        pinned_text = get_text(pinned_message).lower()
 
         # Check links
         bypass = get_stripped_link(get_channel_link(message))
         links = get_links(message)
-        tg_links = [l for l in links if is_regex_text("tgl", l)]
+        tg_links = [l.lower() for l in links if is_regex_text("tgl", l)]
 
         # Define a bypass link filter function
         def is_bypass_link(link: str) -> bool:
             try:
-                link_username = re.match(r"t\.me/(.+?)/", f"{link}/")
-
-                if link_username in invalid:
-                    return True
-
+                link_username = re.match(r"t\.me/([a-z][0-9a-z_]{4,31})/", f"{link}/")
                 if link_username:
-                    link_username = link_username.group(1)
+                    link_username = link_username.group(1).lower()
+
+                    if link_username in glovar.invalid:
+                        return True
+
                     if link_username == "joinchat":
                         link_username = ""
                     else:
@@ -1122,7 +1121,7 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
             return True
 
         # Check text
-        message_text = get_text(message, True)
+        message_text = get_text(message, True).lower()
         for bypass in bypass_list:
             message_text = message_text.replace(bypass, "")
 
@@ -1136,12 +1135,12 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
 
         for en in entities:
             if en.type == "mention":
-                username = get_entity_text(message, en)[1:]
+                username = get_entity_text(message, en)[1:].lower()
 
-                if username in invalid:
+                if username in glovar.invalid:
                     continue
 
-                if message.chat.username and username == message.chat.username:
+                if message.chat.username and username == message.chat.username.lower():
                     continue
 
                 if username in description:
