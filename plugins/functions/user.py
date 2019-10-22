@@ -323,7 +323,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_rule = lang("watch_user")
             debug_action = lang("watch_delete")
             score_user = is_high_score_user(message)
-            limited_user = is_limited_user(gid, user, now)
+            limited_user = is_limited_user(gid, user, now, glovar.configs[gid].get("new"))
 
             if score_user:
                 log_rule = lang("score_user")

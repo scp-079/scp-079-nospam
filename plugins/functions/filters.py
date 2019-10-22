@@ -301,7 +301,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             wb_user = is_watch_user(message, "ban")
             score_user = is_high_score_user(message)
             wd_user = is_watch_user(message, "delete")
-            limited_user = is_limited_user(gid, message.from_user, now)
+            limited_user = is_limited_user(gid, message.from_user, now, glovar.configs[gid].get("new"))
             if message_content:
                 detection = glovar.contents.get(message_content, "")
                 if detection == "ban":
@@ -644,7 +644,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             wb_user = is_watch_user(message, "ban")
             score_user = is_high_score_user(message)
             wd_user = is_watch_user(message, "delete")
-            limited_user = is_limited_user(gid, message.from_user, now)
+            limited_user = is_limited_user(gid, message.from_user, now, glovar.configs[gid].get("new"))
 
             if wb_user or score_user or wd_user or limited_user:
                 # Check the text
@@ -929,7 +929,7 @@ def is_high_score_user(message: Union[Message, User]) -> float:
     return 0.0
 
 
-def is_limited_user(gid: int, user: User, now: int) -> bool:
+def is_limited_user(gid: int, user: User, now: int, short: bool = True) -> bool:
     # Check the user is limited
     try:
         if is_class_e_user(user):
@@ -951,7 +951,7 @@ def is_limited_user(gid: int, user: User, now: int) -> bool:
             return True
 
         join = glovar.user_ids[uid]["join"].get(gid, 0)
-        if now - join < glovar.time_short:
+        if short and now - join < glovar.time_short:
             return True
 
         track = [gid for gid in glovar.user_ids[uid]["join"]
@@ -1012,7 +1012,7 @@ def is_nm_text(text: str) -> bool:
 def is_old_user(client: Client, user: User, now: int, gid: int) -> bool:
     # Check if the user is old member
     try:
-        if is_limited_user(gid, user, now):
+        if is_limited_user(gid, user, now, True):
             return False
 
         member = get_member(client, gid, user.id)
