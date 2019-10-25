@@ -493,6 +493,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 # Operation downgrade if possible
                 if is_old_user(client, user, now, gid):
                     log_level = lang("auto_delete")
+                    debug_action = lang("auto_delete")
                     more = lang("op_downgrade")
                     result = forward_evidence(
                         client=client,

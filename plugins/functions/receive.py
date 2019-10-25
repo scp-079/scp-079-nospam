@@ -956,7 +956,6 @@ def receive_watch_user(client: Client, data: dict, from_watch: bool = False) -> 
         the_type = data["type"]
         uid = data["id"]
         until = data["until"]
-        mid = data["message_id"]
 
         # Decrypt the data
         until = crypt_str("decrypt", until, glovar.key)
@@ -968,6 +967,7 @@ def receive_watch_user(client: Client, data: dict, from_watch: bool = False) -> 
 
             # Global delete
             if from_watch and glovar.user_ids.get(uid) and glovar.user_ids[uid].get("join"):
+                mid = data["message_id"]
                 delay(10, watch_global_delete, [client, uid, mid])
 
         elif the_type == "delete":
