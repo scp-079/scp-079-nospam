@@ -739,7 +739,7 @@ def is_contact(text: str) -> str:
     # Check if the text contains bad contacts
     try:
         for contact in glovar.bad_ids["contacts"]:
-            if re.search(text, contact, re.I):
+            if re.search(contact, text, re.I):
                 return contact
     except Exception as e:
         logger.warning(f"Is contact error: {e}", exc_info=True)
