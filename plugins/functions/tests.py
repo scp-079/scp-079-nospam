@@ -63,7 +63,7 @@ def nospam_test(client: Client, message: Message) -> bool:
         # Recorded contact
         detection = is_contact(message_text)
         if detection:
-            text += f"{lang('record_contact')}{lang('colon')}{code('True')}\n"
+            text += f"{lang('record_contact')}{lang('colon')}{code(detection)}\n"
 
         # Image
         file_id, file_ref, big = get_file_id(message)

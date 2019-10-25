@@ -735,15 +735,16 @@ def is_class_e_user(user: User) -> bool:
     return False
 
 
-def is_contact(text: str) -> bool:
+def is_contact(text: str) -> str:
     # Check if the text contains bad contacts
     try:
-        if any(contact in text for contact in glovar.bad_ids["contacts"]):
-            return True
+        for contact in glovar.bad_ids["contacts"]:
+            if re.search(text, contact, re.I):
+                return contact
     except Exception as e:
         logger.warning(f"Is contact error: {e}", exc_info=True)
 
-    return False
+    return ""
 
 
 def is_declared_message_id(gid: int, mid: int) -> bool:
