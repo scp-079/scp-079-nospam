@@ -918,7 +918,7 @@ def receive_user_score(client: Client, project: str, data: dict) -> bool:
 
         if init_user_id(uid):
             score = data["score"]
-            glovar.user_ids[uid][project] = score
+            glovar.user_ids[uid]["score"][project] = score
             save("user_ids")
 
             # Global delete

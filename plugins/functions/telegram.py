@@ -424,7 +424,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
     return result
 
 
-def send_photo(client: Client, cid: int, photo: str, text: str = "", mid: int = None,
+def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, caption: str = "", mid: int = None,
                markup: InlineKeyboardMarkup = None) -> Optional[Union[bool, Message]]:
     # Send a photo to a chat
     result = None
@@ -439,7 +439,8 @@ def send_photo(client: Client, cid: int, photo: str, text: str = "", mid: int = 
                 result = client.send_photo(
                     chat_id=cid,
                     photo=photo,
-                    caption=text,
+                    file_ref=file_ref,
+                    caption=caption,
                     parse_mode="html",
                     reply_to_message_id=mid,
                     reply_markup=markup
