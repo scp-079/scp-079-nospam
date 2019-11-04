@@ -400,7 +400,7 @@ default_config: Dict[str, Union[bool, int]] = {
     "restrict": False,
     "bio": True,
     "bot": True,
-    "new": True,
+    "new": False,
     "deleter": False,
     "reporter": False,
     "ml": False
