@@ -588,9 +588,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     if is_ban_text(qrcode):
                         return "ban"
 
-                if is_regex_text("ad", all_text) or is_ad_text(all_text):
-                    return "ban"
-
                 # Get OCR
                 ocr = get_ocr(image_path)
                 if ocr:
