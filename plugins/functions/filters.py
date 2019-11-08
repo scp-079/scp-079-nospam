@@ -433,7 +433,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check image
             qrcode = ""
             ocr = ""
-            all_text = message_text
+            all_text = ""
 
             # Get the image
             file_id, file_ref, big = get_file_id(message)
@@ -458,7 +458,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                         if is_ban_text(qrcode, False):
                             return "ban"
 
-                        if is_regex_text("ad", all_text) or is_ad_text(all_text, False):
+                        if is_regex_text("ad", message_text) or is_ad_text(message_text, False):
                             return "ban"
 
                     # Get OCR
@@ -467,9 +467,10 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                         if is_ban_text(ocr, True):
                             return "ban"
 
-                        all_text += ocr
-                        if is_ban_text(all_text, False):
-                            return "ban"
+                        if message_text:
+                            all_text = message_text + ocr
+                            if is_ban_text(all_text, False):
+                                return "ban"
 
             # Start detect watch ban
 
@@ -615,7 +616,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check image
             qrcode = ""
             ocr = ""
-            all_text = text
+            all_text = ""
 
             if image_path:
                 # Get QR code
@@ -624,7 +625,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     if is_ban_text(qrcode, False):
                         return "ban"
 
-                    if is_regex_text("ad", all_text) or is_ad_text(all_text, False):
+                    if is_regex_text("ad", text) or is_ad_text(text, False):
                         return "ban"
 
                 # Get OCR
@@ -633,9 +634,10 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     if is_ban_text(ocr, True):
                         return "ban"
 
-                    all_text += ocr
-                    if is_ban_text(all_text, False):
-                        return "ban"
+                    if text:
+                        all_text = text + ocr
+                        if is_ban_text(all_text, False):
+                            return "ban"
 
             # Start detect watch ban
             wb_user = is_watch_user(message.from_user, "ban", now)
