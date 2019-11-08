@@ -23,7 +23,7 @@ from pyrogram import Client, Message
 
 from .. import glovar
 from .channel import get_content
-from .etc import code, get_int, get_md5sum, get_text, italic, lang, thread, user_mention
+from .etc import code, get_int, get_md5sum, get_text, italic, lang, mention_id, thread
 from .file import delete_file, get_downloaded_path
 from .filters import is_class_e, is_contact, is_detected_url, is_regex_text
 from .image import get_file_id, get_ocr, get_qrcode
@@ -77,6 +77,7 @@ def nospam_test(client: Client, message: Message) -> bool:
         if qrcode:
             text += f"{lang('qrcode')}{lang('colon')}" + "-" * 24 + "\n\n"
             text += code(qrcode) + "\n\n"
+
             type_list = [lang(t) for t in glovar.regex if is_regex_text(t, qrcode)]
             if type_list:
                 text += f"{lang('qrcode_examine')}{lang('colon')}" + "-" * 20 + "\n\n"
@@ -86,6 +87,7 @@ def nospam_test(client: Client, message: Message) -> bool:
         if ocr:
             text += f"\n{lang('ocr')}{lang('colon')}" + "-" * 24 + "\n\n"
             text += code(ocr) + "\n\n"
+
             type_list = [lang(t) for t in glovar.regex if is_regex_text(t, ocr)]
             if type_list:
                 text += f"{lang('ocr_examine')}{lang('colon')}" + "-" * 24 + "\n\n"
@@ -94,6 +96,7 @@ def nospam_test(client: Client, message: Message) -> bool:
             # All text
             if message_text:
                 all_text = message_text + ocr
+
                 type_list = [lang(t) for t in glovar.regex if is_regex_text(t, all_text)]
                 if type_list:
                     text += f"{lang('all_text')}{lang('colon')}" + "-" * 24 + "\n\n"
@@ -105,7 +108,7 @@ def nospam_test(client: Client, message: Message) -> bool:
                            or message_text in glovar.except_ids["long"]
                            or image_hash in glovar.except_ids["temp"])
             text = f"{lang('white_listed')}{lang('colon')}{code(whitelisted)}\n" + text
-            text = f"{lang('admin')}{lang('colon')}{user_mention(aid)}\n\n" + text
+            text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n" + text
             thread(send_message, (client, glovar.test_group_id, text, message.message_id))
 
         return True

@@ -25,9 +25,9 @@ from pyrogram import Client, Filters, Message
 from .. import glovar
 from ..functions.channel import get_content, get_debug_text, share_data
 from ..functions.etc import bold, code, code_block, delay, get_command_context, get_command_type, get_now, lang
-from ..functions.etc import thread, user_mention
+from ..functions.etc import mention_id, thread
 from ..functions.file import save
-from ..functions.filters import from_user, is_class_c, test_group
+from ..functions.filters import authorized_group, from_user, is_class_c, test_group
 from ..functions.group import delete_message, get_config_text
 from ..functions.telegram import get_group_info, send_message, send_report_message
 
@@ -35,8 +35,9 @@ from ..functions.telegram import get_group_info, send_message, send_report_messa
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user
-                   & Filters.command(["config"], glovar.prefix))
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["config"], glovar.prefix)
+                   & ~test_group & authorized_group
+                   & from_user)
 def config(client: Client, message: Message) -> bool:
     # Request CONFIG session
 
@@ -104,8 +105,10 @@ def config(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~test_group & from_user
-                   & Filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix))
+@Client.on_message(Filters.incoming & Filters.group
+                   & Filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix)
+                   & ~test_group & authorized_group
+                   & from_user)
 def config_directly(client: Client, message: Message) -> bool:
     # Config the bot directly
 
@@ -126,6 +129,7 @@ def config_directly(client: Client, message: Message) -> bool:
         reason = lang("config_updated")
         new_config = deepcopy(glovar.configs[gid])
         text = f"{lang('admin_group')}{lang('colon')}{code(aid)}\n"
+
         # Check command format
         command_type, command_context = get_command_context(message)
         if command_type:
@@ -136,6 +140,7 @@ def config_directly(client: Client, message: Message) -> bool:
                 return True
 
             now = get_now()
+
             # Check the config lock
             if now - new_config["lock"] > 310:
                 if command_type == "default":
@@ -196,8 +201,9 @@ def config_directly(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group & from_user
-                   & Filters.command(["content"], glovar.prefix))
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["content"], glovar.prefix)
+                   & test_group
+                   & from_user)
 def content(client: Client, message: Message) -> bool:
     # Show message's content
     try:
@@ -207,7 +213,7 @@ def content(client: Client, message: Message) -> bool:
         mid = message.message_id
 
         # Generate the report message
-        text = f"{lang('admin')}{lang('colon')}{user_mention(aid)}\n\n"
+        text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
         if message.reply_to_message:
             result = get_content(message.reply_to_message)
             if result:
@@ -230,15 +236,16 @@ def content(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & test_group & from_user
-                   & Filters.command(["version"], glovar.prefix))
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["version"], glovar.prefix)
+                   & test_group
+                   & from_user)
 def version(client: Client, message: Message) -> bool:
     # Check the program's version
     try:
         cid = message.chat.id
         aid = message.from_user.id
         mid = message.message_id
-        text = (f"{lang('admin')}{lang('colon')}{user_mention(aid)}\n\n"
+        text = (f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
                 f"{lang('version')}{lang('colon')}{bold(glovar.version)}\n")
         thread(send_message, (client, cid, text, mid))
 

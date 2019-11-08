@@ -18,14 +18,14 @@
 
 import logging
 import re
-from typing import Optional, Union
+from typing import Optional, Set, Union
 
 from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
 from .etc import code, general_link, get_channel_link, get_forward_name, get_full_name, get_now, get_text, lang
 from .etc import message_link, thread
-from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug, send_debug_contact
+from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug
 from .channel import share_bad_user, update_score
 from .file import save
 from .group import delete_message
@@ -86,9 +86,9 @@ def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
     return False
 
 
-def get_contact(text: str) -> str:
-    # Get the contact information in the text
-    result = ""
+def get_contacts(text: str) -> Set[str]:
+    # Get the contacts information in the text
+    result = set()
     try:
         for the_type in ["con", "iml"]:
             match = is_regex_text(the_type, text)
@@ -108,7 +108,8 @@ def get_contact(text: str) -> str:
                 if not group_dict or not group_dict.get("con"):
                     continue
 
-                return group_dict["con"]
+                result.add(group_dict["con"].lower())
+                break
     except Exception as e:
         logger.warning(f"Get contact error: {e}", exc_info=True)
 
@@ -128,39 +129,56 @@ def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
     return result
 
 
-def record_contact_info(client: Client, text: str, em: Message) -> bool:
-    # Record the contact information in the message
+def record_contacts_info(client: Client, text: str) -> Set[str]:
+    # Record the contacts information in the message
+    result = set()
     try:
         if not text.strip():
-            return True
+            return set()
 
         gid = list(glovar.configs)[0]
-        contact = get_contact(text)
-        if (contact and contact not in glovar.bad_ids["contacts"]
-                and not is_friend_username(client, gid, contact, True)):
-            glovar.bad_ids["contacts"].add(contact)
-            save("bad_ids")
-            send_debug_contact(client, "record", contact, em)
+        contacts = get_contacts(text)
+
+        for contact in contacts:
+            if (contact
+                    and contact not in glovar.bad_ids["contacts"]
+                    and not is_friend_username(client, gid, contact, True)):
+                glovar.bad_ids["contacts"].add(contact)
+                save("bad_ids")
+
+        result = contacts
     except Exception as e:
-        logger.warning(f"Record contact error: {e}", exc_info=True)
+        logger.warning(f"Record contacts error: {e}", exc_info=True)
 
-    return False
+    return result
 
 
-def remove_contact_info(client: Client, text: str, em: Message = None, pure: bool = False) -> bool:
-    # Remove the contact information in the message
+def remove_contacts_info(message: Message, text: str) -> bool:
+    # Remove the contacts information
     try:
-        if pure:
-            contact = text
-        else:
-            contact = get_contact(text)
+        # Extract contacts from report message in LOGGING
+        if message:
+            if not message.text:
+                return True
 
-        if contact and contact in glovar.bad_ids["contacts"]:
-            glovar.bad_ids["contacts"].discard(contact)
-            save("bad_ids")
-            send_debug_contact(client, "remove", contact, em)
+            contacts = set()
+            record_list = message.text.split("\n")
+
+            for r in record_list:
+                if re.search(f"^{lang('contact')}{lang('colon')}", r):
+                    contacts.add(r.split(f"{lang('colon')}")[-1])
+
+        # Plain text as contact
+        else:
+            contacts = {text}
+
+        # Remove the contacts
+        for contact in contacts:
+            if contact and contact in glovar.bad_ids["contacts"]:
+                glovar.bad_ids["contacts"].discard(contact)
+                save("bad_ids")
     except Exception as e:
-        logger.warning(f"Remove contact error: {e}", exc_info=True)
+        logger.warning(f"Remove contacts info error: {e}", exc_info=True)
 
     return False
 
@@ -207,7 +225,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 log_rule = lang("name_examine")
 
             # Check if necessary
-            if uid in glovar.recorded_ids[gid] and is_high_score_user(message):
+            if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
                 return False
 
             # Terminate
@@ -247,7 +265,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 log_rule = lang("name_examine")
 
             # Check if necessary
-            if uid in glovar.recorded_ids[gid] and is_high_score_user(message):
+            if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
                 return False
 
             # Terminate
@@ -287,6 +305,11 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 log_rule = lang("record_message")
                 debug_action = lang("record_delete")
 
+            if more in {"contact", "content"}:
+                log_rule = lang("record_message")
+                debug_action = lang("record_delete")
+                more = ""
+
             # Terminate
             if is_detected_user(message) or uid in glovar.recorded_ids[gid] or the_type == "true":
                 delete_message(client, gid, mid)
@@ -322,7 +345,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_level = lang("auto_delete")
             log_rule = lang("watch_user")
             debug_action = lang("watch_delete")
-            score_user = is_high_score_user(message)
+            score_user = is_high_score_user(message.from_user)
             limited_user = is_limited_user(gid, user, now, glovar.configs[gid].get("new"))
 
             if score_user:
@@ -404,7 +427,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_level = lang("auto_ban")
             log_rule = lang("watch_user")
             debug_action = lang("watch_ban")
-            score_user = is_high_score_user(message)
+            score_user = is_high_score_user(message.from_user)
 
             if score_user:
                 log_rule = lang("score_user")
@@ -519,25 +542,26 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         )
                     result = False
                 else:
+                    if rule == "bio":
+                        contacts = record_contacts_info(client, more)
+                    elif rule == "name" and more not in {"contact", "content"}:
+                        forward_name = get_forward_name(message, True)
+                        full_name = get_full_name(user, True)
+                        contacts = record_contacts_info(client, forward_name)
+                        contacts = record_contacts_info(client, full_name) | contacts
+                    else:
+                        contacts = record_contacts_info(client, message_text)
+
                     result = forward_evidence(
                         client=client,
                         message=message,
                         user=user,
                         level=log_level,
                         rule=log_rule,
+                        contacts=contacts,
                         more=more
                     )
                     if result:
-                        if rule == "bio":
-                            thread(record_contact_info, (client, more, result))
-                        elif rule == "name" and more not in {"contact", "content"}:
-                            forward_name = get_forward_name(message, True)
-                            full_name = get_full_name(user, True)
-                            thread(record_contact_info, (client, forward_name, result))
-                            thread(record_contact_info, (client, full_name, result))
-                        else:
-                            thread(record_contact_info, (client, message_text, result))
-
                         add_bad_user(client, uid)
                         ban_user(client, gid, uid)
                         delete_message(client, gid, mid)

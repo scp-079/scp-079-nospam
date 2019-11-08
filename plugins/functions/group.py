@@ -59,29 +59,10 @@ def get_config_text(config: dict) -> str:
                    f"{lang('delete')}{lang('colon')}{code(delete_text)}\n"
                    f"{lang('restrict')}{lang('colon')}{code(restrict_text)}\n")
 
-        # Bio
-        bio_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("bio"))
-        result += f"{lang('bio')}{lang('colon')}{code(bio_text)}\n"
-        
-        # Bot
-        bot_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("bot"))
-        result += f"{lang('bot')}{lang('colon')}{code(bot_text)}\n"
-        
-        # New
-        new_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("new"))
-        result += f"{lang('new')}{lang('colon')}{code(new_text)}\n"
-        
-        # Deleter
-        deleter_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("deleter"))
-        result += f"{lang('deleter')}{lang('colon')}{code(deleter_text)}\n"
-        
-        # Reporter
-        reporter_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("reporter"))
-        result += f"{lang('reporter')}{lang('colon')}{code(reporter_text)}\n"
-        
-        # ML
-        ml_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get("ml"))
-        result += f"{lang('ml')}{lang('colon')}{code(ml_text)}\n"
+        # Others
+        for the_type in ["bio", "bot", "new", "deleter", "reporter", "ml"]:
+            the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
+            result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
     except Exception as e:
         logger.warning(f"Get config text error: {e}", exc_info=True)
 
@@ -106,6 +87,7 @@ def get_group(client: Client, gid: int, cache: bool = True) -> Optional[Chat]:
     result = None
     try:
         the_cache = glovar.chats.get(gid)
+
         if the_cache:
             result = the_cache
         else:
@@ -140,6 +122,7 @@ def get_member(client: Client, gid: int, uid: int, cache: bool = True) -> Option
             return None
 
         the_cache = glovar.members[gid].get(uid)
+
         if the_cache:
             result = the_cache
         else:
@@ -184,6 +167,7 @@ def leave_group(client: Client, gid: int) -> bool:
     # Leave a group, clear it's data
     try:
         glovar.left_group_ids.add(gid)
+        save("left_group_ids")
         thread(leave_chat, (client, gid))
 
         glovar.admin_ids.pop(gid, None)

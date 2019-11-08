@@ -18,7 +18,7 @@
 
 import logging
 from json import dumps
-from typing import List, Optional, Union
+from typing import List, Optional, Set, Union
 
 from pyrogram import Chat, Client, Message, User
 from pyrogram.errors import FloodWait
@@ -67,9 +67,11 @@ def ask_for_help(client: Client, level: str, gid: int, uid: int, group: str = "s
 def auto_report(client: Client, message: Message) -> bool:
     # Let WARN auto report a user
     try:
+        # Basic data
         gid = message.chat.id
         uid = message.from_user.id
         mid = message.message_id
+
         share_data(
             client=client,
             receivers=["WARN"],
@@ -154,16 +156,19 @@ def format_data(sender: str, receivers: List[str], action: str, action_type: str
 
 
 def forward_evidence(client: Client, message: Message, user: User, level: str, rule: str,
-                     score: float = 0.0, more: str = None) -> Optional[Union[bool, Message]]:
+                     score: float = 0.0, contacts: Set[str] = None,
+                     more: str = None) -> Optional[Union[bool, Message]]:
     # Forward the message to the logging channel as evidence
     result = None
     try:
+        # Basic information
         uid = user.id
         text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
                 f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                 f"{lang('level')}{lang('colon')}{code(level)}\n"
                 f"{lang('rule')}{lang('colon')}{code(rule)}\n")
 
+        # Additional information
         if message.game:
             text += f"{lang('message_type')}{lang('colon')}{code(lang('gam'))}\n"
         elif message.service:
@@ -187,6 +192,11 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
         if lang("bio") in rule:
             text += f"{lang('user_bio')}{lang('colon')}{code(more)}\n"
 
+        if contacts:
+            for contact in contacts:
+                text += f"{lang('contact')}{lang('colon')}{code(contact)}\n"
+
+        # Extra information
         if message.contact or message.location or message.venue or message.video_note or message.voice:
             text += f"{lang('more')}{lang('colon')}{code(lang('privacy'))}\n"
         elif message.game or message.service:
@@ -258,19 +268,32 @@ def get_content(message: Message) -> str:
     return result
 
 
-def get_debug_text(client: Client, context: Union[int, Chat]) -> str:
-    # Get a debug message text prefix, accept int or Chat
+def get_debug_text(client: Client, context: Union[int, Chat, List[int]]) -> str:
+    # Get a debug message text prefix
     text = ""
     try:
-        if isinstance(context, int):
-            group_id = context
-        else:
-            group_id = context.id
+        # Prefix
+        text = f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
 
-        group_name, group_link = get_group_info(client, context)
-        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
-                f"{lang('group_id')}{lang('colon')}{code(group_id)}\n")
+        # List of group ids
+        if isinstance(context, list):
+            for group_id in context:
+                group_name, group_link = get_group_info(client, group_id)
+                text += (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                         f"{lang('group_id')}{lang('colon')}{code(group_id)}\n")
+
+        # One group
+        else:
+            # Get group id
+            if isinstance(context, int):
+                group_id = context
+            else:
+                group_id = context.id
+
+            # Generate the group info text
+            group_name, group_link = get_group_info(client, context)
+            text += (f"{lang('group_name')}{lang('colon')}{general_link(group_name, group_link)}\n"
+                     f"{lang('group_id')}{lang('colon')}{code(group_id)}\n")
     except Exception as e:
         logger.warning(f"Get debug text error: {e}", exc_info=True)
 
@@ -289,28 +312,6 @@ def send_debug(client: Client, chat: Chat, action: str, uid: int, mid: int, em: 
         return True
     except Exception as e:
         logger.warning(f"Send debug error: {e}", exc_info=True)
-
-    return False
-
-
-def send_debug_contact(client: Client, action: str, contact: str, em: Message) -> bool:
-    # Send contact debug message
-    try:
-        mid = em.message_id
-        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang(f'{action}_contact'))}\n")
-
-        if em:
-            text += f"{lang('triggered_by')}{lang('colon')}{general_link(mid, message_link(em))}\n"
-
-        if contact:
-            text += f"{lang('more')}{lang('colon')}{code(contact)}\n"
-
-        thread(send_message, (client, glovar.debug_channel_id, text))
-
-        return True
-    except Exception as e:
-        logger.warning(f"Send debug contact error: {e}", exc_info=True)
 
     return False
 
@@ -340,6 +341,22 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
                data: Union[bool, dict, int, str] = None, file: str = None, encrypt: bool = True) -> bool:
     # Use this function to share data in the channel
     try:
+        thread(
+            target=share_data_thread,
+            args=(client, receivers, action, action_type, data, file, encrypt)
+        )
+
+        return True
+    except Exception as e:
+        logger.warning(f"Share data error: {e}", exc_info=True)
+
+    return False
+
+
+def share_data_thread(client: Client, receivers: List[str], action: str, action_type: str,
+                      data: Union[bool, dict, int, str] = None, file: str = None, encrypt: bool = True) -> bool:
+    # Share data thread
+    try:
         if glovar.sender in receivers:
             receivers.remove(glovar.sender)
 
@@ -359,6 +376,7 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
                 action_type=action_type,
                 data=data
             )
+
             if encrypt:
                 # Encrypt the file, save to the tmp directory
                 file_path = get_new_path()
@@ -368,11 +386,11 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
                 file_path = file
 
             result = send_document(client, channel_id, file_path, None, text)
+
             # Delete the tmp file
             if result:
                 for f in {file, file_path}:
-                    if "tmp/" in f:
-                        thread(delete_file, (f,))
+                    "tmp/" in f and thread(delete_file, (f,))
         else:
             text = format_data(
                 sender=glovar.sender,
@@ -391,7 +409,7 @@ def share_data(client: Client, receivers: List[str], action: str, action_type: s
 
         return True
     except Exception as e:
-        logger.warning(f"Share data error: {e}", exc_info=True)
+        logger.warning(f"Share data thread error: {e}", exc_info=True)
 
     return False
 
