@@ -962,7 +962,7 @@ def receive_user_score(client: Client, project: str, data: dict) -> bool:
         # Global delete
         total_score = sum(glovar.user_ids[uid]["score"].values())
 
-        if total_score < 3.0:
+        if total_score < 3.0 or not glovar.user_ids[uid]["join"]:
             return True
 
         text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
