@@ -428,6 +428,7 @@ emoji_set: Set[str] = set(UNICODE_EMOJI)
 locks: Dict[str, Lock] = {
     "admin": Lock(),
     "message": Lock(),
+    "receive": Lock(),
     "regex": Lock(),
     "test": Lock(),
     "text": Lock()
@@ -485,6 +486,11 @@ sender: str = "NOSPAM"
 
 should_hide: bool = False
 
+sticker_titles: Dict[str, str] = {}
+# sticker_titles = {
+#     "short_name": "sticker_title"
+# }
+
 usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 # usernames = {
 #     "SCP_079": {
@@ -493,7 +499,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.1.4"
+version: str = "0.1.5"
 
 # Load data from pickle
 
