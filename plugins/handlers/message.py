@@ -22,7 +22,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_content, get_debug_text
-from ..functions.etc import code, general_link, get_full_name, get_now, lang, mention_id, thread
+from ..functions.etc import code, delay, general_link, get_full_name, get_now, lang, mention_id, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_bad_message, is_bio_text, is_declared_message, is_nm_text
@@ -284,7 +284,7 @@ def process_data(client: Client, message: Message) -> bool:
 
                 if action == "update":
                     if action_type == "score":
-                        receive_user_score(client, sender, data)
+                        delay(3, receive_user_score, [client, sender, data])
 
             elif sender == "CONFIG":
 
