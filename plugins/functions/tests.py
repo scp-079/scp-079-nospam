@@ -75,7 +75,7 @@ def nospam_test(client: Client, message: Message) -> bool:
 
         # QR code
         if qrcode:
-            text += f"{lang('qrcode')}{lang('colon')}" + "-" * 24 + "\n\n"
+            text += f"\n{lang('qrcode')}{lang('colon')}" + "-" * 24 + "\n\n"
             text += code(qrcode) + "\n\n"
 
             type_list = [lang(t) for t in glovar.regex if is_regex_text(t, qrcode)]
