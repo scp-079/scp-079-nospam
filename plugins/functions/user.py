@@ -168,6 +168,12 @@ def remove_contacts_info(message: Message, text: str) -> bool:
                 if re.search(f"^{lang('contact')}{lang('colon')}", r):
                     contacts.add(r.split(f"{lang('colon')}")[-1])
 
+            if message.reply_to_message:
+                forward_name = get_forward_name(message.reply_to_message, True)
+                contacts = contacts | get_contacts(forward_name)
+                message_text = get_text(message.reply_to_message, True)
+                contacts = contacts | get_contacts(message_text)
+
         # Plain text as contact
         else:
             contacts = {text}
@@ -208,7 +214,6 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             more = None
 
         now = message.date or get_now()
-        message_text = get_text(message, True)
 
         # Group config
         report_only = glovar.configs[gid].get("reporter")
@@ -550,6 +555,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         contacts = record_contacts_info(client, forward_name)
                         contacts = record_contacts_info(client, full_name) | contacts
                     else:
+                        message_text = get_text(message, True)
                         contacts = record_contacts_info(client, message_text)
 
                     result = forward_evidence(
