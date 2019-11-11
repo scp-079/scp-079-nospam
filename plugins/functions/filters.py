@@ -957,7 +957,7 @@ def is_exe(message: Message) -> bool:
     return False
 
 
-def is_friend_username(client: Client, gid: int, username: str, friend: bool) -> bool:
+def is_friend_username(client: Client, gid: int, username: str, friend: bool, friend_user: bool = False) -> bool:
     # Check if it is a friend username
     try:
         username = username.strip()
@@ -977,11 +977,14 @@ def is_friend_username(client: Client, gid: int, username: str, friend: bool) ->
                     return True
 
         if peer_type == "user":
+            if friend and friend_user:
+                return True
+
             member = get_member(client, gid, peer_id)
             if member and member.status in {"creator", "administrator", "member"}:
                 return True
 
-            if glovar.configs[gid].get("friend") or friend:
+            if friend or glovar.configs[gid].get("friend"):
                 if member and is_class_e_user(member.user):
                     return True
     except Exception as e:
