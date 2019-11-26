@@ -306,6 +306,7 @@ lang: Dict[str, str] = {
     "bio": (zh_cn and "简介检查") or "Bio",
     "con": (zh_cn and "联系方式") or "Contact",
     "del": (zh_cn and "自动删除") or "Delete",
+    "fil": (zh_cn and "文件名称") or "Filename",
     "iml": (zh_cn and "IM 链接") or "IM Link",
     "pho": (zh_cn and "电话号码") or "Phone Number",
     "nm": (zh_cn and "名称封禁") or "Name",
