@@ -129,6 +129,80 @@ def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
     return result
 
 
+def global_delete_score(client: Client, uid: int) -> bool:
+    # Score global delete
+    try:
+        if uid in glovar.bad_ids["users"]:
+            return True
+
+        if not glovar.user_ids.get(uid) or not glovar.user_ids[uid].get("join"):
+            return True
+
+        total_score = sum(glovar.user_ids[uid]["score"].values())
+
+        if total_score < 3.0:
+            return True
+
+        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('level')}{lang('colon')}{code(lang('global_delete'))}\n"
+                f"{lang('rule')}{lang('colon')}{code(lang('score_user'))}\n"
+                f"{lang('user_score')}{lang('colon')}{code(total_score)}\n")
+        result = send_message(client, glovar.logging_channel_id, text)
+
+        if not result:
+            return True
+
+        gid = list(glovar.configs)[0]
+        ask_for_help(client, "delete", gid, uid, "global")
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('global_delete'))}\n"
+                f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, message_link(result))}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Global delete score error: {e}", exc_info=True)
+
+    return False
+
+
+def global_delete_watch(client: Client, uid: int, mid: int) -> bool:
+    # Watch global delete
+    try:
+        if uid in glovar.bad_ids["users"]:
+            return True
+
+        if not glovar.user_ids.get(uid) or not glovar.user_ids[uid].get("join"):
+            return True
+
+        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('level')}{lang('colon')}{code(lang('global_delete'))}\n"
+                f"{lang('rule')}{lang('colon')}{code(lang('watch_user'))}\n")
+        result = send_message(client, glovar.logging_channel_id, text)
+
+        if not result:
+            return True
+
+        gid = list(glovar.configs)[0]
+        ask_for_help(client, "delete", gid, uid, "global")
+        triggered_link = f"{get_channel_link(glovar.watch_channel_id)}/{mid}"
+        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
+                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
+                f"{lang('action')}{lang('colon')}{code(lang('global_delete'))}\n"
+                f"{lang('triggered_by')}{lang('colon')}{general_link(mid, triggered_link)}\n"
+                f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, message_link(result))}\n")
+        thread(send_message, (client, glovar.debug_channel_id, text))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Global delete watch error: {e}", exc_info=True)
+
+    return False
+
+
 def record_contacts_info(client: Client, text: str) -> Set[str]:
     # Record the contacts information in the message
     result = set()
@@ -585,37 +659,5 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         return bool(result)
     except Exception as e:
         logger.warning(f"Terminate user error: {e}", exc_info=True)
-
-    return False
-
-
-def watch_global_delete(client: Client, uid: int, mid: int) -> bool:
-    # Watch global delete
-    try:
-        if uid in glovar.bad_ids["users"]:
-            return True
-
-        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
-                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
-                f"{lang('level')}{lang('colon')}{code(lang('global_delete'))}\n"
-                f"{lang('rule')}{lang('colon')}{code(lang('watch_user'))}\n")
-        result = send_message(client, glovar.logging_channel_id, text)
-
-        if not result:
-            return True
-
-        gid = list(glovar.configs)[0]
-        ask_for_help(client, "delete", gid, uid, "global")
-        triggered_link = f"{get_channel_link(glovar.watch_channel_id)}/{mid}"
-        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('global_delete'))}\n"
-                f"{lang('triggered_by')}{lang('colon')}{general_link(mid, triggered_link)}\n"
-                f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, message_link(result))}\n")
-        thread(send_message, (client, glovar.debug_channel_id, text))
-
-        return True
-    except Exception as e:
-        logger.warning(f"Watch global delete error: {e}", exc_info=True)
 
     return False

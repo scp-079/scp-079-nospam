@@ -36,7 +36,8 @@ from .ids import init_group_id, init_user_id
 from .image import get_image_hash
 from .telegram import send_message, send_photo, send_report_message
 from .timers import update_admins
-from .user import add_bad_user, ban_user, remove_contacts_info, terminate_user, watch_global_delete
+from .user import add_bad_user, ban_user, global_delete_score, global_delete_watch
+from .user import remove_contacts_info, terminate_user
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -964,28 +965,7 @@ def receive_user_score(client: Client, project: str, data: dict) -> bool:
         save("user_ids")
 
         # Global delete
-        total_score = sum(glovar.user_ids[uid]["score"].values())
-
-        if total_score < 3.0 or not glovar.user_ids[uid]["join"]:
-            return True
-
-        text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
-                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
-                f"{lang('level')}{lang('colon')}{code(lang('global_delete'))}\n"
-                f"{lang('rule')}{lang('colon')}{code(lang('score_user'))}\n"
-                f"{lang('user_score')}{lang('colon')}{code(total_score)}\n")
-        result = send_message(client, glovar.logging_channel_id, text)
-
-        if not result:
-            return True
-
-        gid = list(glovar.configs)[0]
-        ask_for_help(client, "delete", gid, uid, "global")
-        text = (f"{lang('project')}{lang('colon')}{general_link(glovar.project_name, glovar.project_link)}\n"
-                f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
-                f"{lang('action')}{lang('colon')}{code(lang('global_delete'))}\n"
-                f"{lang('evidence')}{lang('colon')}{general_link(result.message_id, message_link(result))}\n")
-        thread(send_message, (client, glovar.debug_channel_id, text))
+        delay(10, global_delete_score, [client, uid])
 
         return True
     except Exception as e:
@@ -1013,9 +993,12 @@ def receive_watch_user(client: Client, data: dict, from_watch: bool = False) -> 
             glovar.watch_ids["ban"][uid] = until
 
             # Global delete
-            if from_watch and glovar.user_ids.get(uid) and glovar.user_ids[uid].get("join"):
-                mid = data["message_id"]
-                delay(10, watch_global_delete, [client, uid, mid])
+            if not from_watch:
+                save("watch_ids")
+                return True
+
+            mid = data["message_id"]
+            delay(10, global_delete_watch, [client, uid, mid])
 
         elif the_type == "delete":
             glovar.watch_ids["delete"][uid] = until
