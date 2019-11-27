@@ -84,7 +84,7 @@ def interval_min_15(client: Client) -> bool:
         # Check user's name
         now = get_now()
 
-        with glovar.locks["message"]:
+        with glovar.locks["message"] and glovar.locks["text"]:
             user_ids = deepcopy(glovar.user_ids)
 
         for uid in user_ids:
