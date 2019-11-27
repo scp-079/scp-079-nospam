@@ -277,6 +277,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         mid = message.message_id
         context_list = context.split()
         the_type = context_list[0]
+
         if len(context_list) >= 2:
             rule = context_list[1]
         else:
