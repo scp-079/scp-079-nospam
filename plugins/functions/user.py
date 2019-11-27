@@ -90,7 +90,7 @@ def get_contacts(text: str) -> Set[str]:
     # Get the contacts information in the text
     result = set()
     try:
-        for the_type in ["con", "iml"]:
+        for the_type in ["con", "iml", "pho"]:
             match = is_regex_text(the_type, text)
 
             if not match:
