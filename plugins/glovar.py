@@ -78,6 +78,7 @@ invalid: Union[str, Set[str]] = ""
 limit_track: int = 0
 project_link: str = ""
 project_name: str = ""
+time_captcha: int = 0
 time_long: int = 0
 time_new: int = 0
 time_punish: int = 0
@@ -136,6 +137,7 @@ try:
     limit_track = int(config["custom"].get("limit_track", limit_track))
     project_link = config["custom"].get("project_link", project_link)
     project_name = config["custom"].get("project_name", project_name)
+    time_captcha = int(config["custom"].get("time_captcha", time_captcha))
     time_long = int(config["custom"].get("time_long", time_long))
     time_new = int(config["custom"].get("time_new", time_new))
     time_punish = int(config["custom"].get("time_punish", time_punish))
@@ -187,6 +189,7 @@ if (bot_token in {"", "[DATA EXPUNGED]"}
         or limit_track == 0
         or project_link in {"", "[DATA EXPUNGED]"}
         or project_name in {"", "[DATA EXPUNGED]"}
+        or time_captcha == 0
         or time_long == 0
         or time_new == 0
         or time_punish == 0
@@ -299,7 +302,6 @@ lang: Dict[str, str] = {
     "more": (zh_cn and "附加信息") or "Extra Info",
     # Regex
     "ad": (zh_cn and "广告用语") or "Ad",
-    "aff": (zh_cn and "推广链接") or "AFF Link",
     "ava": (zh_cn and "头像分析") or "Avatar",
     "bad": (zh_cn and "敏感检测") or "Bad",
     "ban": (zh_cn and "自动封禁") or "Ban",
@@ -460,7 +462,6 @@ recorded_ids: Dict[int, Set[int]] = {}
 
 regex: Dict[str, bool] = {
     "ad": True,
-    "aff": True,
     "ava": True,
     "bad": True,
     "ban": True,
@@ -480,6 +481,7 @@ regex: Dict[str, bool] = {
     "wb": True,
     "wd": True
 }
+
 for c in ascii_lowercase:
     regex[f"ad{c}"] = True
 
@@ -500,7 +502,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.1.5"
+version: str = "0.1.6"
 
 # Load data from pickle
 

@@ -23,10 +23,10 @@ from typing import Optional, Set, Union
 from pyrogram import ChatPermissions, Client, Message, User
 
 from .. import glovar
+from .channel import ask_for_help, ask_help_captcha, auto_report, declare_message, forward_evidence, send_debug
+from .channel import share_bad_user, update_score
 from .etc import code, general_link, get_channel_link, get_forward_name, get_full_name, get_now, get_text, lang
 from .etc import message_link, thread
-from .channel import ask_for_help, auto_report, declare_message, forward_evidence, send_debug
-from .channel import share_bad_user, update_score
 from .file import save
 from .group import delete_message
 from .filters import is_class_d, is_declared_message, is_detected_user, is_friend_username, is_high_score_user
@@ -609,7 +609,12 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     if result:
                         delete_message(client, gid, mid)
                         declare_message(client, gid, mid)
-                        ask_for_help(client, "delete", gid, uid, "global")
+
+                        if glovar.captcha_id in glovar.admin_ids[gid] and get_now() - now < glovar.time_captcha:
+                            ask_help_captcha(client, gid, uid)
+                        else:
+                            ask_for_help(client, "delete", gid, uid, "global")
+
                         previous = add_detected_user(gid, uid, now)
                         not previous and update_score(client, uid)
                         send_debug(

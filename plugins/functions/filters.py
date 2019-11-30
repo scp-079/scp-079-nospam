@@ -735,15 +735,20 @@ def is_ban_text(text: str, ocr: bool, message: Message = None) -> bool:
         if is_regex_text("ban", text, ocr):
             return True
 
+        # ad + con
         ad = is_regex_text("ad", text, ocr) or is_emoji("ad", text, message)
         con = is_con_text(text, ocr)
+
         if ad and con:
             return True
 
+        # ad_ + con
         ad = is_ad_text(text, ocr)
+
         if ad and con:
             return True
 
+        # ad_ + ad_
         if ad:
             ad = is_ad_text(text, ocr, ad)
             return bool(ad)
@@ -806,7 +811,6 @@ def is_con_text(text: str, ocr: bool) -> bool:
     # Check if the text is con text
     try:
         if (is_regex_text("con", text, ocr)
-                or is_regex_text("aff", text, ocr)
                 or is_regex_text("iml", text, ocr)
                 or is_regex_text("pho", text, ocr)):
             return True
@@ -1285,11 +1289,10 @@ def is_wb_text(text: str, ocr: bool) -> bool:
     try:
         if (is_regex_text("wb", text, ocr)
                 or is_regex_text("ad", text, ocr)
-                or is_regex_text("aff", text, ocr)
                 or is_regex_text("iml", text, ocr)
                 or is_regex_text("pho", text, ocr)
-                or is_regex_text("spc", text, ocr)
-                or is_regex_text("spe", text, ocr)):
+                or is_regex_text("sho", text, ocr)
+                or is_regex_text("spc", text, ocr)):
             return True
 
         for c in ascii_lowercase:
@@ -1306,7 +1309,7 @@ def is_wd_text(text: str, ocr: bool) -> bool:
     try:
         if (is_regex_text("wd", text, ocr)
                 or is_regex_text("con", text, ocr)
-                or is_regex_text("sho", text, ocr)
+                or is_regex_text("spe", text, ocr)
                 or is_regex_text("tgp", text, ocr)):
             return True
     except Exception as e:

@@ -64,6 +64,26 @@ def ask_for_help(client: Client, level: str, gid: int, uid: int, group: str = "s
     return False
 
 
+def ask_help_captcha(client: Client, gid: int, uid: int, mid: int = None) -> bool:
+    # Ask help captcha
+    try:
+        share_data(
+            client=client,
+            receivers=["CAPTCHA"],
+            action="help",
+            action_type="captcha",
+            data={
+                "group_id": gid,
+                "user_id": uid,
+                "message_id": mid
+            }
+        )
+    except Exception as e:
+        logger.warning(f"Ask help captcha error: {e}", exc_info=True)
+
+    return False
+
+
 def auto_report(client: Client, message: Message) -> bool:
     # Let WARN auto report a user
     try:
