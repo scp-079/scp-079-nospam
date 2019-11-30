@@ -1296,7 +1296,7 @@ def is_wb_text(text: str, ocr: bool) -> bool:
             return True
 
         for c in ascii_lowercase:
-            if is_regex_text(f"ad{c}", text, ocr):
+            if c not in {"i"} and is_regex_text(f"ad{c}", text, ocr):
                 return True
     except Exception as e:
         logger.warning(f"Is wb text error: {e}", exc_info=True)
@@ -1308,6 +1308,7 @@ def is_wd_text(text: str, ocr: bool) -> bool:
     # Check if the text is wd text
     try:
         if (is_regex_text("wd", text, ocr)
+                or is_regex_text("adi", text, ocr)
                 or is_regex_text("con", text, ocr)
                 or is_regex_text("spe", text, ocr)
                 or is_regex_text("tgp", text, ocr)):
