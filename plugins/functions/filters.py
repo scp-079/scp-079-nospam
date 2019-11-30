@@ -467,11 +467,13 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     # Get OCR
                     ocr = get_ocr(image_path)
                     if ocr:
+                        message.new_chat_title = ocr
                         if is_ban_text(ocr, True):
                             return "ban"
 
                         if message_text:
                             all_text = message_text + ocr
+                            message.new_chat_title = all_text
                             if is_ban_text(all_text, False):
                                 return "ban"
 

@@ -637,6 +637,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     else:
                         message_text = get_text(message, True)
                         contacts = record_contacts_info(client, message_text)
+                        if message.new_chat_title:
+                            contacts = contacts | record_contacts_info(client, message.new_chat_title)
 
                     result = forward_evidence(
                         client=client,
