@@ -472,6 +472,9 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_rule = lang("rule_custom")
             debug_action = lang("auto_delete")
 
+            if rule == "name":
+                log_rule = lang("name_examine")
+
             # Terminate
             if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
                 delete_message(client, gid, mid)
