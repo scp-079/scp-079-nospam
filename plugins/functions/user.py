@@ -343,6 +343,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
             if rule == "name":
                 log_rule = lang("name_examine")
+            elif rule == "bio":
+                log_rule = lang("bio_examine")
 
             # Check if necessary
             if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
@@ -474,6 +476,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
             if rule == "name":
                 log_rule = lang("name_examine")
+            elif rule == "bio":
+                log_rule = lang("bio_examine")
 
             # Terminate
             if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
