@@ -270,7 +270,7 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
     except Exception as e:
         logger.warning(f"Receive avatar error: {e}", exc_info=True)
     finally:
-        delete_file(image_path)
+        thread(delete_file, (image_path,))
         glovar.locks["message"].release()
 
     return False

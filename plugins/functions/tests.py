@@ -71,7 +71,7 @@ def nospam_test(client: Client, message: Message) -> bool:
         image_hash = image_path and get_md5sum("file", image_path)
         qrcode = image_path and get_qrcode(image_path)
         ocr = image_path and get_ocr(image_path, True)
-        image_path and delete_file(image_path)
+        image_path and thread(delete_file, (image_path,))
 
         # QR code
         if qrcode:
