@@ -1201,7 +1201,7 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
         # Check links
         bypass = get_stripped_link(get_channel_link(message))
         links = get_links(message)
-        tg_links = [l.lower() for l in links if is_regex_text("tgl", l)]
+        tg_links = [lk.lower() for lk in links if is_regex_text("tgl", lk)]
 
         # Define a bypass link filter function
         def is_bypass_link(link: str) -> bool:

@@ -70,6 +70,7 @@ test_group_id: int = 0
 watch_channel_id: int = 0
 
 # [custom]
+aio: Union[bool, str] = ""
 backup: Union[bool, str] = ""
 date_reset: str = ""
 default_group_link: str = ""
@@ -126,6 +127,8 @@ try:
     test_group_id = int(config["channels"].get("test_group_id", test_group_id))
     watch_channel_id = int(config["channels"].get("watch_channel_id", watch_channel_id))
     # [custom]
+    aio = config["custom"].get("aio", aio)
+    aio = eval(aio)
     backup = config["custom"].get("backup", backup)
     backup = eval(backup)
     date_reset = config["custom"].get("date_reset", date_reset)
@@ -181,6 +184,7 @@ if (bot_token in {"", "[DATA EXPUNGED]"}
         or logging_channel_id == 0
         or test_group_id == 0
         or watch_channel_id == 0
+        or aio not in {False, True}
         or backup not in {False, True}
         or date_reset in {"", "[DATA EXPUNGED]"}
         or default_group_link in {"", "[DATA EXPUNGED]"}
