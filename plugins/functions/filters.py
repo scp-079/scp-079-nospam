@@ -401,7 +401,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Bypass
             message_text = get_text(message)
             description = get_description(client, gid)
-            if (description and message_text) and message_text in description:
+            if (description and message_text) and len(message_text) > 5 and message_text in description:
                 return ""
 
             pinned_message = get_pinned(client, gid)
@@ -410,7 +410,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 return ""
 
             pinned_text = get_text(pinned_message)
-            if (pinned_text and message_text) and message_text in pinned_text:
+            if (pinned_text and message_text) and len(message_text) > 5 and message_text in pinned_text:
                 return ""
 
             group_sticker = get_group_sticker(client, gid)
