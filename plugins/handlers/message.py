@@ -128,6 +128,8 @@ def check_join(client: Client, message: Message) -> bool:
             if bio and bio not in glovar.except_ids["long"]:
                 if is_bio_text(bio):
                     terminate_user(client, message, new, f"ban bio {bio}")
+                elif bio in glovar.bad_ids["contents"]:
+                    terminate_user(client, message, new, f"ban bio {bio}")
 
             # Check bot
             if glovar.configs[gid].get("bot") and new.is_bot:

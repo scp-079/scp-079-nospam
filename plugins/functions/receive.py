@@ -30,7 +30,8 @@ from .channel import ask_for_help, declare_message, get_content, get_debug_text,
 from .etc import code, crypt_str, delay, general_link, get_int, get_now, get_report_record, get_stripped_link, get_text
 from .etc import lang, mention_id, message_link, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
-from .filters import is_avatar_image, is_bad_message, is_class_e, is_declared_message_id, is_detected_user_id
+from .filters import is_avatar_image, is_bad_message, is_ban_text, is_class_e
+from .filters import is_declared_message_id, is_detected_user_id, is_wb_text
 from .group import delete_message, get_config_text, get_message, leave_group
 from .ids import init_group_id, init_user_id
 from .image import get_image_hash
@@ -75,9 +76,19 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                     glovar.except_ids["temp"].discard(record["name"])
                     save("except_ids")
 
+                if record["bio"] and is_wb_text(record["bio"], False):
+                    glovar.bad_ids["contents"].add(record["bio"])
+                    glovar.except_ids["long"].discard(record["bio"])
+                    glovar.except_ids["temp"].discard(record["bio"])
+                    save("except_ids")
+
             if message.reply_to_message:
                 message = message.reply_to_message
             else:
+                return True
+
+            message_text = get_text(message, True)
+            if message_text and is_ban_text(message_text, False):
                 return True
 
             content = get_content(message)
@@ -712,6 +723,9 @@ def receive_remove_bad(client: Client, data: dict) -> bool:
             if record["type"] == lang("ser"):
                 if record["name"]:
                     glovar.bad_ids["contents"].discard(record["name"])
+
+                if record["bio"]:
+                    glovar.bad_ids["contents"].discard(record["bio"])
 
                 save("bad_ids")
 
