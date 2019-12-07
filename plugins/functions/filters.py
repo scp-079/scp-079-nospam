@@ -858,10 +858,10 @@ def is_declared_message_id(gid: int, mid: int) -> bool:
     return False
 
 
-def is_detected_url(message: Message) -> str:
+def is_detected_url(message: Message, test: bool = False) -> str:
     # Check if the message include detected url, return detected type
     try:
-        if is_class_c(None, message):
+        if not test and is_class_c(None, message):
             return ""
 
         links = get_links(message)

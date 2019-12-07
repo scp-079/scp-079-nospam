@@ -52,7 +52,7 @@ def nospam_test(client: Client, message: Message) -> bool:
             text += f"{lang('record_content')}{lang('colon')}{code(lang(detection.split()[0]))}\n"
 
         # Detected url
-        detection = is_detected_url(message)
+        detection = is_detected_url(message, True)
         if detection:
             text += f"{lang('record_link')}{lang('colon')}{code(lang(detection.split()[0]))}\n"
 
