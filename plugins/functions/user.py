@@ -593,6 +593,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     if more in {"contact", "content"}:
                         log_rule = lang("record_name")
                         debug_action = lang("name_ban")
+                        more = ""
                     else:
                         log_rule = lang("name_examine")
                         debug_action = lang("name_ban")
