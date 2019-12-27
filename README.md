@@ -4,7 +4,9 @@ This bot is used to block spam in groups.
 
 ## How to use
 
-See [this article](https://scp-079.org/nospam/).
+- See the [manual](https://telegra.ph/SCP-079-NOSPAM-12-04)
+- See [this article](https://scp-079.org/nospam/) to build a bot by yourself
+- Discuss [group](https://t.me/SCP_079_CHAT)
 
 ## To Do List
 

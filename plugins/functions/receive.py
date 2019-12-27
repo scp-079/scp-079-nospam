@@ -87,7 +87,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
             else:
                 return True
 
-            message_text = get_text(message, True)
+            message_text = get_text(message, True, True)
             if message_text and is_ban_text(message_text, False):
                 return True
 

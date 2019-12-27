@@ -22,7 +22,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_content, get_debug_text
-from ..functions.etc import code, delay, general_link, get_full_name, get_now, lang, mention_id, thread
+from ..functions.etc import code, delay, general_link, get_full_name, get_now, lang, mention_id, t2t, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_bad_message, is_bio_text, is_contact, is_declared_message
@@ -112,8 +112,9 @@ def check_join(client: Client, message: Message) -> bool:
                 return True
 
             # Check name
-            name = get_full_name(new, True)
+            name = get_full_name(new)
             if name and name not in glovar.except_ids["long"]:
+                name = t2t(name, True, True)
                 if is_nm_text(name):
                     terminate_user(client, message, new, "ban name")
                 elif name in glovar.bad_ids["contents"]:
@@ -126,7 +127,7 @@ def check_join(client: Client, message: Message) -> bool:
                     terminate_user(client, message, new, "bad name")
 
             # Check bio
-            bio = get_user_bio(client, uid, True)
+            bio = get_user_bio(client, uid, True, True)
             if bio and bio not in glovar.except_ids["long"]:
                 if is_bio_text(bio):
                     terminate_user(client, message, new, f"ban bio {bio}")

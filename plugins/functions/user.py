@@ -243,9 +243,9 @@ def remove_contacts_info(message: Message, text: str) -> bool:
                     contacts.add(r.split(f"{lang('colon')}")[-1])
 
             if message.reply_to_message:
-                forward_name = get_forward_name(message.reply_to_message, True)
+                forward_name = get_forward_name(message.reply_to_message, True, True)
                 contacts = contacts | get_contacts(forward_name)
-                message_text = get_text(message.reply_to_message, True)
+                message_text = get_text(message.reply_to_message, True, True)
                 contacts = contacts | get_contacts(message_text)
 
         # Plain text as contact
@@ -638,12 +638,12 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     if rule == "bio":
                         contacts = record_contacts_info(client, more)
                     elif rule == "name" and more not in {"contact", "content"}:
-                        forward_name = get_forward_name(message, True)
-                        full_name = get_full_name(user, True)
+                        forward_name = get_forward_name(message, True, True)
+                        full_name = get_full_name(user, True, True)
                         contacts = record_contacts_info(client, forward_name)
                         contacts = record_contacts_info(client, full_name) | contacts
                     else:
-                        message_text = get_text(message, True)
+                        message_text = get_text(message, True, True)
                         contacts = record_contacts_info(client, message_text)
                         if message.new_chat_title:
                             contacts = contacts | record_contacts_info(client, message.new_chat_title)

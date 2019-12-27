@@ -27,7 +27,7 @@ from pyrogram import CallbackQuery, Client, Filters, Message, User
 from .. import glovar
 from .channel import get_content
 from .etc import get_channel_link, get_filename, get_entity_text, get_forward_name, get_full_name, get_md5sum, get_now
-from .etc import get_links, get_stripped_link, get_text, thread
+from .etc import get_links, get_stripped_link, get_text, t2t, thread
 from .file import delete_file, get_downloaded_path, save
 from .group import get_description, get_group_sticker, get_member, get_pinned
 from .ids import init_group_id
@@ -373,9 +373,11 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Start detect ban
 
             # Check the forward from name
-            forward_name = get_forward_name(message, True)
+            forward_name = get_forward_name(message)
 
             if forward_name and forward_name not in glovar.except_ids["long"]:
+                forward_name = t2t(forward_name, True, True)
+
                 if forward_name in glovar.bad_ids["contents"]:
                     return "ban name content"
 
@@ -386,9 +388,11 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "ban name contact"
 
             # Check the user's name
-            name = get_full_name(message.from_user, True)
+            name = get_full_name(message.from_user)
 
             if name and name not in glovar.except_ids["long"]:
+                name = t2t(name, True, True)
+
                 if name in glovar.bad_ids["contents"]:
                     return "ban name content"
 
@@ -428,7 +432,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "ban"
 
             # Check the filename:
-            file_name = get_filename(message, True)
+            file_name = get_filename(message, True, True)
             if file_name:
                 if is_regex_text("fil", file_name) or is_ban_text(file_name, False):
                     return "ban"
@@ -557,7 +561,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     if is_regex_text("sti", sticker_name):
                         return f"del name {sticker_name}"
 
-                sticker_title = get_sticker_title(client, sticker_name, True)
+                sticker_title = get_sticker_title(client, sticker_name, True, True)
                 if sticker_title not in glovar.except_ids["long"]:
                     if is_regex_text("sti", sticker_title):
                         return f"del name {sticker_title}"
@@ -1235,7 +1239,7 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
             return True
 
         # Check text
-        message_text = get_text(message, True).lower()
+        message_text = get_text(message, True, True).lower()
         for bypass in bypass_list:
             message_text = message_text.replace(bypass, "")
 

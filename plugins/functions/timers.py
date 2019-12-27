@@ -24,7 +24,7 @@ from pyrogram import Client
 
 from .. import glovar
 from .channel import ask_for_help, get_debug_text, share_data, share_regex_count
-from .etc import code, general_link, get_full_name, get_now, lang, message_link, thread
+from .etc import code, general_link, get_full_name, get_now, lang, message_link, t2t, thread
 from .file import save
 from .filters import is_nm_text
 from .group import leave_group
@@ -102,12 +102,12 @@ def interval_min_15(client: Client) -> bool:
                 continue
 
             # Get name
-            name = get_full_name(user, True)
+            name = get_full_name(user)
             if not name or name in glovar.except_ids["long"]:
                 continue
 
             # Check name
-            if not is_nm_text(name):
+            if not is_nm_text(t2t(name, True, True)):
                 continue
 
             text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
@@ -142,12 +142,9 @@ def interval_min_15(client: Client) -> bool:
 def reset_data(client: Client) -> bool:
     # Reset user data every month
     try:
-        glovar.bad_ids = {
-            "channels": set(),
-            "contacts": set(),
-            "contents": set(),
-            "users": set()
-        }
+        glovar.bad_ids["contacts"] = set()
+        glovar.bad_ids["contents"] = set()
+        glovar.bad_ids["users"] = set()
         save("bad_ids")
 
         glovar.except_ids["temp"] = set()
