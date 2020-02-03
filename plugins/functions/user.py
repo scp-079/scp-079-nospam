@@ -602,7 +602,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     debug_action = lang("record_ban")
 
                 # Operation downgrade if possible
-                if is_old_user(client, user, now, gid):
+                if rule not in {"bio", "name"} and is_old_user(client, user, now, gid):
                     log_level = lang("auto_delete")
                     debug_action = lang("auto_delete")
                     more = lang("op_downgrade")
@@ -633,7 +633,6 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                             mid=mid,
                             em=result
                         )
-                    result = False
                 else:
                     if rule == "bio":
                         contacts = record_contacts_info(client, more)
