@@ -27,15 +27,15 @@ from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from .channel import ask_for_help, declare_message, get_content, get_debug_text, send_debug, share_data
-from .etc import code, crypt_str, delay, general_link, get_int, get_now, get_report_record, get_stripped_link, get_text
-from .etc import lang, mention_id, message_link, thread
+from .etc import code, crypt_str, delay, general_link, get_int, get_now, get_report_record
+from .etc import get_stripped_link, get_text, lang, mention_id, message_link, t2t, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
-from .filters import is_avatar_image, is_bad_message, is_ban_text, is_class_e
-from .filters import is_declared_message_id, is_detected_user_id, is_wb_text
+from .filters import is_avatar_image, is_bad_message, is_ban_text, is_bio_text, is_class_e, is_contact
+from .filters import is_declared_message_id, is_detected_user_id, is_from_user, is_nm_text, is_regex_text, is_wb_text
 from .group import delete_message, get_config_text, get_message, leave_group
 from .ids import init_group_id, init_user_id
 from .image import get_image_hash
-from .telegram import send_message, send_photo, send_report_message
+from .telegram import get_user_bio, send_message, send_photo, send_report_message
 from .timers import update_admins
 from .user import add_bad_user, ban_user, global_delete_score, global_delete_watch
 from .user import remove_contacts_info, terminate_user
@@ -531,6 +531,95 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
     return data
 
 
+def receive_help_check(client: Client, message: Message, data: dict) -> bool:
+    # Receive help check
+    try:
+        # Basic data
+        gid = data["group_id"]
+        uid = data["user_id"]
+        rid = data["reporter_id"]
+        mid = data["message_id"]
+
+        # Check declared status
+        if is_declared_message_id(gid, mid):
+            return True
+
+        # Check group
+        if gid not in glovar.admin_ids:
+            return True
+
+        if not init_group_id(gid):
+            return True
+
+        # Get the message
+        the_message = get_message(client, gid, mid)
+
+        if not the_message or not is_from_user(None, the_message) or is_class_e(None, the_message):
+            return True
+
+        the_user = the_message.from_user
+
+        # Get the info
+        info = receive_file_data(client, message)
+
+        if not info:
+            return True
+
+        # Group config
+        report_only = glovar.configs[gid].get("reporter")
+        delete_only = glovar.configs[gid].get("deleter")
+
+        if not report_only and not delete_only:
+            # Check name
+            name = info["name"]
+
+            if name and name not in glovar.except_ids["long"]:
+                name = t2t(name, True, True)
+
+                if is_nm_text(name):
+                    return terminate_user(client, the_message, the_user, "ban name")
+                elif name in glovar.bad_ids["contents"]:
+                    return terminate_user(client, the_message, the_user, "ban name record")
+                elif is_contact(name):
+                    return terminate_user(client, the_message, the_user, "ban name contact")
+                elif is_regex_text("wb", name) and is_regex_text("sho", name):
+                    return terminate_user(client, the_message, the_user, "ban name")
+                elif is_regex_text("bad", name) or is_regex_text("sho", name):
+                    return terminate_user(client, the_message, the_user, "bad name")
+
+            # Check bio
+            bio = get_user_bio(client, uid, True, True)
+
+            if bio and bio not in glovar.except_ids["long"]:
+                if is_bio_text(bio):
+                    return terminate_user(client, the_message, the_user, f"ban bio {bio}")
+                elif bio in glovar.bad_ids["contents"]:
+                    return terminate_user(client, the_message, the_user, f"ban bio {bio}")
+
+        # Report the user
+        data = {
+            "group_id": gid,
+            "user_id": uid,
+            "reporter_id": rid,
+            "message_id": mid
+        }
+        file = data_to_file(info)
+        share_data(
+            client=client,
+            receivers=["WARN"],
+            action="help",
+            action_type="result",
+            data=data,
+            file=file
+        )
+
+        return True
+    except Exception as e:
+        logger.warning(f"Receive help check error: {e}", exc_info=True)
+
+    return False
+
+
 def receive_leave_approve(client: Client, data: dict) -> bool:
     # Receive leave approve
     try:
@@ -883,21 +972,6 @@ def receive_remove_watch(data: dict) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Receive remove watch error: {e}", exc_info=True)
-
-    return False
-
-
-def receive_report_ids(client: Client, message: Message, data: str) -> bool:
-    # Receive report ids
-    try:
-        if data == "report":
-            report_ids = receive_file_data(client, message)
-
-            if report_ids:
-                glovar.report_ids = report_ids
-                save("report_ids")
-    except Exception as e:
-        logger.warning(f"Receive report ids error: {e}", exc_info=True)
 
     return False
 
