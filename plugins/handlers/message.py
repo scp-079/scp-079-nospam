@@ -317,7 +317,7 @@ def process_data(client: Client, message: Message) -> bool:
 
                 if action == "update":
                     if action_type == "score":
-                        delay(3, receive_user_score, [client, sender, data])
+                        receive_user_score(client, sender, data, True)
 
             elif sender == "CONFIG":
 

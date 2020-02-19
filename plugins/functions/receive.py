@@ -987,7 +987,7 @@ def receive_text_data(message: Message) -> dict:
     return data
 
 
-def receive_user_score(client: Client, project: str, data: dict) -> bool:
+def receive_user_score(client: Client, project: str, data: dict, captcha: bool = False) -> bool:
     # Receive and update user's score
     glovar.locks["message"].acquire()
     try:
@@ -1003,6 +1003,9 @@ def receive_user_score(client: Client, project: str, data: dict) -> bool:
         save("user_ids")
 
         # Global delete
+        if captcha:
+            return True
+
         delay(10, global_delete_score, [client, uid])
 
         return True
