@@ -465,7 +465,11 @@ def process_data(client: Client, message: Message) -> bool:
 
             elif sender == "USER":
 
-                if action == "update":
+                if action == "add":
+                    if action_type == "bad":
+                        receive_add_bad(client, sender, data)
+
+                elif action == "update":
                     if action_type == "preview":
                         receive_preview(client, message, data)
 
