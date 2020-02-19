@@ -448,6 +448,10 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_ban_text(message_text, False):
                     return "ban"
 
+            if name and message_text:
+                if is_ban_text(f"{name}\n{message_text}", False):
+                    return "ban"
+
             # Check the filename:
             file_name = get_filename(message, True, True)
 
