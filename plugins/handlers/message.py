@@ -22,7 +22,7 @@ from pyrogram import Client, Filters, Message
 
 from .. import glovar
 from ..functions.channel import get_content, get_debug_text
-from ..functions.etc import code, delay, general_link, get_full_name, get_now, lang, mention_id, t2t, thread
+from ..functions.etc import code, general_link, get_full_name, get_now, lang, mention_id, t2t, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_bad_message, is_bio_text, is_contact, is_declared_message
