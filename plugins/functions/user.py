@@ -1,5 +1,5 @@
 # SCP-079-NOSPAM - Block spam in groups
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-NOSPAM.
 #
@@ -101,10 +101,12 @@ def get_contacts(text: str) -> Set[str]:
                     continue
 
                 sub_match = re.search(regex, text, re.I | re.M | re.S)
+
                 if not sub_match:
                     continue
 
                 group_dict = sub_match.groupdict()
+
                 if not group_dict or not group_dict.get("con"):
                     continue
 
@@ -121,6 +123,7 @@ def get_user(client: Client, uid: Union[int, str]) -> Optional[User]:
     result = None
     try:
         result = get_users(client, [uid])
+
         if result:
             result = result[0]
     except Exception as e:
@@ -304,9 +307,13 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             if rule == "name":
                 log_rule = lang("name_examine")
 
-            # Check if necessary
-            if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
+            if not init_user_id(uid):
                 return False
+
+            # Check if necessary
+            if (not glovar.configs[gid].get("scorer")
+                    or (uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user))):
+                return True
 
             # Terminate
             result = forward_evidence(
@@ -317,13 +324,11 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 rule=log_rule,
                 more=more
             )
+
             if result:
-                if not init_user_id(uid):
-                    return False
                 glovar.user_ids[uid]["bad"][gid] = glovar.user_ids[uid]["bad"].get(gid, 0) + 1
                 update_score(client, uid)
-                if gid in glovar.report_ids and uid not in glovar.recorded_ids[gid]:
-                    auto_report(client, message)
+                auto_report(client, message)
                 glovar.recorded_ids[gid].add(uid)
                 send_debug(
                     client=client,
@@ -346,9 +351,15 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             elif rule == "bio":
                 log_rule = lang("bio_examine")
 
+            if not more:
+                more = lang("reporter")
+
+            if not init_user_id(uid):
+                return False
+
             # Check if necessary
             if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
-                return False
+                return True
 
             # Terminate
             result = forward_evidence(
@@ -359,13 +370,11 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 rule=log_rule,
                 more=more
             )
+
             if result:
-                if not init_user_id(uid):
-                    return False
                 glovar.user_ids[uid]["bad"][gid] = glovar.user_ids[uid]["bad"].get(gid, 0) + 1
                 update_score(client, uid)
-                if gid in glovar.report_ids and uid not in glovar.recorded_ids[gid]:
-                    auto_report(client, message)
+                auto_report(client, message)
                 glovar.recorded_ids[gid].add(uid)
                 send_debug(
                     client=client,
@@ -406,6 +415,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     rule=log_rule,
                     more=more
                 )
+
                 if result:
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
@@ -452,6 +462,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     score=score_user,
                     more=more
                 )
+
                 if result:
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
@@ -479,6 +490,9 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             elif rule == "bio":
                 log_rule = lang("bio_examine")
 
+            if not more:
+                more = lang("deleter")
+
             # Terminate
             if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
                 delete_message(client, gid, mid)
@@ -493,6 +507,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     rule=log_rule,
                     more=more
                 )
+
                 if result:
                     glovar.recorded_ids[gid].add(uid)
                     delete_message(client, gid, mid)
@@ -523,6 +538,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             if rule == "name":
                 log_rule = lang("name_watch")
                 debug_action = lang("name_ban")
+
                 if score_user:
                     log_rule = lang("name_score")
 
@@ -536,6 +552,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 score=score_user,
                 more=more
             )
+
             if result:
                 add_bad_user(client, uid)
                 ban_user(client, gid, uid)
@@ -572,6 +589,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     rule=log_rule,
                     more=more
                 )
+
                 if result:
                     ban_user(client, gid, uid)
                     delete_message(client, gid, mid)
@@ -614,6 +632,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         rule=log_rule,
                         more=more
                     )
+
                     if result:
                         delete_message(client, gid, mid)
                         declare_message(client, gid, mid)
@@ -644,6 +663,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     else:
                         message_text = get_text(message, True, True)
                         contacts = record_contacts_info(client, message_text)
+
                         if message.new_chat_title:
                             contacts = contacts | record_contacts_info(client, message.new_chat_title)
 
@@ -656,6 +676,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         contacts=contacts,
                         more=more
                     )
+
                     if result:
                         add_bad_user(client, uid)
                         ban_user(client, gid, uid)

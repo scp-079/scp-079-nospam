@@ -1,5 +1,5 @@
 # SCP-079-NOSPAM - Block spam in groups
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-NOSPAM.
 #
@@ -66,8 +66,10 @@ def check(client: Client, message: Message) -> bool:
         # Check bad message
         content = get_content(message)
         detection = is_bad_message(client, message)
+
         if detection:
             result = terminate_user(client, message, message.from_user, detection)
+
             if result and content and detection != "true":
                 glovar.contents[content] = detection
         elif message.sticker:
@@ -113,8 +115,10 @@ def check_join(client: Client, message: Message) -> bool:
 
             # Check name
             name = get_full_name(new)
+
             if name and name not in glovar.except_ids["long"]:
                 name = t2t(name, True, True)
+
                 if is_nm_text(name):
                     terminate_user(client, message, new, "ban name")
                 elif name in glovar.bad_ids["contents"]:
@@ -128,6 +132,7 @@ def check_join(client: Client, message: Message) -> bool:
 
             # Check bio
             bio = get_user_bio(client, uid, True, True)
+
             if bio and bio not in glovar.except_ids["long"]:
                 if is_bio_text(bio):
                     terminate_user(client, message, new, f"ban bio {bio}")
@@ -145,6 +150,7 @@ def check_join(client: Client, message: Message) -> bool:
             # Update user's join status
             report_only = glovar.configs[gid].get("reporter")
             delete_only = glovar.configs[gid].get("deleter")
+
             if not (delete_only or report_only):
                 glovar.user_ids[uid]["join"][gid] = now
                 save("user_ids")
@@ -231,10 +237,22 @@ def init_group(client: Client, message: Message) -> bool:
             admin_members = get_admins(client, gid)
 
             if admin_members:
+                # Admin list
                 glovar.admin_ids[gid] = {admin.user.id for admin in admin_members
-                                         if ((not admin.user.is_bot and not admin.user.is_deleted)
+                                         if (((not admin.user.is_bot and not admin.user.is_deleted)
+                                              and admin.can_delete_messages
+                                              and admin.can_restrict_members)
+                                             or admin.status == "creator"
                                              or admin.user.id in glovar.bot_ids)}
                 save("admin_ids")
+
+                # Trust list
+                glovar.trust_ids[gid] = {admin.user.id for admin in admin_members
+                                         if ((not admin.user.is_bot and not admin.user.is_deleted)
+                                             or admin.user.id in glovar.bot_ids)}
+                save("trust_ids")
+
+                # Text
                 text += f"{lang('status')}{lang('colon')}{code(lang('status_joined'))}\n"
             else:
                 thread(leave_group, (client, gid))

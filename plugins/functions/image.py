@@ -1,5 +1,5 @@
 # SCP-079-NOSPAM - Block spam in groups
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-NOSPAM.
 #
@@ -42,8 +42,10 @@ def get_color(path: str) -> bool:
         w, h = image.size
         data = image.getdata()
         cnt = 0
+
         for i, ycbcr in enumerate(data):
             y, cb, cr = ycbcr
+
             if 86 <= cb <= 117 and 140 <= cr <= 168:
                 cnt += 1
 
@@ -116,10 +118,12 @@ def get_image_hash(client: Client, message: Message) -> str:
     result = ""
     try:
         file_id, file_ref, big = get_file_id(message)
+
         if not file_id:
             return ""
 
         image_path = get_downloaded_path(client, file_id, file_ref)
+
         if not image_path:
             return ""
 
@@ -172,6 +176,7 @@ def get_processed_image(image: Image.Image) -> Image.Image:
             total += count
 
         aver = int(s / total)
+
         if aver < 110:
             image = image.point(lambda x: 0 if x > aver + 20 else 255)
         else:
@@ -203,6 +208,7 @@ def get_qrcode(path: str) -> str:
 
         # Decode
         decoded_list = decode(image)
+
         if decoded_list:
             for decoded in decoded_list:
                 if decoded.type == "QRCODE":

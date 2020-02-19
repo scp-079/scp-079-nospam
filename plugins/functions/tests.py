@@ -1,5 +1,5 @@
 # SCP-079-NOSPAM - Block spam in groups
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-NOSPAM.
 #
@@ -37,6 +37,7 @@ def nospam_test(client: Client, message: Message) -> bool:
     # Test image porn score in the test group
     try:
         origin_text = get_text(message)
+
         if re.search(f"^{lang('admin')}{lang('colon')}[0-9]", origin_text):
             aid = get_int(origin_text.split("\n\n")[0].split(lang('colon'))[1])
         else:
@@ -48,11 +49,13 @@ def nospam_test(client: Client, message: Message) -> bool:
         # Detected record
         content = get_content(message)
         detection = glovar.contents.get(content, "")
+
         if detection:
             text += f"{lang('record_content')}{lang('colon')}{code(lang(detection.split()[0]))}\n"
 
         # Detected url
         detection = is_detected_url(message, True)
+
         if detection:
             text += f"{lang('record_link')}{lang('colon')}{code(lang(detection.split()[0]))}\n"
 
@@ -62,6 +65,7 @@ def nospam_test(client: Client, message: Message) -> bool:
 
         # Recorded contact
         detection = is_contact(message_text)
+
         if detection:
             text += f"{lang('record_contact')}{lang('colon')}{code(detection)}\n"
 
@@ -79,6 +83,7 @@ def nospam_test(client: Client, message: Message) -> bool:
             text += code(qrcode) + "\n\n"
 
             type_list = [lang(t) for t in glovar.regex if is_regex_text(t, qrcode)]
+
             if type_list:
                 text += f"{lang('qrcode_examine')}{lang('colon')}" + "-" * 20 + "\n\n"
                 text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
@@ -89,6 +94,7 @@ def nospam_test(client: Client, message: Message) -> bool:
             text += code(ocr) + "\n\n"
 
             type_list = [lang(t) for t in glovar.regex if is_regex_text(t, ocr, True)]
+
             if type_list:
                 text += f"{lang('ocr_examine')}{lang('colon')}" + "-" * 24 + "\n\n"
                 text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
@@ -98,6 +104,7 @@ def nospam_test(client: Client, message: Message) -> bool:
                 all_text = message_text + ocr
 
                 type_list = [lang(t) for t in glovar.regex if is_regex_text(t, all_text)]
+
                 if type_list:
                     text += f"{lang('all_text')}{lang('colon')}" + "-" * 24 + "\n\n"
                     text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"

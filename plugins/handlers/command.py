@@ -1,5 +1,5 @@
 # SCP-079-NOSPAM - Block spam in groups
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-NOSPAM.
 #
@@ -55,6 +55,7 @@ def config(client: Client, message: Message) -> bool:
 
         # Check command format
         command_type = get_command_type(message)
+
         if not command_type or not re.search(f"^{glovar.sender}$", command_type, re.I):
             return True
 
@@ -132,6 +133,7 @@ def config_directly(client: Client, message: Message) -> bool:
 
         # Check command format
         command_type, command_context = get_command_context(message)
+
         if command_type:
             if command_type == "show":
                 text += f"{lang('action')}{lang('colon')}{code(lang('config_show'))}\n"
@@ -147,7 +149,8 @@ def config_directly(client: Client, message: Message) -> bool:
                     new_config = deepcopy(glovar.default_config)
                 else:
                     if command_context:
-                        if command_type in {"delete", "restrict", "bio", "bot", "new", "deleter", "reporter", "ml"}:
+                        if command_type in {"delete", "restrict", "bio", "bot", "new",
+                                            "deleter", "reporter", "scorer", "ml"}:
                             if command_context == "off":
                                 new_config[command_type] = False
                             elif command_context == "on":
@@ -214,8 +217,10 @@ def content(client: Client, message: Message) -> bool:
 
         # Generate the report message
         text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+
         if message.reply_to_message:
             result = get_content(message.reply_to_message)
+
             if result:
                 text += f"{lang('content')}{lang('colon')}" + "-" * 24 + "\n\n"
                 text += code_block(result) + "\n"

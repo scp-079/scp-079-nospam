@@ -1,5 +1,5 @@
 # SCP-079-NOSPAM - Block spam in groups
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-NOSPAM.
 #
@@ -43,6 +43,7 @@ def bold(text: Any) -> str:
     # Get a bold text
     try:
         text = str(text).strip()
+
         if text:
             return f"<b>{escape(text)}</b>"
     except Exception as e:
@@ -71,6 +72,7 @@ def code(text: Any) -> str:
     # Get a code text
     try:
         text = str(text).strip()
+
         if text:
             return f"<code>{escape(text)}</code>"
     except Exception as e:
@@ -83,6 +85,7 @@ def code_block(text: Any) -> str:
     # Get a code block text
     try:
         text = str(text).rstrip()
+
         if text:
             return f"<pre>{escape(text)}</pre>"
     except Exception as e:
@@ -130,6 +133,7 @@ def general_link(text: Union[int, str], link: str) -> str:
     try:
         text = str(text).strip()
         link = link.strip()
+
         if text and link:
             result = f'<a href="{link}">{escape(text)}</a>'
     except Exception as e:
@@ -143,6 +147,7 @@ def get_channel_link(message: Union[int, Message]) -> str:
     text = ""
     try:
         text = "https://t.me/"
+
         if isinstance(message, int):
             text += f"c/{str(message)[4:]}"
         else:
@@ -262,6 +267,7 @@ def get_full_name(user: User, normal: bool = False, printable: bool = False) -> 
             return ""
 
         text = user.first_name
+
         if user.last_name:
             text += f" {user.last_name}"
 
@@ -289,6 +295,7 @@ def get_links(message: Message) -> List[str]:
     result = []
     try:
         entities = message.entities or message.caption_entities
+
         if entities:
             for en in entities:
                 if en.type == "url":
@@ -306,6 +313,7 @@ def get_links(message: Message) -> List[str]:
                 result.append(link)
 
         reply_markup = message.reply_markup
+
         if (reply_markup
                 and isinstance(reply_markup, InlineKeyboardMarkup)
                 and reply_markup.inline_keyboard):
@@ -463,9 +471,11 @@ def get_text(message: Message, normal: bool = False, printable: bool = False) ->
             return ""
 
         the_text = message.text or message.caption
+
         if the_text:
             text += the_text
             entities = message.entities or message.caption_entities
+
             if entities:
                 for en in entities:
                     if not en.url:
@@ -474,6 +484,7 @@ def get_text(message: Message, normal: bool = False, printable: bool = False) ->
                     text += f"\n{en.url}"
 
         reply_markup = message.reply_markup
+
         if (reply_markup
                 and isinstance(reply_markup, InlineKeyboardMarkup)
                 and reply_markup.inline_keyboard):
@@ -500,6 +511,7 @@ def italic(text: Any) -> str:
     # Get italic text
     try:
         text = str(text).strip()
+
         if text:
             return f"<i>{escape(text)}</i>"
     except Exception as e:

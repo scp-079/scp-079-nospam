@@ -1,5 +1,5 @@
 # SCP-079-NOSPAM - Block spam in groups
-# Copyright (C) 2019 SCP-079 <https://scp-079.org>
+# Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>
 #
 # This file is part of SCP-079-NOSPAM.
 #
@@ -102,9 +102,11 @@ password: str = ""
 try:
     config = RawConfigParser()
     config.read("config.ini")
+
     # [basic]
     bot_token = config["basic"].get("bot_token", bot_token)
     prefix = list(config["basic"].get("prefix", prefix_str))
+
     # [bots]
     avatar_id = int(config["bots"].get("avatar_id", avatar_id))
     captcha_id = int(config["bots"].get("captcha_id", captcha_id))
@@ -118,6 +120,7 @@ try:
     tip_id = int(config["bots"].get("tip_id", tip_id))
     user_id = int(config["bots"].get("user_id", user_id))
     warn_id = int(config["bots"].get("warn_id", warn_id))
+
     # [channels]
     critical_channel_id = int(config["channels"].get("critical_channel_id", critical_channel_id))
     debug_channel_id = int(config["channels"].get("debug_channel_id", debug_channel_id))
@@ -126,6 +129,7 @@ try:
     logging_channel_id = int(config["channels"].get("logging_channel_id", logging_channel_id))
     test_group_id = int(config["channels"].get("test_group_id", test_group_id))
     watch_channel_id = int(config["channels"].get("watch_channel_id", watch_channel_id))
+
     # [custom]
     aio = config["custom"].get("aio", aio)
     aio = eval(aio)
@@ -148,6 +152,7 @@ try:
     time_track = int(config["custom"].get("time_track", time_track))
     zh_cn = config["custom"].get("zh_cn", zh_cn)
     zh_cn = eval(zh_cn)
+
     # [emoji]
     emoji_ad_single = int(config["emoji"].get("emoji_ad_single", emoji_ad_single))
     emoji_ad_total = int(config["emoji"].get("emoji_ad_total", emoji_ad_total))
@@ -155,6 +160,7 @@ try:
     emoji_protect = getdecoder("unicode_escape")(config["emoji"].get("emoji_protect", emoji_protect))[0]
     emoji_wb_single = int(config["emoji"].get("emoji_wb_single", emoji_wb_single))
     emoji_wb_total = int(config["emoji"].get("emoji_wb_total", emoji_wb_total))
+
     # [encrypt]
     key = config["encrypt"].get("key", key)
     key = key.encode("utf-8")
@@ -254,6 +260,7 @@ lang: Dict[str, str] = {
     "new": (zh_cn and "新入群限制") or "Limit the New Joined User",
     "deleter": (zh_cn and "仅删除") or "Delete Only",
     "reporter": (zh_cn and "仅举报") or "Report Only",
+    "scorer": (zh_cn and "敏感评分") or "Score",
     "ml": (zh_cn and "机器学习") or "Machine Learning",
     # Debug
     "evidence": (zh_cn and "证据留存") or "Evidence",
@@ -410,6 +417,7 @@ default_config: Dict[str, Union[bool, int]] = {
     "new": False,
     "deleter": False,
     "reporter": False,
+    "scorer": False,
     "ml": False
 }
 
@@ -506,7 +514,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.1.8"
+version: str = "0.1.9"
 
 # Load data from pickle
 
@@ -553,8 +561,10 @@ except_ids: Dict[str, Set[Union[int, str]]] = {
 left_group_ids: Set[int] = set()
 # left_group_ids = {-10012345678}
 
-report_ids: Set[int] = set()
-# report_ids = {-10012345678}
+trust_ids: Dict[int, Set[int]] = {}
+# trust_ids = {
+#     -10012345678: {12345678}
+# }
 
 user_ids: Dict[int, Dict[str, Dict[Union[int, str], Union[float, int]]]] = {}
 # user_ids = {
@@ -609,6 +619,7 @@ configs: Dict[int, Dict[str, Union[bool, int]]] = {}
 #         "new": True,
 #         "deleter": False,
 #         "reporter": False,
+#         "scorer": False,
 #         "ml": False
 #     }
 # }
@@ -623,9 +634,10 @@ for word_type in regex:
 # }
 
 # Load data
-file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "left_group_ids", "report_ids", "user_ids", "watch_ids",
+file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "left_group_ids", "user_ids", "watch_ids",
                         "configs"]
 file_list += [f"{f}_words" for f in regex]
+
 for file in file_list:
     try:
         try:
@@ -637,6 +649,7 @@ for file in file_list:
                     pickle.dump(eval(f"{file}"), f)
         except Exception as e:
             logger.error(f"Load data {file} error: {e}", exc_info=True)
+
             with open(f"data/.{file}", "rb") as f:
                 locals()[f"{file}"] = pickle.load(f)
     except Exception as e:
@@ -646,6 +659,7 @@ for file in file_list:
 # Generate special characters dictionary
 for special in ["spc", "spe"]:
     locals()[f"{special}_dict"]: Dict[str, str] = {}
+
     for rule in locals()[f"{special}_words"]:
         # Check keys
         if "[" not in rule:
@@ -657,10 +671,11 @@ for special in ["spc", "spe"]:
 
         keys = rule.split("]")[0][1:]
         value = rule.split("?#")[1][1]
+
         for k in keys:
             locals()[f"{special}_dict"][k] = value
 
 # Start program
-copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019 SCP-079 <https://scp-079.org>\n"
+copyright_text = (f"SCP-079-{sender} v{version}, Copyright (C) 2019-2020 SCP-079 <https://scp-079.org>\n"
                   "Licensed under the terms of the GNU General Public License v3 or later (GPLv3+)\n")
 print(copyright_text)
