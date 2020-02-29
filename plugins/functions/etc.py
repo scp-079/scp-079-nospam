@@ -588,11 +588,11 @@ def t2t(text: str, normal: bool, printable: bool) -> str:
     return text
 
 
-def thread(target: Callable, args: tuple) -> bool:
+def thread(target: Callable, args: tuple, daemon: bool = True) -> bool:
     # Call a function using thread
     try:
         t = Thread(target=target, args=args)
-        t.daemon = True
+        t.daemon = daemon
         t.start()
 
         return True
