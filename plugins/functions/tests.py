@@ -109,11 +109,12 @@ def nospam_test(client: Client, message: Message) -> bool:
                     text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
 
         # Send the result
-        if text:
+        whitelisted = (is_class_e(None, message, True)
+                       or message_text in glovar.except_ids["long"]
+                       or image_hash in glovar.except_ids["temp"])
+
+        if text or whitelisted:
             text = text.replace("\n\n\n", "\n\n")
-            whitelisted = (is_class_e(None, message, True)
-                           or message_text in glovar.except_ids["long"]
-                           or image_hash in glovar.except_ids["temp"])
             text = f"{lang('white_listed')}{lang('colon')}{code(whitelisted)}\n" + text
             text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n" + text
             thread(send_message, (client, glovar.test_group_id, text, message.message_id))
