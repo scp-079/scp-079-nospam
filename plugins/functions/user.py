@@ -278,8 +278,10 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         gid = message.chat.id
         uid = user.id
         mid = message.message_id
+
+        # Detection = level + rule + more
         context_list = context.split()
-        the_type = context_list[0]
+        level = context_list[0]
 
         if len(context_list) >= 2:
             rule = context_list[1]
@@ -298,14 +300,11 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         delete_only = glovar.configs[gid].get("deleter")
 
         # Bad message
-        if the_type == "bad":
+        if level == "bad":
             # Basic info
             log_level = lang("score_auto")
-            log_rule = lang("rule_global")
+            log_rule = lang(rule or "rule_global")
             debug_action = lang("score_micro")
-
-            if rule == "name":
-                log_rule = lang("name_examine")
 
             if not init_user_id(uid):
                 return False
@@ -343,13 +342,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         elif report_only:
             # Basic info
             log_level = lang("score_auto")
-            log_rule = lang("rule_custom")
+            log_rule = lang(rule or "rule_global")
             debug_action = lang("score_micro")
-
-            if rule == "name":
-                log_rule = lang("name_examine")
-            elif rule == "bio":
-                log_rule = lang("bio_examine")
 
             if not more:
                 more = lang("reporter")
@@ -386,23 +380,21 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 )
 
         # Delete the message
-        elif the_type in {"del", "true"}:
+        elif level in {"del", "true"}:
             # Basic info
             log_level = lang("auto_delete")
-            log_rule = lang("rule_global")
+            log_rule = lang(rule or "rule_global")
             debug_action = lang("auto_delete")
 
-            if rule in {"contact", "content"}:
+            if rule in {"contact", "content"} or more in {"contact", "content"}:
                 log_rule = lang("record_message")
                 debug_action = lang("record_delete")
 
             if more in {"contact", "content"}:
-                log_rule = lang("record_message")
-                debug_action = lang("record_delete")
                 more = ""
 
             # Terminate
-            if is_detected_user(message) or uid in glovar.recorded_ids[gid] or the_type == "true":
+            if is_detected_user(message) or uid in glovar.recorded_ids[gid] or level == "true":
                 delete_message(client, gid, mid)
                 add_detected_user(gid, uid, now)
                 declare_message(client, gid, mid)
@@ -432,7 +424,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     )
 
         # Watch delete the message
-        elif the_type == "wd":
+        elif level == "wd":
             # Basic info
             log_level = lang("auto_delete")
             log_rule = lang("watch_user")
@@ -482,23 +474,19 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         elif delete_only:
             # Basic info
             log_level = lang("auto_delete")
-            log_rule = lang("rule_custom")
+            log_rule = lang(rule or "rule_custom")
             debug_action = lang("auto_delete")
-
-            if rule == "name":
-                log_rule = lang("name_examine")
-            elif rule == "bio":
-                log_rule = lang("bio_examine")
 
             if not more:
                 more = lang("deleter")
 
             # Terminate
-            if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
-                delete_message(client, gid, mid)
-                add_detected_user(gid, uid, now)
-                declare_message(client, gid, mid)
-            else:
+            if rule in {"nick", "bio"}:
+                # Check if necessary
+                if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
+                    return True
+
+                # Terminate
                 result = forward_evidence(
                     client=client,
                     message=message,
@@ -509,11 +497,10 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 )
 
                 if result:
+                    glovar.user_ids[uid]["bad"][gid] = glovar.user_ids[uid]["bad"].get(gid, 0) + 1
+                    update_score(client, uid)
+                    auto_report(client, message)
                     glovar.recorded_ids[gid].add(uid)
-                    delete_message(client, gid, mid)
-                    declare_message(client, gid, mid)
-                    previous = add_detected_user(gid, uid, now)
-                    not previous and update_score(client, uid)
                     send_debug(
                         client=client,
                         chat=message.chat,
@@ -522,9 +509,38 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                         mid=mid,
                         em=result
                     )
+            else:
+                if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
+                    delete_message(client, gid, mid)
+                    add_detected_user(gid, uid, now)
+                    declare_message(client, gid, mid)
+                else:
+                    result = forward_evidence(
+                        client=client,
+                        message=message,
+                        user=user,
+                        level=log_level,
+                        rule=log_rule,
+                        more=more
+                    )
+
+                    if result:
+                        glovar.recorded_ids[gid].add(uid)
+                        delete_message(client, gid, mid)
+                        declare_message(client, gid, mid)
+                        previous = add_detected_user(gid, uid, now)
+                        not previous and update_score(client, uid)
+                        send_debug(
+                            client=client,
+                            chat=message.chat,
+                            action=debug_action,
+                            uid=uid,
+                            mid=mid,
+                            em=result
+                        )
 
         # Watch ban the user
-        elif the_type == "wb":
+        elif level == "wb":
             # Basic info
             log_level = lang("auto_ban")
             log_rule = lang("watch_user")
@@ -535,7 +551,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 log_rule = lang("score_user")
                 debug_action = lang("score_ban")
 
-            if rule == "name":
+            if rule in {"nick", "from"}:
                 log_rule = lang("name_watch")
                 debug_action = lang("name_ban")
 
@@ -569,16 +585,14 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 )
 
         # Ban the user
-        elif the_type == "ban":
+        elif level == "ban":
             # Basic info
             log_level = lang("auto_ban")
-            log_rule = lang("rule_global")
+            log_rule = lang(rule or "rule_global")
             debug_action = lang("auto_ban")
 
             # Terminate
             if rule == "bot":
-                log_level = lang("auto_ban")
-                log_rule = lang("rule_custom")
                 debug_action = lang("bot")
 
                 result = forward_evidence(
@@ -605,22 +619,17 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     )
             else:
                 if rule == "bio":
-                    log_rule = lang("bio_examine")
                     debug_action = lang("bio_ban")
-                elif rule == "name":
+                elif rule in {"nick", "from"}:
+                    debug_action = lang("name_ban")
+
                     if more in {"contact", "content"}:
                         log_rule = lang("record_name")
                         debug_action = lang("name_ban")
                         more = ""
-                    else:
-                        log_rule = lang("name_examine")
-                        debug_action = lang("name_ban")
-                elif rule == "record":
-                    log_rule = lang("record_message")
-                    debug_action = lang("record_ban")
 
                 # Operation downgrade if possible
-                if rule not in {"bio", "name"} and is_old_user(client, user, now, gid):
+                if rule not in {"nick", "bio"} and is_old_user(client, user, now, gid):
                     log_level = lang("auto_delete")
                     debug_action = lang("auto_delete")
                     more = lang("op_downgrade")
@@ -655,7 +664,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 else:
                     if rule == "bio":
                         contacts = record_contacts_info(client, more)
-                    elif rule == "name" and more not in {"contact", "content"}:
+                    elif rule in {"nick", "from"} and more not in {"contact", "content"}:
                         forward_name = get_forward_name(message, True, True)
                         full_name = get_full_name(user, True, True)
                         contacts = record_contacts_info(client, forward_name)

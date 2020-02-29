@@ -96,6 +96,15 @@ def interval_min_15(client: Client) -> bool:
             if not any(now - user_ids[uid]["join"][gid] < glovar.time_new for gid in user_ids[uid]["join"]):
                 continue
 
+            # Check the config
+            g_list = list(user_ids[uid]["join"])
+
+            if all((not glovar.configs[gid].get("nick")
+                    or glovar.configs[gid].get("deleter")
+                    or glovar.configs[gid].get("reporter"))
+                   for gid in g_list):
+                continue
+
             # Get user
             user = get_user(client, uid)
 
@@ -109,13 +118,15 @@ def interval_min_15(client: Client) -> bool:
                 continue
 
             # Check name
-            if not is_nm_text(t2t(name, True, True)):
+            t2t_name = t2t(name, True, True)
+
+            if not is_nm_text(t2t_name):
                 continue
 
             text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
                     f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                     f"{lang('level')}{lang('colon')}{code(lang('auto_ban'))}\n"
-                    f"{lang('rule')}{lang('colon')}{code(lang('name_recheck'))}\n"
+                    f"{lang('rule')}{lang('colon')}{code(lang('nick_recheck'))}\n"
                     f"{lang('message_type')}{lang('colon')}{code(lang('ser'))}\n"
                     f"{lang('user_name')}{lang('colon')}{code(name)}\n")
             result = send_message(client, glovar.logging_channel_id, text)
@@ -123,8 +134,15 @@ def interval_min_15(client: Client) -> bool:
             if not result:
                 continue
 
-            g_list = list(user_ids[uid]["join"])
             gid = sorted(g_list, key=lambda g: user_ids[uid]["join"][g], reverse=True)[0]
+
+            for the_id in g_list:
+                if (glovar.configs[the_id].get("nick")
+                        and not glovar.configs[gid].get("deleter")
+                        and not glovar.configs[gid].get("reporter")):
+                    gid = the_id
+                    break
+
             add_bad_user(client, uid)
             ban_user(client, gid, uid)
             ask_for_help(client, "ban", gid, uid)

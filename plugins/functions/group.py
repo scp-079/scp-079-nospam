@@ -60,7 +60,8 @@ def get_config_text(config: dict) -> str:
                    f"{lang('restrict')}{lang('colon')}{code(restrict_text)}\n")
 
         # Others
-        for the_type in ["bio", "bot", "new", "deleter", "reporter", "scorer", "ml"]:
+        for the_type in ["nick", "bio", "avatar", "message", "ocr", "sticker",
+                         "bot", "new", "deleter", "reporter", "scorer", "ml"]:
             the_text = (lambda x: lang("enabled") if x else lang("disabled"))(config.get(the_type))
             result += f"{lang(the_type)}{lang('colon')}{code(the_text)}\n"
     except Exception as e:

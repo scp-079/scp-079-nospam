@@ -256,6 +256,11 @@ lang: Dict[str, str] = {
     "default": (zh_cn and "默认") or "Default",
     "delete": (zh_cn and "协助删除") or "Help Delete",
     "restrict": (zh_cn and "禁言模式") or "Restriction Mode",
+    "nick": (zh_cn and "昵称检查") or "Nick Name Inspection",
+    "avatar": (zh_cn and "头像检查") or "Avatar Inspection",
+    "message": (zh_cn and "消息检查") or "Message Inspection",
+    "ocr": (zh_cn and "OCR 检查") or "OCR Inspection",
+    "sticker": (zh_cn and "过滤推广贴纸包") or "Ban Promotion Sticker Set",
     "bot": (zh_cn and "阻止机器人进群") or "Prevent Bot from Joining",
     "new": (zh_cn and "新入群限制") or "Limit the New Joined User",
     "deleter": (zh_cn and "仅删除") or "Delete Only",
@@ -316,7 +321,7 @@ lang: Dict[str, str] = {
     "ava": (zh_cn and "头像分析") or "Avatar",
     "bad": (zh_cn and "敏感检测") or "Bad",
     "ban": (zh_cn and "自动封禁") or "Ban",
-    "bio": (zh_cn and "简介检查") or "Bio",
+    "bio": (zh_cn and "简介检查") or "Bio Inspection",
     "con": (zh_cn and "联系方式") or "Contact",
     "del": (zh_cn and "自动删除") or "Delete",
     "fil": (zh_cn and "文件名称") or "Filename",
@@ -334,11 +339,10 @@ lang: Dict[str, str] = {
     "ad_": (zh_cn and "广告 {} 组") or "Ad {}",
     # Special
     "avatar_ban": (zh_cn and "头像封禁") or "Avatar Ban",
-    "avatar_examine": (zh_cn and "头像分析") or "Avatar Examination",
     "avatar_recheck": (zh_cn and "头像复查") or "Avatar Recheck",
     "bio_ban": (zh_cn and "简介封禁") or "Bio Ban",
-    "bio_examine": (zh_cn and "简介检查") or "Bio Examination",
     "blacklist": (zh_cn and "黑名单") or "Blacklisted",
+    "from": (zh_cn and "名称检查") or "Forward Name Inspection",
     "limited_user": (zh_cn and "新用户受限") or "Limited New Joined User",
     "limited_delete": (zh_cn and "受限删除") or "Limited Delete",
     "name_score": (zh_cn and "名称评分") or "Name and Score",
@@ -352,13 +356,13 @@ lang: Dict[str, str] = {
     "score_auto": (zh_cn and "自动评分") or "Auto Score",
     "score_delete": (zh_cn and "评分删除") or "Score Delete",
     "score_micro": (zh_cn and "微量评分") or "Micro Score",
+    "url": (zh_cn and "链接预览") or "Previewed Url",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",
     "auto_delete": (zh_cn and "自动删除") or "Auto Delete",
     "global_delete": (zh_cn and "全局删除") or "Global Delete",
     "name_ban": (zh_cn and "名称封禁") or "Ban by Name",
-    "name_examine": (zh_cn and "名称检查") or "Name Examination",
-    "name_recheck": (zh_cn and "名称复查") or "Name Recheck",
+    "nick_recheck": (zh_cn and "昵称复查") or "Nick Name Recheck",
     "op_downgrade": (zh_cn and "操作降级") or "Operation Downgrade",
     "op_upgrade": (zh_cn and "操作升级") or "Operation Upgrade",
     "rule_custom": (zh_cn and "群组自定义") or "Custom Rule",
@@ -374,8 +378,7 @@ lang: Dict[str, str] = {
     "white_listed": (zh_cn and "白名单") or "White Listed",
     "all_text": (zh_cn and "综合文字") or "All Text",
     "content": (zh_cn and "内容标识") or "Content",
-    "ocr": (zh_cn and "OCR 结果") or "OCR Result",
-    "ocr_examine": (zh_cn and "OCR 检查") or "OCR Examination",
+    "ocr_result": (zh_cn and "OCR 结果") or "OCR Result",
     "qrcode": (zh_cn and "二维码") or "QR Code",
     "qrcode_examine": (zh_cn and "二维码检查") or "QR Code Examination",
     "record_bad": (zh_cn and "已被收录") or "Recorded as Bad",
@@ -412,7 +415,11 @@ default_config: Dict[str, Union[bool, int]] = {
     "lock": 0,
     "delete": True,
     "restrict": False,
+    "nick": True,
     "bio": True,
+    "avatar": True,
+    "message": True,
+    "ocr": True,
     "bot": True,
     "new": False,
     "deleter": False,
@@ -514,7 +521,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.2.1"
+version: str = "0.2.2"
 
 # Load data from pickle
 
@@ -617,7 +624,11 @@ configs: Dict[int, Dict[str, Union[bool, int]]] = {}
 #         "lock": 1512345678,
 #         "delete": True,
 #         "restrict": False,
+#         "nick": True,
 #         "bio": True,
+#         "avatar": True,
+#         "message": True,
+#         "ocr": True,
 #         "bot": True,
 #         "new": True,
 #         "deleter": False,

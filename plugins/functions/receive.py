@@ -26,7 +26,7 @@ from typing import Any
 from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
-from .channel import ask_for_help, declare_message, get_content, get_debug_text, send_debug, share_data
+from .channel import ask_for_help, auto_report, declare_message, get_content, get_debug_text, send_debug, share_data
 from .etc import code, crypt_str, delay, general_link, get_int, get_now, get_report_record
 from .etc import get_stripped_link, get_text, lang, mention_id, message_link, t2t, thread
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
@@ -35,7 +35,7 @@ from .filters import is_declared_message_id, is_detected_user_id, is_from_user, 
 from .group import delete_message, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
 from .image import get_image_hash
-from .telegram import get_messages, get_user_bio, send_message, send_photo, send_report_message
+from .telegram import get_messages, get_user_full, send_message, send_photo, send_report_message
 from .timers import update_admins
 from .user import add_bad_user, ban_user, global_delete_score, global_delete_watch
 from .user import remove_contacts_info, terminate_user
@@ -72,7 +72,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
                 return True
 
             if record["type"] == lang("ser"):
-                if record["name"]:
+                if record["name"] and (not record["bio"] or is_wb_text(record["name"], False)):
                     glovar.bad_ids["contents"].add(record["name"])
                     glovar.except_ids["long"].discard(record["name"])
                     glovar.except_ids["temp"].discard(record["name"])
@@ -136,7 +136,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
 
             record = get_report_record(message)
 
-            if lang("name") in record["rule"]:
+            if lang("nick") in record["rule"] or lang("from") in record["rule"] or lang("name") in record["rule"]:
                 if record["name"]:
                     glovar.except_ids["long"].add(record["name"])
                     glovar.bad_ids["contents"].discard(record["name"])
@@ -157,7 +157,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
             if record["game"]:
                 glovar.except_ids["long"].add(record["game"])
 
-            if record["rule"] in {lang("avatar_examine"), lang("avatar_recheck")}:
+            if record["rule"] in {lang("avatar"), lang("avatar_recheck")}:
                 uid = record["uid"]
                 share_data(
                     client=client,
@@ -213,7 +213,12 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
         uid = data["user_id"]
         mid = data["message_id"]
 
+        # Check if the bot joined the group
         if not glovar.admin_ids.get(gid):
+            return True
+
+        # Check the group config
+        if not glovar.configs[gid].get("avatar"):
             return True
 
         # Do not check admin's avatar
@@ -244,29 +249,51 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
 
         if mid:
             text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
-                    f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
-                    f"{lang('level')}{lang('colon')}{code(lang('auto_ban'))}\n"
-                    f"{lang('rule')}{lang('colon')}{code(lang('avatar_examine'))}\n")
+                    f"{lang('user_id')}{lang('colon')}{code(uid)}\n")
+
+            if glovar.configs[gid].get("deleter") or glovar.configs[gid].get("reporter"):
+                text += (f"{lang('level')}{lang('colon')}{code(lang('auto_ban'))}\n"
+                         f"{lang('rule')}{lang('colon')}{code(lang('avatar'))}\n")
+            else:
+                text += (f"{lang('level')}{lang('colon')}{code(lang('auto_score'))}\n"
+                         f"{lang('rule')}{lang('colon')}{code(lang('avatar'))}\n")
+
             result = result.message_id
             result = send_message(client, glovar.logging_channel_id, text, result)
 
             if not result:
                 return True
 
-            declare_message(client, gid, mid)
-            ban_user(client, gid, uid)
-            delete_message(client, gid, mid)
-            ask_for_help(client, "ban", gid, uid)
-            add_bad_user(client, uid)
-            send_debug(
-                client=client,
-                chat=gid,
-                action=lang("avatar_ban"),
-                uid=uid,
-                mid=mid,
-                em=result
-            )
-        else:
+            if glovar.configs[gid].get("deleter") or glovar.configs[gid].get("reporter"):
+                auto_report(
+                    client=client,
+                    gid=gid,
+                    uid=uid,
+                    mid=mid
+                )
+                send_debug(
+                    client=client,
+                    chat=gid,
+                    action=lang("score_micro"),
+                    uid=uid,
+                    mid=mid,
+                    em=result
+                )
+            else:
+                declare_message(client, gid, mid)
+                ban_user(client, gid, uid)
+                delete_message(client, gid, mid)
+                ask_for_help(client, "ban", gid, uid)
+                add_bad_user(client, uid)
+                send_debug(
+                    client=client,
+                    chat=gid,
+                    action=lang("avatar_ban"),
+                    uid=uid,
+                    mid=mid,
+                    em=result
+                )
+        elif not glovar.configs[gid].get("deleter") and not glovar.configs[gid].get("reporter"):
             text = (f"{lang('project')}{lang('colon')}{code(glovar.sender)}\n"
                     f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                     f"{lang('level')}{lang('colon')}{code(lang('auto_ban'))}\n"
@@ -571,30 +598,35 @@ def receive_help_check(client: Client, message: Message, data: dict) -> bool:
 
         if not report_only and not delete_only:
             # Check name
-            name = info["name"]
+            if glovar.configs[gid].get("nick"):
+                name = info["name"]
 
-            if name and name not in glovar.except_ids["long"]:
-                name = t2t(name, True, True)
+                if name and name not in glovar.except_ids["long"]:
+                    t2t_name = t2t(name, True, True)
 
-                if is_nm_text(name):
-                    return terminate_user(client, the_message, the_user, "ban name")
-                elif name in glovar.bad_ids["contents"]:
-                    return terminate_user(client, the_message, the_user, "ban name record")
-                elif is_contact(name):
-                    return terminate_user(client, the_message, the_user, "ban name contact")
-                elif is_regex_text("wb", name) and is_regex_text("sho", name):
-                    return terminate_user(client, the_message, the_user, "ban name")
-                elif is_regex_text("bad", name) or is_regex_text("sho", name):
-                    return terminate_user(client, the_message, the_user, "bad name")
+                    if is_nm_text(t2t_name):
+                        return terminate_user(client, the_message, the_user, "ban nick")
+                    elif name in glovar.bad_ids["contents"]:
+                        return terminate_user(client, the_message, the_user, "ban nick record")
+                    elif is_contact(t2t_name):
+                        return terminate_user(client, the_message, the_user, "ban nick contact")
+                    elif is_regex_text("wb", t2t_name) and is_regex_text("sho", t2t_name):
+                        return terminate_user(client, the_message, the_user, "ban nick")
 
             # Check bio
-            bio = get_user_bio(client, uid, True, True)
+            if glovar.configs[gid].get("bio"):
+                user = get_user_full(client, uid)
 
-            if bio and bio not in glovar.except_ids["long"]:
-                if is_bio_text(bio):
-                    return terminate_user(client, the_message, the_user, f"ban bio {bio}")
-                elif bio in glovar.bad_ids["contents"]:
-                    return terminate_user(client, the_message, the_user, f"ban bio {bio}")
+                if not user or not user.about:
+                    bio = ""
+                else:
+                    bio = t2t(user.about, True, True)
+
+                if bio and bio not in glovar.except_ids["long"]:
+                    if is_bio_text(bio):
+                        return terminate_user(client, the_message, the_user, f"ban bio {bio}")
+                    elif user.about in glovar.bad_ids["contents"]:
+                        return terminate_user(client, the_message, the_user, f"ban bio {bio}")
 
         # Report the user
         data = {
@@ -664,6 +696,10 @@ def receive_preview(client: Client, message: Message, data: dict) -> bool:
 
         # Check if the bot joined the group
         if not glovar.admin_ids.get(gid):
+            return True
+
+        # Check group config
+        if not glovar.configs[gid].get("message"):
             return True
 
         # Do not check admin's message
@@ -881,7 +917,7 @@ def receive_remove_except(client: Client, data: dict) -> bool:
 
             record = get_report_record(message)
 
-            if lang("name") in record["rule"]:
+            if lang("nick") in record["rule"] or lang("from") in record["rule"] or lang("name") in record["rule"]:
                 if record["name"]:
                     glovar.except_ids["long"].discard(record["name"])
 
@@ -895,7 +931,7 @@ def receive_remove_except(client: Client, data: dict) -> bool:
             if record["game"]:
                 glovar.except_ids["long"].discard(record["game"])
 
-            if record["rule"] in {lang("avatar_examine"), lang("avatar_recheck")}:
+            if record["rule"] in {lang("avatar"), lang("avatar_recheck")}:
                 uid = record["uid"]
                 share_data(
                     client=client,
@@ -1021,7 +1057,7 @@ def receive_status_ask(client: Client, data: dict) -> bool:
                 new_count += 1
 
         status = {
-            lang("name_recheck"): f"{new_count} {lang('members')}",
+            lang("nick_recheck"): f"{new_count} {lang('members')}",
             lang("blacklist"): f"{bad_count} {lang('members')}"
         }
         file = data_to_file(status)

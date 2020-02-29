@@ -35,7 +35,7 @@ from ..functions.receive import receive_declared_message, receive_help_check, re
 from ..functions.receive import receive_regex, receive_refresh, receive_remove_bad, receive_remove_except
 from ..functions.receive import receive_remove_score, receive_remove_watch, receive_rollback, receive_status_ask
 from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
-from ..functions.telegram import get_admins, get_user_bio, send_message
+from ..functions.telegram import get_admins, get_user_full, send_message
 from ..functions.tests import nospam_test
 from ..functions.timers import backup_files, send_count
 from ..functions.user import terminate_user
@@ -59,6 +59,9 @@ def check(client: Client, message: Message) -> bool:
         glovar.locks["message"].acquire()
 
     try:
+        # Basic data
+        gid = message.chat.id
+
         # Check declare status
         if is_declared_message(None, message):
             return True
@@ -72,7 +75,7 @@ def check(client: Client, message: Message) -> bool:
 
             if result and content and detection != "true":
                 glovar.contents[content] = detection
-        elif message.sticker:
+        elif glovar.configs[gid].get("message") and glovar.configs[gid].get("sticker") and message.sticker:
             if content:
                 glovar.except_ids["temp"].add(content)
                 save("except_ids")
@@ -114,30 +117,37 @@ def check_join(client: Client, message: Message) -> bool:
                 return True
 
             # Check name
-            name = get_full_name(new)
+            if glovar.configs[gid].get("nick"):
+                name = get_full_name(new)
 
-            if name and name not in glovar.except_ids["long"]:
-                name = t2t(name, True, True)
+                if name and name not in glovar.except_ids["long"]:
+                    t2t_name = t2t(name, True, True)
 
-                if is_nm_text(name):
-                    terminate_user(client, message, new, "ban name")
-                elif name in glovar.bad_ids["contents"]:
-                    terminate_user(client, message, new, "ban name record")
-                elif is_contact(name):
-                    terminate_user(client, message, new, "ban name contact")
-                elif is_regex_text("wb", name) and is_regex_text("sho", name):
-                    terminate_user(client, message, new, "ban name")
-                elif is_regex_text("bad", name) or is_regex_text("sho", name):
-                    terminate_user(client, message, new, "bad name")
+                    if is_nm_text(t2t_name):
+                        terminate_user(client, message, new, "ban nick")
+                    elif name in glovar.bad_ids["contents"]:
+                        terminate_user(client, message, new, "ban nick record")
+                    elif is_contact(t2t_name):
+                        terminate_user(client, message, new, "ban nick contact")
+                    elif is_regex_text("wb", t2t_name) and is_regex_text("sho", t2t_name):
+                        terminate_user(client, message, new, "ban nick")
+                    elif is_regex_text("bad", t2t_name) or is_regex_text("sho", t2t_name):
+                        terminate_user(client, message, new, "bad nick")
 
             # Check bio
-            bio = get_user_bio(client, uid, True, True)
+            if glovar.configs[gid].get("bio"):
+                user = get_user_full(client, uid)
 
-            if bio and bio not in glovar.except_ids["long"]:
-                if is_bio_text(bio):
-                    terminate_user(client, message, new, f"ban bio {bio}")
-                elif bio in glovar.bad_ids["contents"]:
-                    terminate_user(client, message, new, f"ban bio {bio}")
+                if not user or not user.about:
+                    bio = ""
+                else:
+                    bio = t2t(user.about, True, True)
+
+                if bio and bio not in glovar.except_ids["long"]:
+                    if is_bio_text(bio):
+                        terminate_user(client, message, new, f"ban bio {bio}")
+                    elif user.about in glovar.bad_ids["contents"]:
+                        terminate_user(client, message, new, f"ban bio {bio}")
 
             # Check bot
             if glovar.configs[gid].get("bot") and new.is_bot:
@@ -148,12 +158,8 @@ def check_join(client: Client, message: Message) -> bool:
                 continue
 
             # Update user's join status
-            report_only = glovar.configs[gid].get("reporter")
-            delete_only = glovar.configs[gid].get("deleter")
-
-            if not (delete_only or report_only):
-                glovar.user_ids[uid]["join"][gid] = now
-                save("user_ids")
+            glovar.user_ids[uid]["join"][gid] = now
+            save("user_ids")
 
         return True
     except Exception as e:

@@ -303,12 +303,14 @@ def is_avatar_image(path: str) -> bool:
     try:
         # Check QR code
         qrcode = get_qrcode(path)
+
         if qrcode:
             if is_regex_text("ava", qrcode) or is_ban_text(qrcode, False):
                 return True
 
         # Check OCR
         ocr = get_ocr(path)
+
         if ocr:
             if is_regex_text("ava", ocr, True) or is_ban_text(ocr, True):
                 return True
@@ -341,6 +343,30 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             if is_detected_user(message):
                 return "true"
 
+            # Check the user's name
+            name = get_full_name(message.from_user)
+
+            if glovar.configs[gid].get("nick") and name and name not in glovar.except_ids["long"]:
+                t2t_name = t2t(name, True, True)
+
+                if name in glovar.bad_ids["contents"]:
+                    return "ban nick content"
+
+                name = t2t_name
+
+                if is_nm_text(name):
+                    return "ban nick"
+
+                if is_contact(name):
+                    return "ban nick contact"
+
+                if is_regex_text("wb", name) and is_regex_text("sho", name):
+                    return "ban nick"
+
+            # Check group message inspection config
+            if not glovar.configs[gid].get("message"):
+                return ""
+            
             # Content
             message_content = get_content(message)
             wb_user = is_watch_user(message.from_user, "ban", now)
@@ -351,17 +377,17 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             if message_content:
                 detection = glovar.contents.get(message_content, "")
 
-                if detection == "ban":
-                    return detection
+                if detection.startswith("ban message"):
+                    return "ban message"
 
-                if (wb_user or score_user) and detection == "wb":
-                    return detection
+                if (wb_user or score_user) and detection.startswith("wb message"):
+                    return "wb message"
 
-                if detection == "del":
-                    return detection
+                if detection.startswith("del message"):
+                    return "del message"
 
-                if (wb_user or score_user or wd_user or limited_user) and detection == "wd":
-                    return detection
+                if (wb_user or score_user or wd_user or limited_user) and detection.startswith("wd message"):
+                    return "wd message"
 
                 if message_content in glovar.bad_ids["contents"]:
                     return "del content"
@@ -369,17 +395,17 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Url
             detected_url = is_detected_url(message)
 
-            if detected_url == "ban":
-                return detected_url
+            if detected_url.startswith("ban"):
+                return "ban url"
 
-            if (wb_user or score_user) and detected_url == "wb":
-                return detected_url
+            if (wb_user or score_user) and detected_url.startswith("wb"):
+                return "ban url"
 
-            if detected_url == "del":
-                return detected_url
+            if detected_url.startswith("del"):
+                return "del url"
 
-            if (wb_user or score_user or wd_user or limited_user) and detected_url == "wd":
-                return detected_url
+            if (wb_user or score_user or wd_user or limited_user) and detected_url.startswith("wd"):
+                return "wd url"
 
             # Start detect ban
 
@@ -390,28 +416,13 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 forward_name = t2t(forward_name, True, True)
 
                 if forward_name in glovar.bad_ids["contents"]:
-                    return "ban name content"
+                    return "ban from content"
 
                 if is_nm_text(forward_name):
-                    return "ban name"
+                    return "ban from"
 
                 if is_contact(forward_name):
-                    return "ban name contact"
-
-            # Check the user's name
-            name = get_full_name(message.from_user)
-
-            if name and name not in glovar.except_ids["long"]:
-                name = t2t(name, True, True)
-
-                if name in glovar.bad_ids["contents"]:
-                    return "ban name content"
-
-                if is_nm_text(name):
-                    return "ban name"
-
-                if is_contact(name):
-                    return "ban name contact"
+                    return "ban from contact"
 
             # Bypass
             message_text = get_text(message)
@@ -446,18 +457,18 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             if message_text:
                 if is_ban_text(message_text, False):
-                    return "ban"
+                    return "ban message"
 
             if name and message_text:
                 if is_ban_text(f"{name}\n{message_text}", False):
-                    return "ban"
+                    return "ban message"
 
             # Check the filename:
             file_name = get_filename(message, True, True)
 
             if file_name:
                 if is_regex_text("fil", file_name) or is_ban_text(file_name, False):
-                    return "ban"
+                    return "ban message"
 
             # Check image
             qrcode = ""
@@ -487,26 +498,27 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
                     if qrcode:
                         if is_ban_text(qrcode, False):
-                            return "ban"
+                            return "ban message"
 
                         if is_regex_text("ad", message_text) or is_ad_text(message_text, False):
-                            return "ban"
+                            return "ban message"
 
                     # Get OCR
-                    ocr = get_ocr(image_path)
+                    if glovar.configs[gid].get("ocr"):
+                        ocr = get_ocr(image_path)
 
-                    if ocr:
-                        message.new_chat_title = ocr
+                        if ocr:
+                            message.new_chat_title = ocr
 
-                        if is_ban_text(ocr, True):
-                            return "ban"
+                            if is_ban_text(ocr, True):
+                                return "ban ocr"
 
-                        if message_text:
-                            all_text = message_text + ocr
-                            message.new_chat_title = all_text
+                            if message_text:
+                                all_text = message_text + ocr
+                                message.new_chat_title = all_text
 
-                            if is_ban_text(all_text, False):
-                                return "ban"
+                                if is_ban_text(all_text, False):
+                                    return "ban ocr"
 
             # Start detect watch ban
 
@@ -514,84 +526,88 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 # Check the message's text
                 if message_text:
                     if is_wb_text(message_text, False):
-                        return "wb"
+                        return "wb message"
 
                 # Check channel restriction
                 if is_restricted_channel(message):
-                    return "wb"
+                    return "wb message"
 
                 # Check the forward from name:
                 if forward_name and forward_name not in glovar.except_ids["long"]:
                     if is_wb_text(forward_name, False):
-                        return "wb name"
+                        return "wb from"
 
                 # Check the document filename:
                 if file_name:
                     if is_wb_text(file_name, False):
-                        return "wb"
+                        return "wb message"
 
                 # Check emoji
                 if is_emoji("wb", message_text, message):
-                    return "wb"
+                    return "wb message"
 
                 # Check exe file
                 if is_exe(message):
-                    return "wb"
+                    return "wb message"
 
                 # Check Telegram link
                 if is_tgl(client, message, True):
-                    return "wb"
+                    return "wb message"
 
                 # Check image
                 if qrcode:
-                    return "wb"
+                    return "wb message"
 
                 if ocr:
                     if is_wb_text(ocr, True):
-                        return "wb"
+                        return "wb ocr"
 
                 if all_text:
                     if is_wb_text(all_text, False):
-                        return "wb"
+                        return "wb ocr"
 
             # Start detect delete
 
             # Check the message's text
             if message_text:
                 if is_regex_text("del", message_text):
-                    return "del"
+                    return "del message"
 
             # Check the document filename:
             if file_name:
                 if is_regex_text("del", file_name):
-                    return "del"
+                    return "del message"
 
             # Check image
             if qrcode:
                 if is_regex_text("del", qrcode):
-                    return "del"
+                    return "del message"
 
             if ocr:
                 if is_regex_text("del", ocr, True):
-                    return "del"
+                    return "del ocr"
 
             if all_text:
                 if is_regex_text("del", all_text, True):
-                    return "del"
+                    return "del ocr"
 
                 if is_contact(all_text):
                     return "del contact"
 
             # Check sticker
-            if sticker_name:
+            if glovar.configs[gid].get("sticker") and sticker_name:
                 if sticker_name not in glovar.except_ids["long"]:
                     if is_regex_text("sti", sticker_name):
-                        return f"del name {sticker_name}"
+                        return f"del sticker {sticker_name}"
 
                 sticker_title = get_sticker_title(client, sticker_name, True, True)
+
                 if sticker_title not in glovar.except_ids["long"]:
+                    if is_ban_text(sticker_title, False):
+                        return f"ban sticker {sticker_title}"
+
                     if is_regex_text("sti", sticker_title):
-                        return f"del name {sticker_title}"
+                        return f"del sticker {sticker_title}"
 
             # Start detect watch delete
 
@@ -606,39 +622,40 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                         or message.via_bot
                         or message.video
                         or message.video_note):
-                    return "wd"
+                    return "wd message"
 
                 # Forwarded message
                 if message.forward_from_chat:
-                    return "wd"
+                    return "wd message"
 
                 # Check the message's text
                 if message_text:
                     if is_wd_text(message_text, False):
-                        return "wd"
+                        return "wd message"
 
                 # Check image
                 if qrcode:
-                    return "wd"
+                    return "wd message"
 
                 if ocr:
                     if is_wd_text(ocr, True):
-                        return "wd"
+                        return "wd ocr"
 
                 if all_text:
                     if is_wd_text(all_text, False):
-                        return "wd"
+                        return "wd ocr"
 
                 color = image_path and get_color(image_path)
+
                 if color:
-                    return "wd"
+                    return "wd message"
 
             # Start detect bad
 
             # Check the message's text
             if message_text:
                 if is_regex_text("bad", message_text):
-                    return "bad"
+                    return "bad message"
 
         # Preview message
         else:
@@ -647,7 +664,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check the text
             if text:
                 if is_ban_text(text, False):
-                    return "ban"
+                    return "ban message"
 
             # Check image
             qrcode = ""
@@ -660,23 +677,24 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
                 if qrcode:
                     if is_ban_text(qrcode, False):
-                        return "ban"
+                        return "ban message"
 
                     if is_regex_text("ad", text) or is_ad_text(text, False):
-                        return "ban"
+                        return "ban message"
 
                 # Get OCR
-                ocr = get_ocr(image_path)
+                if glovar.configs[gid].get("ocr"):
+                    ocr = get_ocr(image_path)
 
-                if ocr:
-                    if is_ban_text(ocr, True):
-                        return "ban"
+                    if ocr:
+                        if is_ban_text(ocr, True):
+                            return "ban ocr"
 
-                    if text:
-                        all_text = text + ocr
+                        if text:
+                            all_text = text + ocr
 
-                        if is_ban_text(all_text, False):
-                            return "ban"
+                            if is_ban_text(all_text, False):
+                                return "ban ocr"
 
             # Start detect watch ban
             wb_user = is_watch_user(message.from_user, "ban", now)
@@ -686,39 +704,39 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 # Check the text
                 if text:
                     if is_wb_text(text, False):
-                        return "wb"
+                        return "wb message"
 
                 # Check image
                 if qrcode:
-                    return "wb"
+                    return "wb message"
 
                 if ocr:
                     if is_wb_text(ocr, True):
-                        return "wb"
+                        return "wb ocr"
 
                 if all_text:
                     if is_wb_text(all_text, False):
-                        return "wb"
+                        return "wb ocr"
 
             # Start detect delete
 
             # Check the text
             if text:
                 if is_regex_text("del", text):
-                    return "del"
+                    return "del message"
 
             # Check image
             if qrcode:
                 if is_regex_text("del", qrcode):
-                    return "del"
+                    return "del message"
 
             if ocr:
                 if is_regex_text("del", ocr, True):
-                    return "del"
+                    return "del ocr"
 
             if all_text:
                 if is_regex_text("del", all_text, False):
-                    return "del"
+                    return "del ocr"
 
                 if is_contact(all_text):
                     return "del contact"
@@ -732,31 +750,31 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 # Check the text
                 if text:
                     if is_wd_text(text, False):
-                        return "wd"
+                        return "wd message"
 
                 # Check image
                 if qrcode:
-                    return "wd"
+                    return "wd message"
 
                 if ocr:
                     if is_wd_text(ocr, True):
-                        return "wd"
+                        return "wd ocr"
 
                 if all_text:
                     if is_wd_text(all_text, False):
-                        return "wd"
+                        return "wd ocr"
 
                 color = image_path and get_color(image_path)
 
                 if color:
-                    return "wd"
+                    return "wd message"
 
             # Start detect bad
 
             # Check the text
             if text:
                 if is_regex_text("bad", text):
-                    return "bad"
+                    return "bad message"
     except Exception as e:
         logger.warning(f"Is watch message error: {e}", exc_info=True)
     finally:

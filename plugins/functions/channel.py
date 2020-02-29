@@ -84,13 +84,14 @@ def ask_help_captcha(client: Client, gid: int, uid: int, mid: int = None) -> boo
     return False
 
 
-def auto_report(client: Client, message: Message) -> bool:
+def auto_report(client: Client, message: Message = None, gid: int = 0, uid: int = 0, mid: int = 0) -> bool:
     # Let WARN auto report a user
     try:
         # Basic data
-        gid = message.chat.id
-        uid = message.from_user.id
-        mid = message.message_id
+        if message:
+            gid = message.chat.id
+            uid = message.from_user.id
+            mid = message.message_id
 
         share_data(
             client=client,
@@ -158,7 +159,7 @@ def exchange_to_hide(client: Client) -> bool:
 
 def format_data(sender: str, receivers: List[str], action: str, action_type: str,
                 data: Union[bool, dict, int, str] = None) -> str:
-    # See https://scp-079.org/exchange/
+    # Get exchange string
     text = ""
     try:
         data = {
@@ -200,19 +201,20 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
         if lang("score") in rule:
             text += f"{lang('user_score')}{lang('colon')}{code(f'{score:.1f}')}\n"
 
-        if lang("name") in rule:
+        if lang("nick") in rule or lang("name") in rule:
             name = get_full_name(user)
 
             if name:
                 text += f"{lang('user_name')}{lang('colon')}{code(name)}\n"
 
-            forward_name = get_forward_name(message)
-
-            if forward_name and forward_name != name:
-                text += f"{lang('from_name')}{lang('colon')}{code(forward_name)}\n"
-
         if lang("bio") in rule:
             text += f"{lang('user_bio')}{lang('colon')}{code(more)}\n"
+
+        if lang("from") in rule or lang("name") in rule:
+            forward_name = get_forward_name(message)
+
+            if forward_name:
+                text += f"{lang('from_name')}{lang('colon')}{code(forward_name)}\n"
 
         if contacts:
             for contact in contacts:
