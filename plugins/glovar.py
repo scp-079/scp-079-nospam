@@ -558,6 +558,9 @@ except_ids: Dict[str, Set[Union[int, str]]] = {
 #     "temp": {"content"}
 # }
 
+lack_group_ids: Set[int] = set()
+# lack_group_ids = {-10012345678}
+
 left_group_ids: Set[int] = set()
 # left_group_ids = {-10012345678}
 
@@ -634,7 +637,8 @@ for word_type in regex:
 # }
 
 # Load data
-file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "left_group_ids", "user_ids", "watch_ids",
+file_list: List[str] = ["admin_ids", "bad_ids", "except_ids", "lack_group_ids", "left_group_ids",
+                        "user_ids", "watch_ids",
                         "configs"]
 file_list += [f"{f}_words" for f in regex]
 
