@@ -25,7 +25,7 @@ from .. import glovar
 from .etc import code, lang, t2t, thread
 from .file import save
 from .ids import init_group_id
-from .telegram import delete_messages, get_chat, get_chat_member, get_messages, leave_chat
+from .telegram import delete_messages, get_chat, get_chat_member, leave_chat
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -134,21 +134,6 @@ def get_member(client: Client, gid: int, uid: int, cache: bool = True) -> Option
             glovar.members[gid][uid] = result
     except Exception as e:
         logger.warning(f"Get member error: {e}", exc_info=True)
-
-    return result
-
-
-def get_message(client: Client, gid: int, mid: int) -> Optional[Message]:
-    # Get a single message
-    result = None
-    try:
-        mids = [mid]
-        result = get_messages(client, gid, mids)
-
-        if result:
-            result = result[0]
-    except Exception as e:
-        logger.warning(f"Get message error: {e}", exc_info=True)
 
     return result
 

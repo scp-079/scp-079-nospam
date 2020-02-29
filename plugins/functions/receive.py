@@ -32,10 +32,10 @@ from .etc import get_stripped_link, get_text, lang, mention_id, message_link, t2
 from .file import crypt_file, data_to_file, delete_file, get_new_path, get_downloaded_path, save
 from .filters import is_avatar_image, is_bad_message, is_ban_text, is_bio_text, is_class_e, is_contact
 from .filters import is_declared_message_id, is_detected_user_id, is_from_user, is_nm_text, is_regex_text, is_wb_text
-from .group import delete_message, get_config_text, get_message, leave_group
+from .group import delete_message, get_config_text, leave_group
 from .ids import init_group_id, init_user_id
 from .image import get_image_hash
-from .telegram import get_user_bio, send_message, send_photo, send_report_message
+from .telegram import get_messages, get_user_bio, send_message, send_photo, send_report_message
 from .timers import update_admins
 from .user import add_bad_user, ban_user, global_delete_score, global_delete_watch
 from .user import remove_contacts_info, terminate_user
@@ -61,7 +61,7 @@ def receive_add_bad(client: Client, sender: str, data: dict) -> bool:
 
         # Receive bad content
         if sender == "MANAGE" and the_type == "content":
-            message = get_message(client, glovar.logging_channel_id, the_id)
+            message = get_messages(client, glovar.logging_channel_id, the_id)
 
             if not message:
                 return True
@@ -129,7 +129,7 @@ def receive_add_except(client: Client, data: dict) -> bool:
 
         # Receive except content
         if the_type in {"long", "temp"}:
-            message = get_message(client, glovar.logging_channel_id, the_id)
+            message = get_messages(client, glovar.logging_channel_id, the_id)
 
             if not message:
                 return True
@@ -552,7 +552,7 @@ def receive_help_check(client: Client, message: Message, data: dict) -> bool:
             return True
 
         # Get the message
-        the_message = get_message(client, gid, mid)
+        the_message = get_messages(client, gid, mid)
 
         if not the_message or not is_from_user(None, the_message) or is_class_e(None, the_message):
             return True
@@ -692,7 +692,7 @@ def receive_preview(client: Client, message: Message, data: dict) -> bool:
             return True
 
         # Get the message
-        the_message = get_message(client, gid, mid)
+        the_message = get_messages(client, gid, mid)
 
         if not the_message or is_class_e(None, the_message):
             return True
@@ -818,7 +818,7 @@ def receive_remove_bad(client: Client, data: dict) -> bool:
 
         # Remove bad content
         if the_type == "content":
-            message = get_message(client, glovar.logging_channel_id, the_id)
+            message = get_messages(client, glovar.logging_channel_id, the_id)
 
             if not message:
                 return True
@@ -874,7 +874,7 @@ def receive_remove_except(client: Client, data: dict) -> bool:
 
         # Receive except content
         if the_type in {"long", "temp"}:
-            message = get_message(client, glovar.logging_channel_id, the_id)
+            message = get_messages(client, glovar.logging_channel_id, the_id)
 
             if not message:
                 return True
