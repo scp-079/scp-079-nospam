@@ -168,7 +168,7 @@ def get_command_context(message: Message) -> (str, str):
     command_context = ""
     try:
         text = get_text(message)
-        command_list = text.split(" ")
+        command_list = text.split()
 
         if len(list(filter(None, command_list))) <= 1:
             return "", ""
@@ -192,7 +192,7 @@ def get_command_type(message: Message) -> str:
     result = ""
     try:
         text = get_text(message)
-        command_list = list(filter(None, text.split(" ")))
+        command_list = list(filter(None, text.split()))
         result = text[len(command_list[0]):].strip()
     except Exception as e:
         logger.warning(f"Get command type error: {e}", exc_info=True)
