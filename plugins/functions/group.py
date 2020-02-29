@@ -91,11 +91,11 @@ def get_group(client: Client, gid: int, cache: bool = True) -> Optional[Chat]:
         the_cache = glovar.chats.get(gid)
 
         if cache and the_cache:
-            result = the_cache
-        else:
-            result = get_chat(client, gid)
+            return the_cache
 
-        if cache and result:
+        result = get_chat(client, gid)
+
+        if result:
             glovar.chats[gid] = result
     except Exception as e:
         logger.warning(f"Get group error: {e}", exc_info=True)
