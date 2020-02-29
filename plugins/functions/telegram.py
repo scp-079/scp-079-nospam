@@ -92,7 +92,7 @@ def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
-            except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+            except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
                 return False
     except Exception as e:
         logger.warning(f"Get admins in {cid} error: {e}", exc_info=True)
@@ -112,7 +112,7 @@ def get_chat(client: Client, cid: Union[int, str]) -> Union[Chat, ChatPreview, N
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
-            except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+            except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
                 return None
     except Exception as e:
         logger.warning(f"Get chat {cid} error: {e}", exc_info=True)
@@ -172,7 +172,7 @@ def get_group_info(client: Client, chat: Union[int, Chat], cache: bool = True) -
     return group_name, group_link
 
 
-def get_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[List[Message]]:
+def get_messages(client: Client, cid: int, mids: Union[int, Iterable[int]]) -> Union[Message, List[Message], None]:
     # Get some messages
     result = None
     try:
@@ -184,6 +184,8 @@ def get_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[List
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
+            except PeerIdInvalid:
+                return None
     except Exception as e:
         logger.warning(f"Get messages {mids} in {cid} error: {e}", exc_info=True)
 
@@ -228,6 +230,22 @@ def get_user_bio(client: Client, uid: int, normal: bool = False, printable: bool
     # Get user's bio
     result = None
     try:
+        user = get_user_full(client, uid)
+
+        if not user or not user.about:
+            return None
+
+        result = t2t(user.about, normal, printable)
+    except Exception as e:
+        logger.warning(f"Get user {uid} bio error: {e}", exc_info=True)
+
+    return result
+
+
+def get_user_full(client: Client, uid: int) -> Optional[UserFull]:
+    # Get a full user
+    result = None
+    try:
         user_id = resolve_peer(client, uid)
 
         if not user_id:
@@ -237,14 +255,12 @@ def get_user_bio(client: Client, uid: int, normal: bool = False, printable: bool
         while flood_wait:
             flood_wait = False
             try:
-                user: UserFull = client.send(GetFullUser(id=user_id))
-                if user and user.about:
-                    result = t2t(user.about, normal, printable)
+                result = client.send(GetFullUser(id=user_id))
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
     except Exception as e:
-        logger.warning(f"Get user {uid} bio error: {e}", exc_info=True)
+        logger.warning(f"Get user {uid} full error: {e}", exc_info=True)
 
     return result
 
@@ -298,7 +314,7 @@ def leave_chat(client: Client, cid: int, delete: bool = False) -> bool:
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
-            except (PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+            except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
                 return False
 
         return True
@@ -411,10 +427,10 @@ def send_document(client: Client, cid: int, document: str, file_ref: str = None,
                 wait_flood(e)
             except ButtonDataInvalid:
                 logger.warning(f"Send document {document} to {cid} - invalid markup: {markup}")
-            except (ChatAdminRequired, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+            except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
                 return False
     except Exception as e:
-        logger.warning(f"Send document {document} to {cid} error: {e}", exec_info=True)
+        logger.warning(f"Send document {document} to {cid} error: {e}", exc_info=True)
 
     return result
 
@@ -444,7 +460,7 @@ def send_message(client: Client, cid: int, text: str, mid: int = None,
                 wait_flood(e)
             except ButtonDataInvalid:
                 logger.warning(f"Send message to {cid} - invalid markup: {markup}")
-            except (ChatAdminRequired, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+            except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
                 return False
     except Exception as e:
         logger.warning(f"Send message to {cid} error: {e}", exc_info=True)
@@ -478,7 +494,7 @@ def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, capti
                 wait_flood(e)
             except ButtonDataInvalid:
                 logger.warning(f"Send photo {photo} to {cid} - invalid markup: {markup}")
-            except (ChatAdminRequired, PeerIdInvalid, ChannelInvalid, ChannelPrivate):
+            except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
                 return False
     except Exception as e:
         logger.warning(f"Send photo {photo} to {cid} error: {e}", exc_info=True)
@@ -511,6 +527,8 @@ def send_report_message(secs: int, client: Client, cid: int, text: str, mid: int
                 wait_flood(e)
             except ButtonDataInvalid:
                 logger.warning(f"Send report message to {cid} - invalid markup: {markup}")
+            except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, PeerIdInvalid):
+                return None
 
         if not result:
             return None
