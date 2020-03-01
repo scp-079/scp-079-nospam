@@ -597,6 +597,9 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check sticker
             if glovar.configs[gid].get("sticker") and sticker_name:
                 if sticker_name not in glovar.except_ids["long"]:
+                    if is_ban_text(sticker_name, False):
+                        return f"ban sticker {sticker_name}"
+
                     if is_regex_text("sti", sticker_name):
                         return f"del sticker {sticker_name}"
 
