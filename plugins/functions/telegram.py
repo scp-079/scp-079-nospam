@@ -226,22 +226,6 @@ def get_sticker_title(client: Client, short_name: str, normal: bool = False, pri
     return result
 
 
-def get_user_bio(client: Client, uid: int, normal: bool = False, printable: bool = False) -> Optional[str]:
-    # Get user's bio
-    result = None
-    try:
-        user = get_user_full(client, uid)
-
-        if not user or not user.about:
-            return None
-
-        result = t2t(user.about, normal, printable)
-    except Exception as e:
-        logger.warning(f"Get user {uid} bio error: {e}", exc_info=True)
-
-    return result
-
-
 def get_user_full(client: Client, uid: int) -> Optional[UserFull]:
     # Get a full user
     result = None
