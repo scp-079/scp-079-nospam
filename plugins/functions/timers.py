@@ -97,7 +97,8 @@ def interval_min_15(client: Client) -> bool:
                 continue
 
             # Check the config
-            g_list = list(user_ids[uid]["join"])
+            group_list = list(user_ids[uid]["join"])
+            g_list = [gid for gid in group_list if glovar.configs.get(gid)]
 
             if all((not glovar.configs[gid].get("nick")
                     or glovar.configs[gid].get("deleter")
