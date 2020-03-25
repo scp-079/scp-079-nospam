@@ -110,7 +110,13 @@ def get_contacts(text: str) -> Set[str]:
                 if not group_dict or not group_dict.get("con"):
                     continue
 
-                result.add(group_dict["con"].lower())
+                the_contact = group_dict["con"].lower()
+
+                if the_contact in glovar.except_ids["contacts"]:
+                    continue
+
+                result.add(the_contact)
+
                 break
     except Exception as e:
         logger.warning(f"Get contact error: {e}", exc_info=True)
@@ -252,8 +258,12 @@ def remove_contacts_info(message: Message, text: str) -> bool:
                 contacts = contacts | get_contacts(message_text)
 
         # Plain text as contact
-        else:
+        elif text:
             contacts = {text}
+            glovar.except_ids["contacts"].add(text)
+            save("except_ids")
+        else:
+            contacts = set()
 
         # Remove the contacts
         for contact in contacts:

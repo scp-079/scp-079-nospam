@@ -372,6 +372,8 @@ def receive_clear_data(client: Client, data_type: str, data: dict) -> bool:
         if data_type == "except":
             if the_type == "channels":
                 glovar.except_ids["channels"] = set()
+            elif the_type == "contacts":
+                glovar.except_ids["contacts"] = set()
             elif the_type == "long":
                 glovar.except_ids["long"] = set()
             elif the_type == "temp":
