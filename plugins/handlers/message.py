@@ -116,6 +116,10 @@ def check_join(client: Client, message: Message) -> bool:
             if is_declared_message(None, message):
                 return True
 
+            # Init the user's status
+            if not init_user_id(uid):
+                continue
+
             # Check name
             if glovar.configs[gid].get("nick"):
                 name = get_full_name(new)
@@ -152,10 +156,6 @@ def check_join(client: Client, message: Message) -> bool:
             # Check bot
             if glovar.configs[gid].get("bot") and new.is_bot:
                 terminate_user(client, message, new, "ban bot")
-
-            # Init the user's status
-            if not init_user_id(uid):
-                continue
 
             # Update user's join status
             glovar.user_ids[uid]["join"][gid] = now
