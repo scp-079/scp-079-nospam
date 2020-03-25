@@ -38,7 +38,7 @@ from .image import get_image_hash
 from .telegram import get_messages, get_user_full, send_message, send_photo, send_report_message
 from .timers import update_admins
 from .user import add_bad_user, ban_user, global_delete_score, global_delete_watch
-from .user import remove_contacts_info, terminate_user
+from .user import remove_contacts_info, terminate_user, update_score
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -252,10 +252,10 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
                     f"{lang('user_id')}{lang('colon')}{code(uid)}\n")
 
             if glovar.configs[gid].get("deleter") or glovar.configs[gid].get("reporter"):
-                text += (f"{lang('level')}{lang('colon')}{code(lang('auto_ban'))}\n"
+                text += (f"{lang('level')}{lang('colon')}{code(lang('score_auto'))}\n"
                          f"{lang('rule')}{lang('colon')}{code(lang('avatar'))}\n")
             else:
-                text += (f"{lang('level')}{lang('colon')}{code(lang('auto_score'))}\n"
+                text += (f"{lang('level')}{lang('colon')}{code(lang('auto_ban'))}\n"
                          f"{lang('rule')}{lang('colon')}{code(lang('avatar'))}\n")
 
             result = result.message_id
@@ -265,6 +265,8 @@ def receive_avatar(client: Client, message: Message, data: dict) -> bool:
                 return True
 
             if glovar.configs[gid].get("deleter") or glovar.configs[gid].get("reporter"):
+                glovar.user_ids[uid]["bad"][gid] = glovar.user_ids[uid]["bad"].get(gid, 0) + 1
+                update_score(client, uid)
                 auto_report(
                     client=client,
                     gid=gid,
