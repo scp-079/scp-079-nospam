@@ -390,7 +390,7 @@ for c in ascii_lowercase:
 
 # Init
 
-all_commands: List[str] = ["config", "config_nospam", "content", "version"]
+all_commands: List[str] = ["config", "config_nospam", "content", "nospam", "version"]
 
 bot_ids: Set[int] = {avatar_id, captcha_id, clean_id, lang_id, long_id, noflood_id,
                      noporn_id, nospam_id, recheck_id, tip_id, user_id, warn_id}
@@ -521,7 +521,7 @@ usernames: Dict[str, Dict[str, Union[int, str]]] = {}
 #     }
 # }
 
-version: str = "0.2.2"
+version: str = "0.2.3"
 
 # Load data from pickle
 

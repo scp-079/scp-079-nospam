@@ -612,6 +612,14 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     if is_regex_text("sti", sticker_title):
                         return f"del sticker {sticker_title}"
 
+            # Check forward from user
+            if (message.forward_from
+                    and message.forward_from.is_bot
+                    and message.forward_from.username):
+                if (is_ban_text(message.forward_from.username, False)
+                        or is_regex_text("del", message.forward_from.username, False)):
+                    return f"del from {message.forward_from.username}"
+
             # Start detect watch delete
 
             if wb_user or score_user or wd_user or limited_user:

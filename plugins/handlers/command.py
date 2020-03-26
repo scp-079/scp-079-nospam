@@ -27,7 +27,7 @@ from ..functions.channel import get_content, get_debug_text, share_data
 from ..functions.etc import bold, code, code_block, delay, get_command_context, get_command_type, get_now, lang
 from ..functions.etc import mention_id, thread
 from ..functions.file import save
-from ..functions.filters import authorized_group, from_user, is_class_c, test_group
+from ..functions.filters import authorized_group, from_user, is_bad_message, is_class_c, test_group
 from ..functions.group import delete_message, get_config_text
 from ..functions.telegram import get_group_info, send_message, send_report_message
 
@@ -237,6 +237,42 @@ def content(client: Client, message: Message) -> bool:
         return True
     except Exception as e:
         logger.warning(f"Content error: {e}", exc_info=True)
+
+    return False
+
+
+@Client.on_message(Filters.incoming & Filters.group & Filters.command(["nospam"], glovar.prefix)
+                   & test_group
+                   & from_user)
+def nospam(client: Client, message: Message) -> bool:
+    # Check message's detection
+    try:
+        # Basic data
+        cid = message.chat.id
+        aid = message.from_user.id
+        mid = message.message_id
+
+        # Generate the report message
+        text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+
+        if message.reply_to_message:
+            result = is_bad_message(client, message.reply_to_message)
+
+            if result:
+                text += f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
+                text += code_block(result) + "\n"
+            else:
+                text += f"{lang('reason')}{lang('colon')}{code(lang('reason_none'))}\n"
+        else:
+            text = (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
+                    f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
+
+        # Send the report message
+        thread(send_message, (client, cid, text, mid))
+
+        return True
+    except Exception as e:
+        logger.warning(f"Nospam error: {e}", exc_info=True)
 
     return False
 
