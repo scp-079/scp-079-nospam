@@ -234,6 +234,7 @@ lang: Dict[str, str] = {
     "name": (zh_cn and "名称") or "Name",
     "reason": (zh_cn and "原因") or "Reason",
     "reset": (zh_cn and "重置数据") or "Reset Data",
+    "result": (zh_cn and "结果") or "Result",
     "rollback": (zh_cn and "数据回滚") or "Rollback",
     "score": (zh_cn and "评分") or "Score",
     "status_failed": (zh_cn and "未执行") or "Failed",
