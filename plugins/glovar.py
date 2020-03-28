@@ -357,6 +357,7 @@ lang: Dict[str, str] = {
     "score_auto": (zh_cn and "自动评分") or "Auto Score",
     "score_delete": (zh_cn and "评分删除") or "Score Delete",
     "score_micro": (zh_cn and "微量评分") or "Micro Score",
+    "spam_test": (zh_cn and "SPAM 测试") or "SPAM Test",
     "url": (zh_cn and "链接预览") or "Previewed Url",
     # Terminate
     "auto_ban": (zh_cn and "自动封禁") or "Auto Ban",

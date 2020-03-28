@@ -253,11 +253,12 @@ def nospam(client: Client, message: Message) -> bool:
         mid = message.message_id
 
         # Generate the report message
-        text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+        text = (f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
+                f"{lang('action')}{lang('colon')}{code(lang('spam_test'))}\n")
 
         if message.reply_to_message:
             result = is_bad_message(client, message.reply_to_message) or lang("reason_none")
-            text += f"{lang('result')}{lang('colon')}{code_block(result)}\n"
+            text += f"{lang('result')}{lang('colon')}{code(result)}\n"
         else:
             text = (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
