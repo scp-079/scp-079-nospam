@@ -256,13 +256,8 @@ def nospam(client: Client, message: Message) -> bool:
         text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n"
 
         if message.reply_to_message:
-            result = is_bad_message(client, message.reply_to_message)
-
-            if result:
-                text += f"{lang('result')}{lang('colon')}" + "-" * 24 + "\n\n"
-                text += code_block(result) + "\n"
-            else:
-                text += f"{lang('reason')}{lang('colon')}{code(lang('reason_none'))}\n"
+            result = is_bad_message(client, message.reply_to_message) or lang("reason_none")
+            text += f"{lang('result')}{lang('colon')}{code_block(result)}\n"
         else:
             text = (f"{lang('status')}{lang('colon')}{code(lang('status_failed'))}\n"
                     f"{lang('reason')}{lang('colon')}{code(lang('command_usage'))}\n")
