@@ -33,8 +33,9 @@ from ..functions.receive import receive_add_bad, receive_add_except, receive_ava
 from ..functions.receive import receive_clear_data, receive_config_commit, receive_config_reply, receive_config_show
 from ..functions.receive import receive_declared_message, receive_help_check, receive_leave_approve, receive_preview
 from ..functions.receive import receive_regex, receive_refresh, receive_remove_bad, receive_remove_except
-from ..functions.receive import receive_remove_score, receive_remove_watch, receive_rollback, receive_status_ask
-from ..functions.receive import receive_text_data, receive_user_score, receive_watch_user
+from ..functions.receive import receive_remove_score, receive_remove_watch, receive_remove_white, receive_rollback
+from ..functions.receive import receive_status_ask, receive_text_data, receive_user_score, receive_watch_user
+from ..functions.receive import receive_white_users
 from ..functions.telegram import get_admins, get_user_full, send_message
 from ..functions.tests import nospam_test
 from ..functions.timers import backup_files, send_count
@@ -319,7 +320,15 @@ def process_data(client: Client, message: Message) -> bool:
 
             if sender == "AVATAR":
 
-                if action == "update":
+                if action == "add":
+                    if action_type == "white":
+                        receive_white_users(client, message)
+
+                elif action == "remove":
+                    if action_type == "white":
+                        receive_remove_white(data)
+
+                elif action == "update":
                     if action_type == "avatar":
                         receive_avatar(client, message, data)
 
