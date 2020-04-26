@@ -26,7 +26,7 @@ from ..functions.etc import code, general_link, get_full_name, get_now, lang, me
 from ..functions.file import save
 from ..functions.filters import authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_bad_message, is_bio_text, is_contact, is_declared_message
-from ..functions.filters import is_nm_text, is_regex_text, is_white_user, new_group, test_group
+from ..functions.filters import is_nm_text, is_regex_text, new_group, test_group
 from ..functions.group import leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_avatar, receive_captcha_kicked_user
@@ -113,7 +113,7 @@ def check_join(client: Client, message: Message) -> bool:
                 continue
 
             # Check if the user is white user
-            if is_white_user(None, message):
+            if uid in glovar.white_ids:
                 continue
 
             # Check declare status

@@ -232,22 +232,6 @@ def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
-def is_white_user(_, message: Message) -> bool:
-    # Check if the user is in the white list
-    try:
-        if not message.from_user:
-            return False
-
-        uid = message.from_user.id
-
-        if uid in glovar.white_ids:
-            return True
-    except Exception as e:
-        logger.warning(f"Is white user error: {e}", exc_info=True)
-
-    return False
-
-
 authorized_group = Filters.create(
     func=is_authorized_group,
     name="Authorized Group"
@@ -296,11 +280,6 @@ new_group = Filters.create(
 test_group = Filters.create(
     func=is_test_group,
     name="Test Group"
-)
-
-white_user = Filters.create(
-    func=is_white_user,
-    name="White User"
 )
 
 
