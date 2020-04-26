@@ -311,7 +311,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
         # White user
         if (uid in glovar.white_ids and not is_high_score_user(user)
-                and rule != "sticker"):
+                and not (message.sticker and any(c in context for c in ["content", "sticker", "true"]))):
             # Basic info
             log_level = lang("score_auto")
             log_rule = lang(rule or "rule_global")
