@@ -310,7 +310,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         delete_only = glovar.configs[gid].get("deleter")
 
         # White user
-        if uid in glovar.white_ids and not is_high_score_user(user):
+        if (uid in glovar.white_ids and not is_high_score_user(user)
+                and rule != "sticker"):
             # Basic info
             log_level = lang("score_auto")
             log_rule = lang(rule or "rule_global")
@@ -346,10 +347,6 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     em=result
                 )
 
-            return bool(message.sticker)
-
-        # White user with high score
-        elif uid in glovar.white_ids:
             return bool(message.sticker)
 
         # Bad message
