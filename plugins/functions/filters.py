@@ -1052,7 +1052,8 @@ def is_exe(message: Message) -> bool:
     return False
 
 
-def is_friend_username(client: Client, gid: int, username: str, friend: bool, friend_user: bool = False) -> bool:
+def is_friend_username(client: Client, gid: int, username: str, friend: bool,
+                       friend_user: bool = False) -> Union[bool, str]:
     # Check if it is a friend username
     try:
         username = username.strip()
@@ -1072,6 +1073,9 @@ def is_friend_username(client: Client, gid: int, username: str, friend: bool, fr
             if glovar.configs[gid].get("friend") or friend:
                 if peer_id in glovar.except_ids["channels"] or glovar.admin_ids.get(peer_id, {}):
                     return True
+
+                if peer_id in glovar.bad_ids["channels"]:
+                    return "bad"
 
         if peer_type == "user":
             if friend and friend_user:
@@ -1271,7 +1275,7 @@ def is_regex_text(word_type: str, text: str, ocr: bool = False, again: bool = Fa
     return result
 
 
-def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
+def is_tgl(client: Client, message: Message, friend: bool = False) -> Union[bool, str]:
     # Check if the message includes the Telegram link
     try:
         # Bypass prepare
@@ -1286,7 +1290,7 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
         tg_links = [lk.lower() for lk in links if is_regex_text("tgl", lk)]
 
         # Define a bypass link filter function
-        def is_bypass_link(link: str) -> bool:
+        def is_bypass_link(link: str) -> Union[bool, str]:
             try:
                 link_username = re.match(r"t\.me/([a-z][0-9a-z_]{4,31})/", f"{link}/")
 
@@ -1298,9 +1302,11 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
 
                     if link_username == "joinchat":
                         link_username = ""
-                    else:
-                        if is_friend_username(client, gid, link_username, friend):
-                            return True
+
+                    result = is_friend_username(client, gid, link_username, friend)
+
+                    if result:
+                        return result
 
                 if (f"{bypass}/" in f"{link}/"
                         or link in description
@@ -1313,7 +1319,12 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
 
             return False
 
-        bypass_list = [link for link in tg_links if is_bypass_link(link)]
+        bypass_results = [is_bypass_link(link) for link in tg_links]
+
+        if any(result == "bad" for result in bypass_results):
+            return "bad"
+
+        bypass_list = [tg_links[i] for i in range(len(tg_links)) if bypass_results[i]]
 
         if len(bypass_list) != len(tg_links):
             return True
@@ -1349,8 +1360,10 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> bool:
                 if username in pinned_text:
                     continue
 
-                if not is_friend_username(client, gid, username, friend):
-                    return True
+                result = is_friend_username(client, gid, username, friend)
+
+                if result is not True:
+                    return result
 
             if en.type == "user":
                 uid = en.user.id

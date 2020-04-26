@@ -225,7 +225,7 @@ def record_contacts_info(client: Client, text: str) -> Set[str]:
         for contact in contacts:
             if (contact
                     and contact not in glovar.bad_ids["contacts"]
-                    and not is_friend_username(client, gid, contact, True)):
+                    and is_friend_username(client, gid, contact, True)) is not True:
                 glovar.bad_ids["contacts"].add(contact)
                 save("bad_ids")
 
@@ -492,6 +492,11 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
             # Terminate
             if rule in {"nick", "bio"}:
+                # Basic info
+                log_level = lang("score_auto")
+                log_rule = lang(rule or "rule_global")
+                debug_action = lang("score_micro")
+
                 # Check if necessary
                 if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
                     return True

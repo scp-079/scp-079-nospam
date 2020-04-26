@@ -442,7 +442,6 @@ default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
         "noflood": 0.0,
         "noporn": 0.0,
         "nospam": 0.0,
-        "recheck": 0.0,
         "warn": 0.0
     }
 }
@@ -599,7 +598,6 @@ user_ids: Dict[int, Dict[str, Dict[Union[int, str], Union[float, int]]]] = {}
 #             "noflood": 0.0,
 #             "noporn": 0.0,
 #             "nospam": 0.0,
-#             "recheck": 0.0,
 #             "warn": 0.0
 #         }
 #     }
