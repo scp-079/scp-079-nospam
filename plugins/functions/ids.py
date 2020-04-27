@@ -66,9 +66,11 @@ def init_group_id(gid: int) -> bool:
 def init_user_id(uid: int) -> bool:
     # Init user data
     try:
-        if glovar.user_ids.get(uid) is None:
-            glovar.user_ids[uid] = deepcopy(glovar.default_user_status)
-            save("user_ids")
+        if glovar.user_ids.get(uid) is not None:
+            return True
+
+        glovar.user_ids[uid] = deepcopy(glovar.default_user_status)
+        save("user_ids")
 
         return True
     except Exception as e:

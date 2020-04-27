@@ -289,6 +289,10 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         uid = user.id
         mid = message.message_id
 
+        # Init user data
+        if not init_user_id(uid):
+            return False
+
         # Detection = level + rule + more
         context_list = context.split()
         level = context_list[0]
@@ -356,9 +360,6 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_rule = lang(rule or "rule_global")
             debug_action = lang("score_micro")
 
-            if not init_user_id(uid):
-                return False
-
             # Check if necessary
             if (not glovar.configs[gid].get("scorer")
                     or (uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user))):
@@ -397,9 +398,6 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
 
             if not more:
                 more = lang("reporter")
-
-            if not init_user_id(uid):
-                return False
 
             # Check if necessary
             if uid in glovar.recorded_ids[gid] and is_high_score_user(message.from_user):
