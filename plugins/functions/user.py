@@ -552,7 +552,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 if result:
                     glovar.user_ids[uid]["bad"][gid] = glovar.user_ids[uid]["bad"].get(gid, 0) + 1
                     update_score(client, uid)
-                    auto_report(client, message)
+                    uid not in glovar.recorded_ids[gid] and auto_report(client, message)
                     glovar.recorded_ids[gid].add(uid)
                     send_debug(
                         client=client,
