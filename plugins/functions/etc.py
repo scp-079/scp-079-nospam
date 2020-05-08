@@ -22,6 +22,7 @@ from hashlib import md5
 from html import escape
 from json import dumps
 from random import choice, uniform
+from re import sub
 from string import ascii_letters, digits
 from threading import Thread, Timer
 from time import sleep, time
@@ -94,7 +95,7 @@ def code_block(text: Any) -> str:
     return ""
 
 
-def crypt_str(operation: str, text: str, key: str) -> str:
+def crypt_str(operation: str, text: str, key: bytes) -> str:
     # Encrypt or decrypt a string
     result = ""
     try:
@@ -566,7 +567,7 @@ def random_str(i: int) -> str:
     return text
 
 
-def t2t(text: str, normal: bool, printable: bool) -> str:
+def t2t(text: str, normal: bool, printable: bool, pure: bool = False) -> str:
     # Convert the string, text to text
     try:
         if not text:
@@ -583,6 +584,9 @@ def t2t(text: str, normal: bool, printable: bool) -> str:
 
         if normal and glovar.zh_cn:
             text = convert(text, config="t2s.json")
+
+        if pure:
+            text = sub(r"""[^\da-zA-Z一-龥.,:'"?!~;()。，？！～@“”]""", "", text)
     except Exception as e:
         logger.warning(f"T2T error: {e}", exc_info=True)
 

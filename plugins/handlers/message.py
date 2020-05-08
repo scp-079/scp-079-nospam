@@ -130,7 +130,7 @@ def check_join(client: Client, message: Message) -> bool:
                 name = get_full_name(new)
 
                 if name and name not in glovar.except_ids["long"]:
-                    t2t_name = t2t(name, True, True)
+                    t2t_name = t2t(name, True, True, True)
 
                     if is_nm_text(t2t_name):
                         terminate_user(client, message, new, "ban nick")
@@ -150,7 +150,7 @@ def check_join(client: Client, message: Message) -> bool:
                 if not user or not user.about:
                     bio = ""
                 else:
-                    bio = t2t(user.about, True, True)
+                    bio = t2t(user.about, True, True, True)
 
                 if bio and bio not in glovar.except_ids["long"]:
                     if is_bio_text(bio):
