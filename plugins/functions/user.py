@@ -313,48 +313,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         report_only = glovar.configs[gid].get("reporter")
         delete_only = glovar.configs[gid].get("deleter")
 
-        # White user
-        if (uid in glovar.white_ids and not is_high_score_user(user)
-                and not (message.sticker and any(c in context for c in ["content", "sticker", "true"]))):
-            # Basic info
-            log_level = lang("score_auto")
-            log_rule = lang(rule or "rule_global")
-            debug_action = lang("score_micro")
-
-            if not more:
-                more = lang("white_user")
-
-            # Check if necessary
-            if uid in glovar.recorded_ids[gid]:
-                return True
-
-            # Terminate
-            result = forward_evidence(
-                client=client,
-                message=message,
-                user=user,
-                level=log_level,
-                rule=log_rule,
-                more=more
-            )
-
-            if result:
-                glovar.user_ids[uid]["bad"][gid] = glovar.user_ids[uid]["bad"].get(gid, 0) + 1
-                update_score(client, uid)
-                glovar.recorded_ids[gid].add(uid)
-                send_debug(
-                    client=client,
-                    chat=message.chat,
-                    action=debug_action,
-                    uid=uid,
-                    mid=mid,
-                    em=result
-                )
-
-            return bool(message.sticker)
-
         # Bad message
-        elif level == "bad":
+        if level == "bad":
             # Basic info
             log_level = lang("score_auto")
             log_rule = lang(rule or "rule_global")
@@ -426,6 +386,46 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     mid=mid,
                     em=result
                 )
+
+        # White user
+        elif (uid in glovar.white_ids and not is_high_score_user(user)
+              and not (message.sticker and any(c in context for c in ["content", "sticker", "true"]))):
+            # Basic info
+            log_level = lang("score_auto")
+            log_rule = lang(rule or "rule_global")
+            debug_action = lang("score_micro")
+
+            if not more:
+                more = lang("white_user")
+
+            # Check if necessary
+            if uid in glovar.recorded_ids[gid]:
+                return True
+
+            # Terminate
+            result = forward_evidence(
+                client=client,
+                message=message,
+                user=user,
+                level=log_level,
+                rule=log_rule,
+                more=more
+            )
+
+            if result:
+                glovar.user_ids[uid]["bad"][gid] = glovar.user_ids[uid]["bad"].get(gid, 0) + 1
+                update_score(client, uid)
+                glovar.recorded_ids[gid].add(uid)
+                send_debug(
+                    client=client,
+                    chat=message.chat,
+                    action=debug_action,
+                    uid=uid,
+                    mid=mid,
+                    em=result
+                )
+
+            return bool(message.sticker)
 
         # Delete the message
         elif level in {"del", "true"}:
