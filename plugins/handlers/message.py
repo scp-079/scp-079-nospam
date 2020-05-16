@@ -30,8 +30,9 @@ from ..functions.filters import is_nm_text, is_regex_text, new_group, test_group
 from ..functions.group import leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_avatar, receive_captcha_kicked_user
-from ..functions.receive import receive_clear_data, receive_config_commit, receive_config_reply, receive_config_show
-from ..functions.receive import receive_declared_message, receive_help_check, receive_leave_approve, receive_preview
+from ..functions.receive import receive_captcha_kicked_users, receive_clear_data, receive_config_commit
+from ..functions.receive import receive_config_reply, receive_config_show, receive_declared_message
+from ..functions.receive import receive_flood_score, receive_help_check, receive_leave_approve, receive_preview
 from ..functions.receive import receive_regex, receive_refresh, receive_remove_bad, receive_remove_except
 from ..functions.receive import receive_remove_score, receive_remove_watch, receive_remove_white, receive_rollback
 from ..functions.receive import receive_status_ask, receive_text_data, receive_user_score, receive_watch_user
@@ -334,7 +335,11 @@ def process_data(client: Client, message: Message) -> bool:
 
             elif sender == "CAPTCHA":
 
-                if action == "update":
+                if action == "flood":
+                    if action_type == "score":
+                        receive_flood_score(client, message)
+
+                elif action == "update":
                     if action_type == "score":
                         receive_user_score(client, sender, data, True)
 
@@ -479,8 +484,7 @@ def process_data(client: Client, message: Message) -> bool:
                     if action_type == "update":
                         receive_regex(client, message, data)
                     elif action_type == "count":
-                        if data == "ask":
-                            send_count(client)
+                        data == "ask" and send_count(client)
 
             elif sender == "USER":
 
@@ -512,7 +516,11 @@ def process_data(client: Client, message: Message) -> bool:
 
             if sender == "CAPTCHA":
 
-                if action == "help":
+                if action == "flood":
+                    if action_type == "delete":
+                        receive_captcha_kicked_users(client, message, data)
+
+                elif action == "help":
                     if action_type == "delete":
                         receive_captcha_kicked_user(data)
 
