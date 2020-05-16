@@ -25,7 +25,7 @@ from pyrogram import Client
 from .. import glovar
 from .channel import ask_for_help, get_debug_text, share_data, share_regex_count
 from .etc import code, general_link, get_full_name, get_now, lang, message_link, t2t, thread
-from .file import save
+from .file import data_to_file, save
 from .filters import is_nm_text
 from .group import leave_group
 from .telegram import get_admins, get_group_info, send_message
@@ -59,6 +59,32 @@ def backup_files(client: Client) -> bool:
         logger.warning(f"Backup error: {e}", exc_info=True)
 
     return False
+
+
+def interval_hour_01(client: Client) -> bool:
+    # Execute every hour
+    result = False
+
+    try:
+        # Ignore groups
+        group_list = {gid for gid in list(glovar.configs)
+                      if (not glovar.configs[gid].get("nick")
+                          or glovar.configs[gid].get("deleter")
+                          or glovar.configs[gid].get("reporter"))}
+        file = data_to_file(group_list)
+        share_data(
+            client=client,
+            receivers=["CAPTCHA"],
+            action="update",
+            action_type="ignore",
+            file=file
+        )
+
+        result = True
+    except Exception as e:
+        logger.warning(f"Interval hour 01 error: {e}", exc_info=True)
+
+    return result
 
 
 def interval_min_10() -> bool:
