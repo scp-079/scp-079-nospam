@@ -382,6 +382,8 @@ def receive_captcha_kicked_users(client: Client, message: Message, data: int) ->
         result = True
     except Exception as e:
         logger.warning(f"Receive captcha kicked users error: {e}", exc_info=True)
+    finally:
+        glovar.locks["message"].release()
 
     return result
 
