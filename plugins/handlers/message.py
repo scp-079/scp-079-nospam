@@ -24,7 +24,7 @@ from .. import glovar
 from ..functions.channel import get_content, get_debug_text
 from ..functions.etc import code, general_link, get_full_name, get_now, lang, mention_id, t2t, thread
 from ..functions.file import save
-from ..functions.filters import authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
+from ..functions.filters import aio, authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_bad_message, is_bio_text, is_contact, is_declared_message
 from ..functions.filters import is_nm_text, is_regex_text, new_group, test_group
 from ..functions.group import leave_group
@@ -295,7 +295,7 @@ def init_group(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message((Filters.incoming or glovar.aio) & Filters.channel
+@Client.on_message((Filters.incoming | aio) & Filters.channel
                    & ~Filters.command(glovar.all_commands, glovar.prefix)
                    & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
