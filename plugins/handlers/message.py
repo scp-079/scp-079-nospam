@@ -539,14 +539,15 @@ def process_data(client: Client, message: Message) -> bool:
                    & from_user)
 def test(client: Client, message: Message) -> bool:
     # Show test results in TEST group
-    glovar.locks["test"].acquire()
-    try:
-        nospam_test(client, message)
+    result = False
 
-        return True
+    glovar.locks["test"].acquire()
+
+    try:
+        result = nospam_test(client, message)
     except Exception as e:
         logger.warning(f"Test error: {e}", exc_info=True)
     finally:
         glovar.locks["test"].release()
 
-    return False
+    return result

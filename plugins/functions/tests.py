@@ -35,6 +35,8 @@ logger = logging.getLogger(__name__)
 
 def nospam_test(client: Client, message: Message) -> bool:
     # Test image porn score in the test group
+    result = False
+
     try:
         origin_text = get_text(message)
 
@@ -66,6 +68,7 @@ def nospam_test(client: Client, message: Message) -> bool:
         # Recorded contact
         for contact in glovar.bad_ids["contacts"]:
             if re.search(contact, text, re.I):
+                logger.warning(contact)
                 text += f"{lang('record_contact')}{lang('colon')}{code(contact)}\n"
 
         # Image
@@ -119,8 +122,8 @@ def nospam_test(client: Client, message: Message) -> bool:
             text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n" + text
             thread(send_message, (client, glovar.test_group_id, text, message.message_id))
 
-        return True
+        result = True
     except Exception as e:
         logger.warning(f"Nospam test error: {e}", exc_info=True)
 
-    return False
+    return result
