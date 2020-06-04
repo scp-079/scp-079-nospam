@@ -16,7 +16,7 @@ This bot is used to block spam in groups.
 
 - Python 3.6 or higher
 - Debian 10: `sudo apt update && sudo apt install libzbar0 opencc tesseract-ocr tesseract-ocr-chi-sim tesseract-ocr-chi-tra -y`
-- pip: `pip install -r requirements.txt` or `pip install -U APScheduler emoji OpenCC Pillow pyAesCrypt pyrogram[fast] pytesseract pyzbar`
+- pip: `pip install -r requirements.txt` or `pip install -U APScheduler emoji OpenCC Pillow pyAesCrypt pyrogram pytesseract pyzbar tgcrypto`
 
 ## Files
 
