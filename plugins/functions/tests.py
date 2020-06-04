@@ -38,7 +38,6 @@ def nospam_test(client: Client, message: Message) -> bool:
     result = False
 
     try:
-        logger.warning(1)
         origin_text = get_text(message)
 
         if re.search(f"^{lang('admin')}{lang('colon')}[0-9]", origin_text):
@@ -67,11 +66,11 @@ def nospam_test(client: Client, message: Message) -> bool:
             text += f"{lang('record_bad')}{lang('colon')}{code('True')}\n"
 
         # Recorded contact
-        logger.warning(2)
         for contact in glovar.bad_ids["contacts"]:
-            if re.search(contact, text, re.I):
-                logger.warning(contact)
-                text += f"{lang('record_contact')}{lang('colon')}{code(contact)}\n"
+            if not re.search(contact, message_text, re.I):
+                continue
+
+            text += f"{lang('record_contact')}{lang('colon')}{code(contact)}\n"
 
         # Image
         file_id, file_ref, big = get_file_id(message)
@@ -81,51 +80,87 @@ def nospam_test(client: Client, message: Message) -> bool:
         ocr = image_path and get_ocr(image_path, True)
         image_path and thread(delete_file, (image_path,))
 
-        # QR code
-        if qrcode:
-            text += f"\n{lang('qrcode')}{lang('colon')}" + "-" * 24 + "\n\n"
-            text += code(qrcode) + "\n\n"
-
-            type_list = [lang(t) for t in glovar.regex if is_regex_text(t, qrcode)]
-
-            if type_list:
-                text += f"{lang('qrcode_examine')}{lang('colon')}" + "-" * 20 + "\n\n"
-                text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
-
         # OCR
-        if ocr:
-            text += f"\n{lang('ocr_result')}{lang('colon')}" + "-" * 24 + "\n\n"
-            text += code(ocr) + "\n\n"
+        text = nospam_test_ocr(text, ocr, message_text)
 
-            type_list = [lang(t) for t in glovar.regex if is_regex_text(t, ocr, True)]
+        # QR code
+        text = nospam_test_qrcode(text, qrcode)
 
-            if type_list:
-                text += f"{lang('ocr')}{lang('colon')}" + "-" * 24 + "\n\n"
-                text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
-
-            # All text
-            if message_text:
-                all_text = message_text + ocr
-
-                type_list = [lang(t) for t in glovar.regex if is_regex_text(t, all_text)]
-
-                if type_list:
-                    text += f"{lang('all_text')}{lang('colon')}" + "-" * 24 + "\n\n"
-                    text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
-
-        # Send the result
+        # Check white list
         whitelisted = (is_class_e(None, message, True)
                        or message_text in glovar.except_ids["long"]
                        or image_hash in glovar.except_ids["temp"])
 
-        if text or whitelisted:
-            text = text.replace("\n\n\n", "\n\n")
-            text = f"{lang('white_listed')}{lang('colon')}{code(whitelisted)}\n" + text
-            text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n" + text
-            thread(send_message, (client, glovar.test_group_id, text, message.message_id))
+        if not text and not whitelisted:
+            return False
+
+        text = text.replace("\n\n\n", "\n\n")
+        text = f"{lang('white_listed')}{lang('colon')}{code(whitelisted)}\n" + text
+        text = f"{lang('admin')}{lang('colon')}{mention_id(aid)}\n\n" + text
+        thread(send_message, (client, glovar.test_group_id, text, message.message_id))
 
         result = True
     except Exception as e:
         logger.warning(f"Nospam test error: {e}", exc_info=True)
+
+    return result
+
+
+def nospam_test_ocr(text: str, ocr: str, message_text: str) -> str:
+    # NOSPAM OCR test
+    result = text
+
+    try:
+        if not ocr:
+            return result
+
+        result += f"\n{lang('ocr_result')}{lang('colon')}" + "-" * 24 + "\n\n"
+        result += code(ocr) + "\n\n"
+
+        type_list = [lang(t) for t in glovar.regex if is_regex_text(t, ocr, True)]
+
+        if type_list:
+            result += f"{lang('ocr')}{lang('colon')}" + "-" * 24 + "\n\n"
+            result += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
+
+        # All text
+        if not message_text:
+            return result
+
+        all_text = message_text + ocr
+
+        type_list = [lang(t) for t in glovar.regex if is_regex_text(t, all_text)]
+
+        if not type_list:
+            return result
+
+        result += f"{lang('all_text')}{lang('colon')}" + "-" * 24 + "\n\n"
+        result += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
+    except Exception as e:
+        logger.warning(f"Nospam test ocr error: {e}", exc_info=True)
+
+    return result
+
+
+def nospam_test_qrcode(text: str, qrcode: str) -> str:
+    # NOSPAM QRCODE test
+    result = text
+
+    try:
+        if not qrcode:
+            return result
+
+        text += f"\n{lang('qrcode')}{lang('colon')}" + "-" * 24 + "\n\n"
+        text += code(qrcode) + "\n\n"
+
+        type_list = [lang(t) for t in glovar.regex if is_regex_text(t, qrcode)]
+
+        if not type_list:
+            return result
+
+        text += f"{lang('qrcode_examine')}{lang('colon')}" + "-" * 20 + "\n\n"
+        text += "\t" * 4 + italic(lang("comma").join(type_list)) + "\n\n"
+    except Exception as e:
+        logger.warning(f"Nospam test qrcode error: {e}", exc_info=True)
 
     return result
