@@ -38,6 +38,7 @@ def nospam_test(client: Client, message: Message) -> bool:
     result = False
 
     try:
+        logger.warning(1)
         origin_text = get_text(message)
 
         if re.search(f"^{lang('admin')}{lang('colon')}[0-9]", origin_text):
@@ -66,6 +67,7 @@ def nospam_test(client: Client, message: Message) -> bool:
             text += f"{lang('record_bad')}{lang('colon')}{code('True')}\n"
 
         # Recorded contact
+        logger.warning(2)
         for contact in glovar.bad_ids["contacts"]:
             if re.search(contact, text, re.I):
                 logger.warning(contact)

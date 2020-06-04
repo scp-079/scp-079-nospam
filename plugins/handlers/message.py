@@ -544,6 +544,7 @@ def test(client: Client, message: Message) -> bool:
     glovar.locks["test"].acquire()
 
     try:
+        logger.warning(0)
         result = nospam_test(client, message)
     except Exception as e:
         logger.warning(f"Test error: {e}", exc_info=True)
