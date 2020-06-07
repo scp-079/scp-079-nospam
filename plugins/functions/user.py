@@ -89,6 +89,7 @@ def ban_user(client: Client, gid: int, uid: Union[int, str]) -> bool:
 def get_contacts(text: str) -> Set[str]:
     # Get the contacts information in the text
     result = set()
+
     try:
         for the_type in ["con", "iml", "pho"]:
             match = is_regex_text(the_type, text)
@@ -111,6 +112,10 @@ def get_contacts(text: str) -> Set[str]:
                     continue
 
                 the_contact = group_dict["con"].lower()
+                the_contact = "".join(t for t in the_contact if t.isprintable() and t.strip())
+
+                if not the_contact or len(the_contact) < 6:
+                    continue
 
                 if the_contact in glovar.except_ids["contacts"]:
                     continue
