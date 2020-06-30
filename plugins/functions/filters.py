@@ -534,7 +534,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                                 all_text = message_text + ocr
                                 message.new_chat_title = all_text
 
-                                if is_ban_text(all_text, False):
+                                if not is_ban_text(ocr, False) and is_ban_text(all_text, False):
                                     return "ban ocr"
 
             # Start detect watch ban
