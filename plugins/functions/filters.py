@@ -438,6 +438,9 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_nm_text(forward_name):
                     return "ban from"
 
+                if is_regex_text("fcnm", forward_name):
+                    return "ban from"
+
                 if is_contact(forward_name):
                     return "ban from contact"
 
