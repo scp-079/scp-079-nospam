@@ -441,6 +441,9 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if message.forward_from_chat and is_regex_text("fcnm", forward_name):
                     return "ban from"
 
+                if message.forward_from_chat.username and is_regex_text("fcnm", message.forward_from_chat.username):
+                    return f"ban from {message.forward_from_chat.username}"
+
                 if is_contact(forward_name):
                     return "ban from contact"
 
