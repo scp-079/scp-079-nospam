@@ -486,12 +486,18 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_ban_text(f"{name}\n{message_text}", False):
                     return "ban message"
 
-            # Check the filename:
+            # Check the filename
             file_name = get_filename(message, True, True)
 
             if file_name:
                 if is_regex_text("fil", file_name) or is_ban_text(file_name, False):
                     return "ban message"
+
+            # Check the caption
+            caption = message.caption
+
+            if caption and is_regex_text("cap", caption):
+                return "ban message"
 
             # Check image
             qrcode = ""
