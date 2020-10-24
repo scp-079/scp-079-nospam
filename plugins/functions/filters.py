@@ -486,6 +486,12 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_ban_text(f"{name}\n{message_text}", False):
                     return "ban message"
 
+            # Check contact
+            contact_name = get_full_name(message.contact, True, True, True)
+
+            if is_nm_text(contact_name):
+                return f"ban message {contact_name}"
+
             # Check the filename
             file_name = get_filename(message, True, True)
 
