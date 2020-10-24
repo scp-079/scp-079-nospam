@@ -489,7 +489,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # Check contact
             contact_name = get_full_name(message.contact, True, True, True)
 
-            if is_nm_text(contact_name):
+            if contact_name and contact_name not in glovar.except_ids["long"] and is_nm_text(contact_name):
                 return f"ban message {contact_name}"
 
             # Check the filename
