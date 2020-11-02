@@ -337,7 +337,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 user=user,
                 level=log_level,
                 rule=log_rule,
-                more=more
+                more=more,
+                general=False
             )
 
             if result:
@@ -375,7 +376,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 user=user,
                 level=log_level,
                 rule=log_rule,
-                more=more
+                more=more,
+                general=False
             )
 
             if result:
@@ -414,7 +416,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                 user=user,
                 level=log_level,
                 rule=log_rule,
-                more=more
+                more=more,
+                general=False
             )
 
             if result:
@@ -484,6 +487,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             debug_action = lang("watch_delete")
             score_user = is_high_score_user(message.from_user)
             limited_user = is_limited_user(gid, user, now, glovar.configs[gid].get("new"))
+            general = True
 
             if score_user:
                 log_rule = lang("score_user")
@@ -491,6 +495,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             elif limited_user and glovar.configs[gid].get("new"):
                 log_rule = lang("limited_user")
                 debug_action = lang("limited_delete")
+                general = False
 
             # Terminate
             if is_detected_user(message) or uid in glovar.recorded_ids[gid]:
@@ -505,7 +510,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     level=log_level,
                     rule=log_rule,
                     score=score_user,
-                    more=more
+                    more=more,
+                    general=general
                 )
 
                 if result:
