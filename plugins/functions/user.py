@@ -441,6 +441,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
             log_level = lang("auto_delete")
             log_rule = lang(rule or "rule_global")
             debug_action = lang("auto_delete")
+            general = rule == "sticker"
 
             if rule in {"contact", "content"} or more in {"contact", "content"}:
                 log_rule = lang("record_message")
@@ -461,7 +462,8 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
                     user=user,
                     level=log_level,
                     rule=log_rule,
-                    more=more
+                    more=more,
+                    general=general
                 )
 
                 if result:
