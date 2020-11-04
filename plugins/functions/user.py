@@ -185,6 +185,8 @@ def global_delete_score(client: Client, uid: int) -> bool:
 def global_delete_watch(client: Client, uid: int, mid: int) -> bool:
     # Watch global delete
     try:
+        channel_id = glovar.nospam_channel_id or glovar.logging_channel_id
+
         if uid in glovar.bad_ids["users"]:
             return True
 
@@ -195,7 +197,7 @@ def global_delete_watch(client: Client, uid: int, mid: int) -> bool:
                 f"{lang('user_id')}{lang('colon')}{code(uid)}\n"
                 f"{lang('level')}{lang('colon')}{code(lang('global_delete'))}\n"
                 f"{lang('rule')}{lang('colon')}{code(lang('watch_user'))}\n")
-        result = send_message(client, glovar.logging_channel_id, text)
+        result = send_message(client, channel_id, text)
 
         if not result:
             return True
