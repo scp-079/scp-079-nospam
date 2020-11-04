@@ -144,6 +144,12 @@ def check_join(client: Client, message: Message) -> bool:
                     elif is_regex_text("bad", t2t_name) or is_regex_text("sho", t2t_name):
                         terminate_user(client, message, new, "bad nick")
 
+            # Check username
+            username = new.username
+
+            if username and is_nm_text(username):
+                terminate_user(client, message, new, "ban username")
+
             # Check bio
             if glovar.configs[gid].get("bio"):
                 user = get_user_full(client, uid)
