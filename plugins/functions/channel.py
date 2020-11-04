@@ -213,6 +213,12 @@ def forward_evidence(client: Client, message: Message, user: User, level: str, r
             if name:
                 text += f"{lang('user_name')}{lang('colon')}{code(name)}\n"
 
+        if lang("username") in rule:
+            username = message.from_user and message.from_user.username
+
+            if username:
+                text += f"{lang('more')}{lang('colon')}{code(username)}\n"
+
         if lang("bio") in rule:
             text += f"{lang('user_bio')}{lang('colon')}{code(more)}\n"
 

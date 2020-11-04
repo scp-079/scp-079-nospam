@@ -380,6 +380,13 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 if is_regex_text("wb", name) and is_regex_text("sho", name):
                     return "ban nick"
 
+            # Check the username
+            username = message.from_user and message.from_user.username
+
+            if glovar.configs[gid].get("nick") and username and username not in glovar.except_ids["long"]:
+                if is_nm_text(username):
+                    return f"ban username"
+
             # Check group message inspection config
             if not glovar.configs[gid].get("message"):
                 return ""
