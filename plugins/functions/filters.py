@@ -498,7 +498,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             contact_name = get_full_name(message.contact, True, True, True)
 
             if contact_name and contact_name not in glovar.except_ids["long"] and is_nm_text(contact_name):
-                return f"ban message {contact_name}"
+                return f"ban contact {contact_name}"
 
             # Check the filename
             file_name = get_filename(message, True, True)
@@ -638,20 +638,22 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "del contact"
 
             # Check sticker
+            sticker_title = get_sticker_title(client, sticker_name, True, True)
+
+            if sticker_name not in glovar.except_ids["long"]:
+                if is_ban_text(sticker_name, False):
+                    return f"ban sticker {sticker_name}"
+
+            if sticker_title not in glovar.except_ids["long"]:
+                if is_ban_text(sticker_title, False):
+                    return f"ban sticker {sticker_title}"
+
             if glovar.configs[gid].get("sticker") and sticker_name:
                 if sticker_name not in glovar.except_ids["long"]:
-                    if is_ban_text(sticker_name, False):
-                        return f"ban sticker {sticker_name}"
-
                     if is_regex_text("sti", sticker_name):
                         return f"del sticker {sticker_name}"
 
-                sticker_title = get_sticker_title(client, sticker_name, True, True)
-
                 if sticker_title not in glovar.except_ids["long"]:
-                    if is_ban_text(sticker_title, False):
-                        return f"ban sticker {sticker_title}"
-
                     if is_regex_text("sti", sticker_title):
                         return f"del sticker {sticker_title}"
 
