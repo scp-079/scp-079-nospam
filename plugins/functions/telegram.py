@@ -29,6 +29,7 @@ from pyrogram.errors import MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
 
 from .. import glovar
+from .decorators import retry
 from .etc import delay, get_int, t2t, wait_flood
 
 # Enable logging
@@ -100,20 +101,17 @@ def get_admins(client: Client, cid: int) -> Union[bool, List[ChatMember], None]:
     return result
 
 
+@retry
 def get_chat(client: Client, cid: Union[int, str]) -> Union[Chat, ChatPreview, None]:
     # Get a chat
     result = None
+
     try:
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.get_chat(chat_id=cid)
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
-            except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
-                return None
+        result = client.get_chat(chat_id=cid)
+    except FloodWait as e:
+        raise e
+    except (ChannelInvalid, ChannelPrivate, PeerIdInvalid):
+        return None
     except Exception as e:
         logger.warning(f"Get chat {cid} error: {e}", exc_info=True)
 

@@ -32,7 +32,7 @@ from .file import delete_file, get_downloaded_path, save
 from .group import get_description, get_group_sticker, get_member, get_pinned
 from .ids import init_group_id
 from .image import get_color, get_file_id, get_ocr, get_qrcode
-from .telegram import get_sticker_title, resolve_username
+from .telegram import get_chat, get_sticker_title, resolve_username
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -563,6 +563,11 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                                 if not is_ban_text(ocr, False) and is_ban_text(all_text, False):
                                     return "ban ocr"
 
+            tgl_result = is_tgl(client, message, True)
+
+            if tgl_result == "ban":
+                return "ban message"
+
             # Start detect watch ban
 
             if wb_user or score_user:
@@ -594,7 +599,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "wb message"
 
                 # Check Telegram link
-                if is_tgl(client, message, True):
+                if tgl_result:
                     return "wb message"
 
                 # Check image
@@ -1120,8 +1125,8 @@ def is_friend_username(client: Client, gid: int, username: str, friend: bool,
                 if peer_id in glovar.except_ids["channels"] or glovar.admin_ids.get(peer_id, {}):
                     return True
 
-                if peer_id in glovar.bad_ids["channels"]:
-                    return "bad"
+            if peer_id in glovar.bad_ids["channels"]:
+                return "bad"
 
         if peer_type == "user":
             if friend and friend_user:
@@ -1338,6 +1343,15 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> Union[bool
         # Define a bypass link filter function
         def is_bypass_link(link: str) -> Union[bool, str]:
             try:
+                if "joinchat" in link:
+                    chat = get_chat(client, link)
+                    if chat and chat.title:
+                        if is_ban_text(chat.title, False):
+                            return "ban"
+
+                        if is_nm_text(chat.title):
+                            return "ban"
+
                 link_username = re.match(r"t\.me/([a-z][0-9a-z_]{4,31})/", f"{link}/")
 
                 if link_username:
@@ -1366,6 +1380,9 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> Union[bool
             return False
 
         bypass_results = [is_bypass_link(link) for link in tg_links]
+
+        if any(result == "ban" for result in bypass_results):
+            return "ban"
 
         if any(result == "bad" for result in bypass_results):
             return "bad"

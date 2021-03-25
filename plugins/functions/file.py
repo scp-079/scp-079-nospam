@@ -116,7 +116,7 @@ def get_new_path(extension: str = "", prefix: str = "") -> str:
 def save(file: str) -> bool:
     # Save a global variable to a file
     try:
-        thread(save_thread, (file,), False)
+        thread(save_thread, (file,), None, False)
 
         return True
     except Exception as e:
