@@ -638,24 +638,25 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                     return "del contact"
 
             # Check sticker
-            sticker_title = get_sticker_title(client, sticker_name, True, True)
+            if sticker_name:
+                sticker_title = get_sticker_title(client, sticker_name, True, True)
 
-            if sticker_name not in glovar.except_ids["long"]:
-                if is_ban_text(sticker_name, False):
-                    return f"ban sticker {sticker_name}"
-
-            if sticker_title not in glovar.except_ids["long"]:
-                if is_ban_text(sticker_title, False):
-                    return f"ban sticker {sticker_title}"
-
-            if glovar.configs[gid].get("sticker") and sticker_name:
                 if sticker_name not in glovar.except_ids["long"]:
-                    if is_regex_text("sti", sticker_name):
-                        return f"del sticker {sticker_name}"
+                    if is_ban_text(sticker_name, False):
+                        return f"ban sticker {sticker_name}"
 
                 if sticker_title not in glovar.except_ids["long"]:
-                    if is_regex_text("sti", sticker_title):
-                        return f"del sticker {sticker_title}"
+                    if is_ban_text(sticker_title, False):
+                        return f"ban sticker {sticker_title}"
+
+                if glovar.configs[gid].get("sticker"):
+                    if sticker_name not in glovar.except_ids["long"]:
+                        if is_regex_text("sti", sticker_name):
+                            return f"del sticker {sticker_name}"
+
+                    if sticker_title not in glovar.except_ids["long"]:
+                        if is_regex_text("sti", sticker_title):
+                            return f"del sticker {sticker_title}"
 
             # Check forward from user
             if (message.forward_from
