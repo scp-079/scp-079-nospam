@@ -71,7 +71,10 @@ def check(client: Client, message: Message) -> bool:
 
         # TODO TEMP: Check class D
         if is_class_d(None, message):
-            return delete_message(client, gid, message.message_id)
+            mid = message.message_id
+            uid = message.from_user and message.from_user.id
+            logger.warning(f"TEMP delete Class D message {mid} in {gid} from {uid}")
+            return delete_message(client, gid, mid)
 
         # Check bad message
         content = get_content(message)
