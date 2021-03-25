@@ -27,7 +27,8 @@ from ..functions.file import save
 from ..functions.filters import aio, authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_bad_message, is_bio_text, is_contact, is_declared_message
 from ..functions.filters import is_nm_text, is_regex_text, new_group, test_group
-from ..functions.group import leave_group
+from ..functions.filters import is_class_d
+from ..functions.group import delete_message, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_avatar, receive_captcha_kicked_user
 from ..functions.receive import receive_captcha_kicked_users, receive_clear_data, receive_config_commit
@@ -48,7 +49,7 @@ logger = logging.getLogger(__name__)
 
 @Client.on_message(Filters.incoming & Filters.group & ~Filters.new_chat_members
                    & ~test_group & authorized_group
-                   & from_user & ~class_c & ~class_e & ~class_d
+                   & from_user & ~class_c & ~class_e
                    & ~declared_message)
 def check(client: Client, message: Message) -> bool:
     # Check the messages sent from groups
@@ -67,6 +68,10 @@ def check(client: Client, message: Message) -> bool:
         # Check declare status
         if is_declared_message(None, message):
             return True
+
+        # TODO TEMP: Check class D
+        if is_class_d(None, message):
+            return delete_message(client, gid, message.message_id)
 
         # Check bad message
         content = get_content(message)
