@@ -1343,7 +1343,7 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> Union[bool
         # Define a bypass link filter function
         def is_bypass_link(link: str) -> Union[bool, str]:
             try:
-                if "joinchat" in link:
+                if "joinchat" in link or "t.me" in link:
                     chat = get_chat(client, link)
                     if chat and chat.title:
                         if is_ban_text(chat.title, False):
