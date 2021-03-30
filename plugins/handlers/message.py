@@ -118,6 +118,13 @@ def check_join(client: Client, message: Message) -> bool:
             # Basic data
             uid = new.id
 
+            # TODO TEMP: Check class D
+            if is_class_d(None, message):
+                mid = message.message_id
+                uid = message.from_user and message.from_user.id
+                logger.warning(f"TEMP delete Class D message {mid} in {gid} from {uid}")
+                return delete_message(client, gid, mid)
+
             # Check if the user is Class D personnel
             if uid in glovar.bad_ids["users"]:
                 continue
