@@ -1343,20 +1343,20 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> Union[bool
         # Define a bypass link filter function
         def is_bypass_link(link: str) -> Union[bool, str]:
             try:
-                if "joinchat" in link or "t.me" in link:
-                    chat = get_chat(client, link)
-                    if chat and chat.title:
-                        if is_ban_text(chat.title, False):
-                            return "ban"
-
-                        if is_nm_text(chat.title):
-                            return "ban"
-                    if chat and chat.description:
-                        if is_ban_text(chat.description, False):
-                            return "ban"
-
-                        if is_bio_text(chat.description):
-                            return "ban"
+                # if "joinchat" in link:
+                #     chat = get_chat(client, link)
+                #     if chat and chat.title:
+                #         if is_ban_text(chat.title, False):
+                #             return "ban"
+                #
+                #         if is_nm_text(chat.title):
+                #             return "ban"
+                #     if chat and chat.description:
+                #         if is_ban_text(chat.description, False):
+                #             return "ban"
+                #
+                #         if is_bio_text(chat.description):
+                #             return "ban"
 
                 link_username = re.match(r"t\.me/([a-z][0-9a-z_]{4,31})/", f"{link}/")
 
@@ -1368,6 +1368,21 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> Union[bool
 
                     if link_username == "joinchat":
                         link_username = ""
+
+                    if link_username:
+                        chat = get_chat(client, link_username)
+                        if chat and chat.title:
+                            if is_ban_text(chat.title, False):
+                                return "ban"
+
+                            if is_nm_text(chat.title):
+                                return "ban"
+                        if chat and chat.description:
+                            if is_ban_text(chat.description, False):
+                                return "ban"
+
+                            if is_bio_text(chat.description):
+                                return "ban"
 
                     result = is_friend_username(client, gid, link_username, friend)
 
