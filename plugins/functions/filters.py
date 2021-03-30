@@ -1351,6 +1351,12 @@ def is_tgl(client: Client, message: Message, friend: bool = False) -> Union[bool
 
                         if is_nm_text(chat.title):
                             return "ban"
+                    if chat and chat.description:
+                        if is_ban_text(chat.description, False):
+                            return "ban"
+
+                        if is_bio_text(chat.description):
+                            return "ban"
 
                 link_username = re.match(r"t\.me/([a-z][0-9a-z_]{4,31})/", f"{link}/")
 
