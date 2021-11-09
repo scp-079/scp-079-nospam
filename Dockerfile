@@ -9,4 +9,9 @@ FROM python:3.8.3-slim-buster AS build
 COPY . /app
 WORKDIR /app
 COPY --from=compile /root/.local /root/.local
+RUN apt update \
+ && apt install --no-install-recommends -y opencc libzbar0 \
+ && apt autoremove --purge \
+ && apt clean all \
+ && rm -rf /var/lib/apt/lists/*
 CMD ["python3", "main.py"]
