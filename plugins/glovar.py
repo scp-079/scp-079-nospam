@@ -27,8 +27,8 @@ from string import ascii_lowercase
 from threading import Lock
 from typing import Dict, List, Set, Union
 
-from emoji import UNICODE_EMOJI
-from pyrogram import Chat, ChatMember
+from emoji import UNICODE_EMOJI_ENGLISH
+from pyrogram.types import Chat, ChatMember
 
 # Enable logging
 logging.basicConfig(
@@ -452,7 +452,7 @@ default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
     }
 }
 
-emoji_set: Set[str] = set(UNICODE_EMOJI)
+emoji_set: Set[str] = set(UNICODE_EMOJI_ENGLISH)
 
 locks: Dict[str, Lock] = {
     "admin": Lock(),

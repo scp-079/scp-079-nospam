@@ -18,7 +18,8 @@
 
 import logging
 
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_content, get_debug_text
@@ -47,7 +48,7 @@ from ..functions.user import terminate_user
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~Filters.new_chat_members
+@Client.on_message(filters.incoming & filters.group & ~filters.new_chat_members
                    & ~test_group & authorized_group
                    & from_user & ~class_c & ~class_e
                    & ~declared_message)
@@ -102,7 +103,7 @@ def check(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.new_chat_members
+@Client.on_message(filters.incoming & filters.group & filters.new_chat_members
                    & ~test_group & ~new_group & authorized_group
                    & from_user & ~class_c & ~class_e
                    & ~declared_message)
@@ -197,7 +198,7 @@ def check_join(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.channel & ~Filters.command(glovar.all_commands, glovar.prefix)
+@Client.on_message(filters.incoming & filters.channel & ~filters.command(glovar.all_commands, glovar.prefix)
                    & hide_channel, group=-1)
 def exchange_emergency(client: Client, message: Message) -> bool:
     # Sent emergency channel transfer request
@@ -242,8 +243,8 @@ def exchange_emergency(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group
-                   & (Filters.new_chat_members | Filters.group_chat_created | Filters.supergroup_chat_created)
+@Client.on_message(filters.incoming & filters.group
+                   & (filters.new_chat_members | filters.group_chat_created | filters.supergroup_chat_created)
                    & ~test_group & new_group
                    & from_user)
 def init_group(client: Client, message: Message) -> bool:
@@ -316,8 +317,8 @@ def init_group(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message((Filters.incoming | aio) & Filters.channel
-                   & ~Filters.command(glovar.all_commands, glovar.prefix)
+@Client.on_message((filters.incoming | aio) & filters.channel
+                   & ~filters.command(glovar.all_commands, glovar.prefix)
                    & exchange_channel)
 def process_data(client: Client, message: Message) -> bool:
     # Process the data in exchange channel
@@ -554,8 +555,8 @@ def process_data(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & ~Filters.service
-                   & ~Filters.command(glovar.all_commands, glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & ~filters.service
+                   & ~filters.command(glovar.all_commands, glovar.prefix)
                    & test_group
                    & from_user)
 def test(client: Client, message: Message) -> bool:

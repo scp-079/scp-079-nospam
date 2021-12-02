@@ -20,8 +20,9 @@ import logging
 from json import dumps
 from typing import List, Optional, Set, Union
 
-from pyrogram import Chat, Client, Message, User
+from pyrogram import Client
 from pyrogram.errors import FloodWait
+from pyrogram.types import Chat, Message, User
 
 from .. import glovar
 from .etc import code, code_block, general_link, get_forward_name, get_full_name, get_md5sum, get_text, lang
@@ -281,7 +282,7 @@ def get_content(message: Message) -> str:
         if not message:
             return ""
 
-        file_id, _, _ = get_file_id(message)
+        file_id, _ = get_file_id(message)
         text = get_text(message)
 
         if file_id:
@@ -421,7 +422,7 @@ def share_data_thread(client: Client, receivers: List[str], action: str, action_
                 # Send directly
                 file_path = file
 
-            result = send_document(client, channel_id, file_path, None, text)
+            result = send_document(client, channel_id, file_path, text)
 
             # Delete the tmp file
             if result:

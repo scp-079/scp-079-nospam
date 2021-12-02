@@ -20,7 +20,8 @@ import logging
 import re
 from typing import Optional, Set, Union
 
-from pyrogram import ChatPermissions, Client, Message, User
+from pyrogram import Client
+from pyrogram.types import ChatPermissions, Message, User
 
 from .. import glovar
 from .channel import ask_for_help, ask_help_captcha, auto_report, declare_message, forward_evidence, send_debug

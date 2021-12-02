@@ -21,7 +21,8 @@ import re
 from copy import deepcopy
 from subprocess import run, PIPE
 
-from pyrogram import Client, Filters, Message
+from pyrogram import Client, filters
+from pyrogram.types import Message
 
 from .. import glovar
 from ..functions.channel import get_content, get_debug_text, share_data
@@ -36,7 +37,7 @@ from ..functions.telegram import get_group_info, send_message, send_report_messa
 logger = logging.getLogger(__name__)
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["config"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["config"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def config(client: Client, message: Message) -> bool:
@@ -107,8 +108,8 @@ def config(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group
-                   & Filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group
+                   & filters.command([f"config_{glovar.sender.lower()}"], glovar.prefix)
                    & ~test_group & authorized_group
                    & from_user)
 def config_directly(client: Client, message: Message) -> bool:
@@ -205,7 +206,7 @@ def config_directly(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["content"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["content"], glovar.prefix)
                    & test_group
                    & from_user)
 def content(client: Client, message: Message) -> bool:
@@ -242,7 +243,7 @@ def content(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["nospam"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["nospam"], glovar.prefix)
                    & test_group
                    & from_user)
 def nospam(client: Client, message: Message) -> bool:
@@ -274,7 +275,7 @@ def nospam(client: Client, message: Message) -> bool:
     return False
 
 
-@Client.on_message(Filters.incoming & Filters.group & Filters.command(["version"], glovar.prefix)
+@Client.on_message(filters.incoming & filters.group & filters.command(["version"], glovar.prefix)
                    & test_group
                    & from_user)
 def version(client: Client, message: Message) -> bool:

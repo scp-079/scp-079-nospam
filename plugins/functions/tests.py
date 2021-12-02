@@ -19,7 +19,8 @@
 import logging
 import re
 
-from pyrogram import Client, Message
+from pyrogram import Client
+from pyrogram.types import Message
 
 from .. import glovar
 from .channel import get_content
@@ -73,8 +74,8 @@ def nospam_test(client: Client, message: Message) -> bool:
             text += f"{lang('record_contact')}{lang('colon')}{code(contact)}\n"
 
         # Image
-        file_id, file_ref, big = get_file_id(message)
-        image_path = big and get_downloaded_path(client, file_id, file_ref)
+        file_id, big = get_file_id(message)
+        image_path = big and get_downloaded_path(client, file_id)
         image_hash = image_path and get_md5sum("file", image_path)
         qrcode = image_path and get_qrcode(image_path)
         ocr = image_path and get_ocr(image_path, True)

@@ -22,7 +22,8 @@ from copy import deepcopy
 from string import ascii_lowercase
 from typing import Match, Optional, Union
 
-from pyrogram import CallbackQuery, Client, Filters, Message, User
+from pyrogram import Client, filters
+from pyrogram.types import CallbackQuery, Message, User
 
 from .. import glovar
 from .channel import get_content
@@ -245,57 +246,57 @@ def is_test_group(_, update: Union[CallbackQuery, Message]) -> bool:
     return False
 
 
-aio = Filters.create(
+aio = filters.create(
     func=is_aio,
     name="AIO"
 )
 
-authorized_group = Filters.create(
+authorized_group = filters.create(
     func=is_authorized_group,
     name="Authorized Group"
 )
 
-class_c = Filters.create(
+class_c = filters.create(
     func=is_class_c,
     name="Class C"
 )
 
-class_d = Filters.create(
+class_d = filters.create(
     func=is_class_d,
     name="Class D"
 )
 
-class_e = Filters.create(
+class_e = filters.create(
     func=is_class_e,
     name="Class E"
 )
 
-declared_message = Filters.create(
+declared_message = filters.create(
     func=is_declared_message,
     name="Declared message"
 )
 
-exchange_channel = Filters.create(
+exchange_channel = filters.create(
     func=is_exchange_channel,
     name="Exchange Channel"
 )
 
-from_user = Filters.create(
+from_user = filters.create(
     func=is_from_user,
     name="From User"
 )
 
-hide_channel = Filters.create(
+hide_channel = filters.create(
     func=is_hide_channel,
     name="Hide Channel"
 )
 
-new_group = Filters.create(
+new_group = filters.create(
     func=is_new_group,
     name="New Group"
 )
 
-test_group = Filters.create(
+test_group = filters.create(
     func=is_test_group,
     name="Test Group"
 )
@@ -520,8 +521,8 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             all_text = ""
 
             # Get the image
-            file_id, file_ref, big = get_file_id(message)
-            image_path = big and get_downloaded_path(client, file_id, file_ref)
+            file_id, big = get_file_id(message)
+            image_path = big and get_downloaded_path(client, file_id)
             image_path and need_delete.append(image_path)
 
             # Check declared status

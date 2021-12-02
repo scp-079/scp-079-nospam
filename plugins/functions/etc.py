@@ -31,14 +31,17 @@ from typing import Any, Callable, Dict, List, Optional, Union
 from unicodedata import normalize
 
 from cryptography.fernet import Fernet
-from opencc import convert
-from pyrogram import Contact, InlineKeyboardMarkup, Message, MessageEntity, User
+from opencc import OpenCC
 from pyrogram.errors import FloodWait
+from pyrogram.types import Contact, InlineKeyboardMarkup, Message, MessageEntity, User
 
 from .. import glovar
 
 # Enable logging
 logger = logging.getLogger(__name__)
+
+# Init Opencc
+converter = OpenCC(config="t2s.json")
 
 
 def bold(text: Any) -> str:
@@ -600,7 +603,7 @@ def t2t(text: str, normal: bool, printable: bool, pure: bool = False) -> str:
             text = "".join(t for t in text if t.isprintable() or t in {"\n", "\r", "\t"})
 
         if normal and glovar.zh_cn:
-            text = convert(text, config="t2s.json")
+            text = converter.convert(text)
 
         if pure:
             text = sub(r"""[^\da-zA-Z一-龥.,:'"?!~;()。，？！～@“”]""", "", text)

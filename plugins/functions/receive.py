@@ -23,7 +23,8 @@ from json import loads
 from os import rename
 from typing import Any
 
-from pyrogram import Client, InlineKeyboardButton, InlineKeyboardMarkup, Message
+from pyrogram import Client
+from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from .. import glovar
 from .channel import ask_for_help, auto_report, declare_message, get_content, get_debug_text, send_debug, share_data
@@ -576,8 +577,7 @@ def receive_file_data(client: Client, message: Message, decrypt: bool = True) ->
             return None
 
         file_id = message.document.file_id
-        file_ref = message.document.file_ref
-        path = get_downloaded_path(client, file_id, file_ref)
+        path = get_downloaded_path(client, file_id)
 
         if not path:
             return None

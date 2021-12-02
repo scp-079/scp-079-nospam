@@ -19,14 +19,16 @@
 import logging
 from typing import Iterable, List, Optional, Union
 
-from pyrogram import Chat, ChatMember, ChatPermissions, ChatPreview, Client, InlineKeyboardMarkup, Message, User
-from pyrogram.api.functions.messages import GetStickerSet
-from pyrogram.api.functions.users import GetFullUser
-from pyrogram.api.types import InputPeerUser, InputPeerChannel, InputStickerSetShortName, StickerSet, UserFull
-from pyrogram.api.types.messages import StickerSet as messages_StickerSet
+from pyrogram import Client
+from pyrogram.raw.functions.messages import GetStickerSet
+from pyrogram.raw.functions.users import GetFullUser
+from pyrogram.raw.types import InputPeerUser, InputPeerChannel, InputStickerSetShortName, StickerSet, UserFull
+from pyrogram.raw.types.messages import StickerSet as messages_StickerSet
 from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait
 from pyrogram.errors import MessageDeleteForbidden, PeerIdInvalid
 from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
+from pyrogram.types import Chat, ChatMember, ChatPermissions, ChatPreview, InlineKeyboardMarkup, Message, User
+from pyrogram.raw.base import InputChannel, InputUser, InputPeer
 
 from .. import glovar
 from .decorators import retry
@@ -63,7 +65,7 @@ def delete_messages(client: Client, cid: int, mids: Iterable[int]) -> Optional[b
     return result
 
 
-def download_media(client: Client, file_id: str, file_ref: str, file_path: str) -> Optional[str]:
+def download_media(client: Client, file_id: str, file_path: str) -> Optional[str]:
     # Download a media file
     result = None
     try:
@@ -71,7 +73,7 @@ def download_media(client: Client, file_id: str, file_ref: str, file_path: str) 
         while flood_wait:
             flood_wait = False
             try:
-                result = client.download_media(message=file_id, file_ref=file_ref, file_name=file_path)
+                result = client.download_media(message=file_id, file_name=file_path)
             except FloodWait as e:
                 flood_wait = True
                 wait_flood(e)
@@ -306,7 +308,7 @@ def leave_chat(client: Client, cid: int, delete: bool = False) -> bool:
     return False
 
 
-def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputPeerChannel, InputPeerUser, None]:
+def resolve_peer(client: Client, pid: Union[int, str]) -> Union[bool, InputChannel, InputPeer, InputUser, None]:
     # Get an input peer by id
     result = None
     try:
@@ -386,7 +388,7 @@ def restrict_chat_member(client: Client, cid: int, uid: int, permissions: ChatPe
     return result
 
 
-def send_document(client: Client, cid: int, document: str, file_ref: str = None, caption: str = "", mid: int = None,
+def send_document(client: Client, cid: int, document: str, caption: str = "", mid: int = None,
                   markup: InlineKeyboardMarkup = None) -> Union[bool, Message, None]:
     # Send a document to a chat
     result = None
@@ -398,7 +400,6 @@ def send_document(client: Client, cid: int, document: str, file_ref: str = None,
                 result = client.send_document(
                     chat_id=cid,
                     document=document,
-                    file_ref=file_ref,
                     caption=caption,
                     parse_mode="html",
                     reply_to_message_id=mid,
@@ -465,7 +466,6 @@ def send_photo(client: Client, cid: int, photo: str, file_ref: str = None, capti
                 result = client.send_photo(
                     chat_id=cid,
                     photo=photo,
-                    file_ref=file_ref,
                     caption=caption,
                     parse_mode="html",
                     reply_to_message_id=mid,
