@@ -67,11 +67,11 @@ def check(client: Client, message: Message) -> bool:
         gid = message.chat.id
 
         # Check declare status
-        if is_declared_message(None, message):
+        if is_declared_message(None, None, message):
             return True
 
         # TODO TEMP: Check class D
-        if is_class_d(None, message):
+        if is_class_d(None, None, message):
             mid = message.message_id
             uid = message.from_user and message.from_user.id
             logger.warning(f"TEMP delete Class D message {mid} in {gid} from {uid}")
@@ -120,7 +120,7 @@ def check_join(client: Client, message: Message) -> bool:
             uid = new.id
 
             # TODO TEMP: Check class D
-            if is_class_d(None, message):
+            if is_class_d(None, None, message):
                 mid = message.message_id
                 uid = message.from_user and message.from_user.id
                 logger.warning(f"TEMP delete Class D message {mid} in {gid} from {uid}")
@@ -135,7 +135,7 @@ def check_join(client: Client, message: Message) -> bool:
                 continue
 
             # Check declare status
-            if is_declared_message(None, message):
+            if is_declared_message(None, None, message):
                 return True
 
             # Init the user's status

@@ -290,7 +290,7 @@ def terminate_user(client: Client, message: Message, user: User, context: str) -
         result = None
 
         # Check if it is necessary
-        if is_class_d(None, message) or is_declared_message(None, message):
+        if is_class_d(None, None, message) or is_declared_message(None, None, message):
             return False
 
         gid = message.chat.id

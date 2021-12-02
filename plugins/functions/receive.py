@@ -652,7 +652,7 @@ def receive_help_check(client: Client, message: Message, data: dict) -> bool:
         # Get the message
         the_message = get_messages(client, gid, mid)
 
-        if not the_message or not is_from_user(None, the_message) or is_class_e(None, the_message):
+        if not the_message or not is_from_user(None, None, the_message) or is_class_e(None, None, the_message):
             return True
 
         the_user = the_message.from_user
@@ -801,7 +801,7 @@ def receive_preview(client: Client, message: Message, data: dict) -> bool:
         # Get the message
         the_message = get_messages(client, gid, mid)
 
-        if not the_message or is_class_e(None, the_message):
+        if not the_message or is_class_e(None, None, the_message):
             return True
 
         # Detect

@@ -526,7 +526,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             image_path and need_delete.append(image_path)
 
             # Check declared status
-            if is_declared_message(None, message):
+            if is_declared_message(None, None, message):
                 return ""
 
             # Check hash
@@ -534,7 +534,7 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
 
             if image_path and image_hash and image_hash not in glovar.except_ids["temp"]:
                 # Check declare status
-                if is_declared_message(None, message):
+                if is_declared_message(None, None, message):
                     return ""
 
                 if big:
@@ -980,7 +980,7 @@ def is_declared_message_id(gid: int, mid: int) -> bool:
 def is_detected_url(message: Message, test: bool = False) -> str:
     # Check if the message include detected url, return detected type
     try:
-        if not test and is_class_c(None, message):
+        if not test and is_class_c(None, None, message):
             return ""
 
         links = get_links(message)

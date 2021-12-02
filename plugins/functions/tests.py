@@ -88,7 +88,7 @@ def nospam_test(client: Client, message: Message) -> bool:
         text = nospam_test_qrcode(text, qrcode)
 
         # Check white list
-        whitelisted = (is_class_e(None, message, True)
+        whitelisted = (is_class_e(None, None, message, True)
                        or message_text in glovar.except_ids["long"]
                        or image_hash in glovar.except_ids["temp"])
 
