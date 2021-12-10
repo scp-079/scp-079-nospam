@@ -104,18 +104,13 @@ def check(client: Client, message: Message) -> bool:
 
 
 @Client.on_message(filters.incoming & filters.group & ~filters.new_chat_members
-                   & ~test_group & authorized_group
-                   & ~declared_message)
+                   & ~test_group & authorized_group)
 def check_sender_chat(client: Client, message: Message) -> bool:
     # Check the sender chat message
     result = False
 
     try:
-        # Basic data
-        gid = message.chat.id
-
         # Check sender chat message
-
         detection = is_sender_chat(message)
 
         if not detection:

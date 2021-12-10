@@ -339,24 +339,26 @@ def is_avatar_image(path: str) -> bool:
     return False
 
 
-def is_sender_chat(message: Message) -> str:
+def is_sender_chat(message: Message) -> bool:
     # Check sender_chat
-    result = ""
+    result = False
 
     try:
         gid = message.chat.id
 
         if not glovar.configs[gid].get("sender_chat"):
-            return ""
+            return False
+
+        logger.warning(message)
 
         if not message.sender_chat:
-            return ""
+            return False
 
         if (message.sender_chat.id == glovar.configs[gid].get("channel_id")
-                or message.sender_chat.id != gid):
-            return ""
+                or message.sender_chat.id == gid):
+            return False
 
-        result = "del sender_chat"
+        result = True
     except Exception as e:
         logger.warning(f"Is sender chat error: {e}")
 
