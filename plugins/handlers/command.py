@@ -166,7 +166,7 @@ def config_directly(client: Client, message: Message) -> bool:
                                 linked_channel = full_chat.linked_chat
 
                                 if linked_channel:
-                                    glovar.configs[gid]["channel_id"] = linked_channel.id
+                                    new_config["channel_id"] = linked_channel.id
 
                             if command_type == "deleter" and new_config[command_type]:
                                 new_config["reporter"] = False
