@@ -93,7 +93,7 @@ def forward_or_copy_message(client: Client, cid: int, fid: int, mid: int) -> Uni
         if forwarded_message:
             return forwarded_message[0]
 
-        copied_message = copy_message(client, cid, fid)
+        copied_message = copy_message(client, cid, fid, mid)
 
         result = copied_message
     except Exception as e:
