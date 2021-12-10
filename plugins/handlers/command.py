@@ -31,7 +31,7 @@ from ..functions.etc import get_now, get_readable_time, lang, mention_id, thread
 from ..functions.file import save
 from ..functions.filters import authorized_group, from_user, is_bad_message, is_class_c, test_group
 from ..functions.group import delete_message, get_config_text
-from ..functions.telegram import get_group_info, send_message, send_report_message
+from ..functions.telegram import get_chat, get_group_info, send_message, send_report_message
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -152,7 +152,7 @@ def config_directly(client: Client, message: Message) -> bool:
                 else:
                     if command_context:
                         if command_type in {"delete", "restrict", "nick", "bio", "avatar", "message", "ocr", "sticker",
-                                            "bot", "new", "deleter", "reporter", "scorer", "ml"}:
+                                            "bot", "new", "deleter", "reporter", "scorer", "ml", "sender_chat"}:
                             if command_context == "off":
                                 new_config[command_type] = False
                             elif command_context == "on":
@@ -160,6 +160,13 @@ def config_directly(client: Client, message: Message) -> bool:
                             else:
                                 success = False
                                 reason = lang("command_para")
+
+                            if command_type == "sender_chat" and new_config[command_type]:
+                                full_chat = get_chat(client, gid)
+                                linked_channel = full_chat.linked_chat
+
+                                if linked_channel:
+                                    glovar.configs[gid]["channel_id"] = linked_channel.id
 
                             if command_type == "deleter" and new_config[command_type]:
                                 new_config["reporter"] = False

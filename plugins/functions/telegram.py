@@ -24,9 +24,9 @@ from pyrogram.raw.functions.messages import GetStickerSet
 from pyrogram.raw.functions.users import GetFullUser
 from pyrogram.raw.types import InputPeerUser, InputPeerChannel, InputStickerSetShortName, StickerSet, UserFull
 from pyrogram.raw.types.messages import StickerSet as messages_StickerSet
-from pyrogram.errors import ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait
-from pyrogram.errors import MessageDeleteForbidden, PeerIdInvalid
-from pyrogram.errors import UsernameInvalid, UsernameNotOccupied, UserNotParticipant
+from pyrogram.errors import (ChatAdminRequired, ButtonDataInvalid, ChannelInvalid, ChannelPrivate, FloodWait,
+                             MessageDeleteForbidden, MessageIdInvalid, PeerIdInvalid, UsernameInvalid,
+                             UsernameNotOccupied, UserNotParticipant)
 from pyrogram.types import Chat, ChatMember, ChatPermissions, ChatPreview, InlineKeyboardMarkup, Message, User
 from pyrogram.raw.base import InputChannel, InputUser, InputPeer
 
@@ -79,6 +79,72 @@ def download_media(client: Client, file_id: str, file_path: str) -> Optional[str
                 wait_flood(e)
     except Exception as e:
         logger.warning(f"Download media {file_id} to {file_path} error: {e}", exc_info=True)
+
+    return result
+
+
+def forward_or_copy_message(client: Client, cid: int, fid: int, mid: int) -> Union[bool, Message, List[Message], None]:
+    # Forward of copy a message
+    result = None
+
+    try:
+        forwarded_message = forward_messages(client, cid, fid, [mid])
+
+        if forwarded_message:
+            return forwarded_message[0]
+
+        copied_message = copy_message(client, cid, fid)
+
+        result = copied_message
+    except Exception as e:
+        logger.warning(f"Forward or copy message from {fid} to {cid} error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
+def forward_messages(client: Client, cid: int, fid: int,
+                     mids: Union[int, Iterable[int]]) -> Union[bool, Message, List[Message], None]:
+    # Forward messages of any kind
+    result = None
+
+    try:
+        result = client.forward_messages(
+            chat_id=cid,
+            from_chat_id=fid,
+            message_ids=mids,
+            disable_notification=True
+        )
+    except FloodWait as e:
+        logger.warning(f"Forward message from {fid} to {cid} - Sleep for {e.x} second(s)")
+        raise e
+    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, MessageIdInvalid, PeerIdInvalid):
+        return False
+    except Exception as e:
+        logger.warning(f"Forward messages error: {e}", exc_info=True)
+
+    return result
+
+
+@retry
+def copy_message(client: Client, cid: int, fid: int, mid: int) -> Union[bool, Message, None]:
+    # Copy message of any kind
+    result = None
+
+    try:
+        result = client.copy_message(
+            chat_id=cid,
+            from_chat_id=fid,
+            message_id=mid,
+            disable_notification=True
+        )
+    except FloodWait as e:
+        logger.warning(f"Forward message from {fid} to {cid} - Sleep for {e.x} second(s)")
+        raise e
+    except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, MessageIdInvalid, PeerIdInvalid):
+        return False
+    except Exception as e:
+        logger.warning(f"Forward messages error: {e}", exc_info=True)
 
     return result
 
@@ -208,6 +274,8 @@ def get_sticker_title(client: Client, short_name: str, normal: bool = False, pri
         while flood_wait:
             flood_wait = False
             try:
+                # TODO
+                return None
                 the_set = client.send(GetStickerSet(stickerset=sticker_set))
 
                 if isinstance(the_set, messages_StickerSet):

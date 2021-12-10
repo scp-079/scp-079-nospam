@@ -362,6 +362,12 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             if is_detected_user(message):
                 return "true"
 
+            # Check sender_chat
+            if (glovar.configs[gid].get("sender_chat")
+                    and message.sender_chat
+                    and message.sender_chat.id != glovar.configs[gid].get("channel_id")):
+                return "del sender_chat"
+
             # Check the user's name
             name = get_full_name(message.from_user)
 

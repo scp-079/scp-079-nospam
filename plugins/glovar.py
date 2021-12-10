@@ -433,7 +433,9 @@ default_config: Dict[str, Union[bool, int]] = {
     "deleter": False,
     "reporter": False,
     "scorer": False,
-    "ml": False
+    "ml": False,
+    "channel_id": 0,
+    "sender_chat": False
 }
 
 default_user_status: Dict[str, Dict[Union[int, str], Union[float, int]]] = {
