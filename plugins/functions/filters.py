@@ -339,6 +339,30 @@ def is_avatar_image(path: str) -> bool:
     return False
 
 
+def is_sender_chat(message: Message) -> str:
+    # Check sender_chat
+    result = ""
+    
+    try:
+        gid = message.chat.id
+
+        if not glovar.configs[gid].get("sender_chat"):
+            return ""
+
+        if not message.sender_chat:
+            return ""
+
+        if (message.sender_chat.id == glovar.configs[gid].get("channel_id")
+                or message.sender_chat.id != gid):
+            return ""
+
+        result = "del sender_chat"
+    except Exception as e:
+        logger.warning(f"Is sender chat error: {e}")
+
+    return result
+
+
 def is_bad_message(client: Client, message: Message, text: str = None, image_path: str = None) -> str:
     # Check if the message is bad message
     if image_path:
@@ -361,16 +385,6 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
             # If the user is being punished
             if is_detected_user(message):
                 return "true"
-
-            # Check sender_chat
-            if glovar.configs[gid].get("sender_chat"):
-                logger.warning(message)
-
-            if (glovar.configs[gid].get("sender_chat")
-                    and message.sender_chat
-                    and message.sender_chat.id != glovar.configs[gid].get("channel_id")
-                    and message.sender_chat.id != message.chat.id):
-                return "del sender_chat"
 
             # Check the user's name
             name = get_full_name(message.from_user)

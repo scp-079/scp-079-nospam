@@ -284,6 +284,30 @@ def remove_contacts_info(message: Message, text: str) -> bool:
     return False
 
 
+def terminate_sender_chat(client: Client, message: Message) -> bool:
+    # Delete sender chat message
+    result = False
+
+    try:
+        gid = message.chat.id
+        mid = message.message_id
+
+        result = delete_message(client, gid, mid)
+
+        send_debug(
+            client=client,
+            chat=message.chat,
+            action=lang("自动删除 - 频道身份消息"),
+            uid=0,
+            mid=0,
+            em=message
+        )
+    except Exception as e:
+        logger.warning(f"Terminate sender chat error: {e}", exc_info=True)
+
+    return result
+
+
 def terminate_user(client: Client, message: Message, user: User, context: str) -> bool:
     # Delete user's message, or ban the user
     try:

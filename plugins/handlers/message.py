@@ -28,7 +28,7 @@ from ..functions.file import save
 from ..functions.filters import aio, authorized_group, class_c, class_e, class_d, declared_message, exchange_channel
 from ..functions.filters import from_user, hide_channel, is_bad_message, is_bio_text, is_contact, is_declared_message
 from ..functions.filters import is_nm_text, is_regex_text, new_group, test_group
-from ..functions.filters import is_class_d
+from ..functions.filters import is_class_d, is_sender_chat
 from ..functions.group import delete_message, leave_group
 from ..functions.ids import init_group_id, init_user_id
 from ..functions.receive import receive_add_bad, receive_add_except, receive_avatar, receive_captcha_kicked_user
@@ -42,7 +42,7 @@ from ..functions.receive import receive_white_users
 from ..functions.telegram import get_admins, get_user_full, send_message
 from ..functions.tests import nospam_test
 from ..functions.timers import backup_files, send_count
-from ..functions.user import terminate_user
+from ..functions.user import terminate_sender_chat, terminate_user
 
 # Enable logging
 logger = logging.getLogger(__name__)
@@ -101,6 +101,31 @@ def check(client: Client, message: Message) -> bool:
             glovar.locks["message"].release()
 
     return False
+
+
+@Client.on_message(filters.incoming & filters.group & ~filters.new_chat_members
+                   & ~test_group & authorized_group
+                   & ~declared_message)
+def check_sender_chat(client: Client, message: Message) -> bool:
+    # Check the sender chat message
+    result = False
+
+    try:
+        # Basic data
+        gid = message.chat.id
+
+        # Check sender chat message
+
+        detection = is_sender_chat(message)
+
+        if not detection:
+            return False
+
+        result = terminate_sender_chat(client, message)
+    except Exception as e:
+        logger.warning(f"Check error: {e}", exc_info=True)
+
+    return result
 
 
 @Client.on_message(filters.incoming & filters.group & filters.new_chat_members
