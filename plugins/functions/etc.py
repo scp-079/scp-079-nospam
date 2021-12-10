@@ -489,7 +489,7 @@ def get_text(message: Message, normal: bool = False, printable: bool = False) ->
     # Get message's text, including links and buttons
     text = ""
     try:
-        if not message:
+        if not message or (not message.text and not message.caption):
             return ""
 
         the_text = message.text or message.caption
