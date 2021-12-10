@@ -349,8 +349,6 @@ def is_sender_chat(message: Message) -> bool:
         if not glovar.configs[gid].get("sender_chat"):
             return False
 
-        logger.warning(message)
-
         if not message.sender_chat:
             return False
 
