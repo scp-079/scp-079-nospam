@@ -294,23 +294,25 @@ def get_sticker_title(client: Client, short_name: str, normal: bool = False, pri
     return result
 
 
+@retry
 def get_user_full(client: Client, uid: int) -> Optional[UserFull]:
     # Get a full user
     result = None
+
     try:
         user_id = resolve_peer(client, uid)
 
         if not user_id:
             return None
 
-        flood_wait = True
-        while flood_wait:
-            flood_wait = False
-            try:
-                result = client.send(GetFullUser(id=user_id))
-            except FloodWait as e:
-                flood_wait = True
-                wait_flood(e)
+        result = client.send(GetFullUser(id=user_id))
+
+        # TODO
+        if not result or not result.about:
+            return None
+
+    except FloodWait as e:
+        raise e
     except Exception as e:
         logger.warning(f"Get user {uid} full error: {e}", exc_info=True)
 
