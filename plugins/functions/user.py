@@ -299,7 +299,7 @@ def terminate_sender_chat(client: Client, message: Message) -> bool:
             chat=message.chat,
             action=lang("自动删除 - 频道身份消息"),
             uid=message.sender_chat.id,
-            mid=message.chat.id,
+            mid=message.message_id,
             em=message
         )
     except Exception as e:
