@@ -363,6 +363,9 @@ def is_bad_message(client: Client, message: Message, text: str = None, image_pat
                 return "true"
 
             # Check sender_chat
+            if glovar.configs[gid].get("sender_chat"):
+                logger.warning(message)
+
             if (glovar.configs[gid].get("sender_chat")
                     and message.sender_chat
                     and message.sender_chat.id != glovar.configs[gid].get("channel_id")
