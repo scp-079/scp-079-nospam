@@ -308,7 +308,12 @@ def get_user_full(client: Client, uid: int) -> Optional[UserFull]:
         result = client.send(GetFullUser(id=user_id))
 
         # TODO
-        if not result or not result.about:
+        try:
+            if not result or not result.about:
+                return None
+        except AttributeError:
+            pass
+        finally:
             return None
 
     except FloodWait as e:
