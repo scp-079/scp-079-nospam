@@ -121,6 +121,8 @@ def forward_messages(client: Client, cid: int, fid: int,
     except (ChannelInvalid, ChannelPrivate, ChatAdminRequired, MessageIdInvalid, PeerIdInvalid):
         return False
     except Exception as e:
+        if "CHAT_FORWARDS_RESTRICTED" in str(e):
+            return False
         logger.warning(f"Forward messages error: {e}", exc_info=True)
 
     return result
