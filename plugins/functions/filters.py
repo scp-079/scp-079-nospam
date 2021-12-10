@@ -342,7 +342,7 @@ def is_avatar_image(path: str) -> bool:
 def is_sender_chat(message: Message) -> str:
     # Check sender_chat
     result = ""
-    
+
     try:
         gid = message.chat.id
 
@@ -980,6 +980,9 @@ def is_con_text(text: str, ocr: bool) -> bool:
 def is_contact(text: str) -> str:
     # Check if the text contains bad contacts
     try:
+        if not text:
+            return ""
+
         text = text.lower()
         for contact in glovar.bad_ids["contacts"]:
             if contact.lower() in text:
@@ -1058,6 +1061,9 @@ def is_detected_user_id(gid: int, uid: int, now: int) -> bool:
 def is_emoji(the_type: str, text: str, message: Message = None) -> bool:
     # Check the emoji type
     try:
+        if not text:
+            return False
+
         if message:
             text = get_text(message, False, False)
 
